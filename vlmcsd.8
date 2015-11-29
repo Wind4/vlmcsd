@@ -1,0 +1,256 @@
+.mso www.tmac
+.TH VLMCSD 8 "July 2015" "Hotbird64" "KMS Activation Manual"
+.LO 8
+
+.SH NAME
+vlmcsd \- a fully Microsoft compatible KMS server
+
+.SH SYNOPSIS
+.B vlmcsd
+[
+.IR "options" " ]
+
+.SH DESCRIPTION
+\fBvlmcsd\fR is a fully Microsoft compatible KMS server that provides product activation services to clients. It is meant as a drop-in replacement for a Microsoft KMS server (Windows computer with KMS key entered). It currently supports KMS protocol versions 4, 5 and 6.
+.PP
+\fBvlmcsd\fR is designed to run on POSIX compatible operating systens. It only requires a basic C library with a BSD-style sockets API and either \fBfork\fR(2) or \fBpthreads\fR(7). That allows it to run on most embedded systems like routers, NASes, mobile phones, tablets, TVs, settop boxes, etc. Some efforts have been made that it also runs on Windows.
+.PP
+Although \fBvlmcsd\fR does neither require an activation key nor a payment to anyone, it is not meant to run illegal copies of Windows. Its purpose is to ensure that owners of legal copies can use their software without restrictions, e.g. if you buy a new computer or motherboard and your key will be refused activation from Microsoft servers due to hardware changes.
+.PP
+\fBvlmcsd\fR may be started via an internet superserver like \fBinetd\fR(8) or \fBxinetd\fR(8) as well as an advanced init system like \fBsystemd\fR(8) or \fBlaunchd\fR(8) using socket based activation. If \fBvlmcsd\fR detects that \fBstdin\fR(3) is a socket, it assumes that there is already a connected client on stdin that wants to be activated. All options that control setting up listening sockets will be ignored when in inetd mode. 
+
+.SH OPTIONS
+Since vlmcsd can be configured at compile time, some options may not be available on your system.
+.PP
+All options that do no require an argument may be combined with a single dash, for instance "vlmcsd -D -e" is identical to "vlmcsd -De". For all options that require an argument a space between the option and the option argument is optional. Thus "vlmcsd -r 2" and "vlmcsd -r2" are identical too.
+
+.IP "\fB-h\fR or \fB-?\fR"
+Displays help.
+
+.IP "\fB-L\fR \fIipaddress\fR[:\fIport\fR]"
+Instructs vlmcsd to listen on \fIipaddress\fR with optional \fIport\fR (default 1688). You can use this option more than once. If you do not specify \fB-L\fR at least once, IP addresses 0.0.0.0 (IPv4) and :: (IPv6) are used. If the IP address contains colons (IPv6) you must enclose the IP address in brackets if you specify the optional port, e.g. [2001:db8::dead:beef]:1688.
+.PP
+.IP
+If no port is specified, vlmcsd uses the default port according to a preceding \fB-P\fR option. If you specify a port, it can be a number (1-65535) or a name (usually found in /etc/services if not provided via LDAP, NIS+ or another name service).
+.PP
+.IP
+If you specify a link local IPv6 address (fe80::/10, usually starting with fe80::), it must be followed by a percent sign (%) and a scope id (=network interface name or number) on most unixoid OSses including Linux, Android, MacOS X and iOS, e.g. fe80::1234:56ff:fe78:9abc\fB%eth0\fR or [fe80::1234:56ff:fe78:9abc\fB%2\fR]:1688. Windows (including cygwin) does not require a scope id unless the same link local address is used on more than one network interface. Windows does not accept a name and the scope id must be a number.
+
+.IP "\fB-P\fR \fIport"
+Use TCP \fIport\fR for all subsequent \fB-L\fR statements that do not include an optional port. If you use \fB-P\fR and \fB-L\fR, \fB-P\fR must be specified before \fB-L\fR.
+
+.IP "\fB-4\fR and \fB-6\fR"
+Used to control the use of IPv4 and IPv4 if you did not use -L. If you specify both \fB-4\fR and \fB-6\fR or none, vlmcsd uses both protocols. If you specify only one, that protocol will be used only. \fBThese options are deprecated and will be removed.\fR
+
+.IP "\fB-I\fR"
+This option is deprecated and does nothing. It is provided for compatibility with svn681 and earlier versions only. It will be removed in a future release.
+
+.IP "\fB-t\fR \fIseconds\fR"
+Timeout the TCP connection with the client after \fIseconds\fR seconds. After sending an activation request. RPC keeps the TCP connection for a while. The default is 30 seconds. You may specify a shorter period to free ressources on your device faster. This is useful for devices with limited main memory or if you used \fB-m\fR to limit the concurrent clients that may request activation. Microsoft RPC clients disconnect after 30 seconds by default. Setting \fIseconds\fR to a greater value does not make much sense.
+
+.IP "\fB-m\fR \fIconcurrent-clients\fR"
+Limit the number of clients that will be handled concurrently. This is useful for devices with limited ressources or if you are experiencing DoS attacks that spawn thousands of threads or forked processes. If additional clients connect to vlmcsd, they need to wait until another client disconnects. If you set \fIconcurrent-clients\fR to a small value ( <10 ), you should also select a reasonable timeout of 2 or 3 seconds with \fB-t\fR. The default is no limit.
+
+.IP "\fB-d\fR"
+Disconnect each client after processing one activation request. This is a direct violation of DCE RPC but may help if you receive malicous fake RPC requests that block your threads or forked processes. Some other KMS emulators (e.g. py-kms) behave this way.
+
+.IP "\fB-k\fR"
+Do not disconnect clients after processing an activation request. This selects the default behavior. \fB-k\fR is useful only if you used an ini file (see \fBvlmcsd.ini\fR(5) and \fB-i\fR). If the ini file contains the line "DisconnectClientsImmediately = true", you can use this switch to restore the default behavior.
+
+.IP "\fB-N0\fR and \fB-N1\fR
+Disables (\fB-N0\fR) or enables (\fB-N1\fR) the use of the NDR64 transfer syntax in the RPC protocol. Unlike Microsoft vlmcsd supports NDR64 on 32-bit operating systems. Microsoft introduced NDR64 in Windows Vista but their KMS servers started using it with Windows 8. Thus if you choose random ePIDs, vlmcsd will select ePIDs with build numbers 9200 and 9600 if you enable NDR64 and build numbers 6002 and 7601 if you disable NDR64. The default is to enable NDR64.
+
+.IP "\fB-B0\fR and \fB-B1\fR"
+Disables (\fB-B0\fR) or enables (\fB-B1\fR) bind time feature negotiation (BTFN) in the RPC protocol. All Windows operating systems starting with Vista support BTFN and try to negotiate it when initiating an RPC connection. Thus consider turning it off as a debug / troubleshooting feature only. Some older firewalls that selectively block or redirect RPC traffic may get confused when they detect NDR64 or BTFN.
+
+.IP "\fB-l\fR \fIfilename\fR
+Use \fIfilename\fR as a log file. The log file records all activations with IP address, Windows workstation name (no reverse DNS lookup), activated product, KMS protocol, time and date. If you do not specify a log file, no log is created. For a live view of the log file
+type tail -f \fIfile\fR.
+.PP
+.IP
+If you use the special \fIfilename\fR "syslog", vlmcsd uses \fBsyslog\fR(3) for logging. If your system has no syslog service (/dev/log) installed, logging output will go to /dev/console. Syslog logging is not available in the native Windows version. The Cygwin version does support syslog logging.
+
+.IP "\fB-D\fR"
+Normally vlmcsd daemonizes and runs in background (except the native Windows version). If \fB-D\fR is specified, vlmcsd does not daemonize and runs in foreground. This is useful for testing and allows you to simply press <Ctrl-C> to exit vlmcsd.
+.PP
+.IP
+The native Windows version never daemonizes and always behaves as if \fB-D\fR had been specified. You may want to install vlmcsd as a service instead. See \fB-s\fR.
+
+.IP "\fB-e\fR"
+If specified, vlmcsd ignores \fB-l\fR and writes all logging output to \fBstdout\fR(3). This is mainly useful for testing and debugging and often combined with \fB-D\fR.
+
+.IP "\fB-f\fR"
+This flag combines \fB-D\fR and \fB-e\fR. So typing "vlmcsd -f" is identical to "vlmcsd -De". The purpose of \fB-f\fR is to provide compatibility with previous versions of vlmcsd. \fBThis option is deprecated and will be removed.\fR
+
+.IP "\fB-v\fR"
+Use verbose logging. Logs every parameter of the base request and the base response. It also logs the HWID of the KMS server if KMS protocol version 6 is used. This option is mainly for debugging purposes. It only has an effect if some form of logging is used. Thus \fB-v\fR does not make sense if not used with \fB-l\fR, \fB-e\fR or \fB-f\fR.
+
+.IP "\fB-q\fR"
+Do not use verbose logging. This is actually the default behavior. It only makes sense if you use vlmcsd with an ini file (see \fB-i\fR and \fBvlmcsd.ini\fR(5)). If the ini file contains the line "LogVerbose = true" you can use \fB-q\fR to restore the default behavior.
+
+.IP "\fB-p\fR \fIfilename\fR" 
+Create pid file \fIfilename\fR. This has nothing to do with KMS ePIDs. A pid file is a file where vlmcsd writes its own process id. This is used by standard init scripts (typically found in /etc/init.d). The default is not to write a pid file.
+
+.IP "\fB-u\fR \fIuser\fR and \fB-g\fR \fIgroup\fR"
+Causes vlmcsd to run in the specified \fIuser\fR and \fIgroup\fR security context. The main purpose for this is to drop root privileges after it has been started from the root account. To use this feature from cygwin you must run cyglsa-config and the account from which vlmcsd is started must have the rights "Act as part of the operating system" and "Replace a process
+level token". The native Windows version does not support these options.
+.PP
+.IP
+The actual security context switch is performed after the TCP sockets have been created. This allows you to use privileged ports (< 1024) when you start vlmcsd from the root account.
+.PP
+.IP
+However if you use an ini, pid or log file, you must ensure that the unprivileged user has access to these files. You can always log to \fBsyslog\fR(3) from an unprivileged account on most platforms (see \fB-l\fR).
+
+.IP "\fB-w\fR \fIePID\fR"
+Use \fIePID\fR as Windows ePID. If specified, \fB-r\fR is disregarded for Windows.
+
+.IP "\fB-0\fR \fIePID\fR"
+Use \fIePID\fR as Office 2010 ePID (including Project and Visio). If specified, \fB-r\fR is disregarded for Office 2010.
+
+.IP "\fB-3\fR \fIePID\fR"
+Use \fIePID\fR as Office 2013 ePID (including Project and Visio). If specified, \fB-r\fR is disregarded for Office 2013.
+
+.IP "\fB-H\fR \fIHwId\fR"
+Use \fIHwId\fR for all products. All HWIDs in the ini file (see \fB-i\fR) will not be used. In an ini file you can specify a seperate HWID for each \fIapplication-guid\fR. This is not possible when entering a HWID from the command line.
+
+\fIHwId\fR must be specified as 16 hex digits that are interpreted as a series of 8 bytes (big endian). Any character that is not a hex digit will be ignored. This is for better readability. The following commands are identical:
+
+vlmcsd -H 0123456789ABCDEF
+.br
+vlmcsd -H 01:23:45:67:89:ab:cd:ef
+.br
+vlmcsd -H "01 23 45 67 89 AB CD EF"
+
+.IP "\fB-i\fR \fIfilename\fR"
+Use configuration file (aka ini file) \fIfilename\fR. Most configuration parameters can be set either via the command line or an ini file. The command line always has precedence over configuration items in the ini file. See \fBvlmcsd.ini\fR(5) for the format of the configuration file.
+
+If vlmcsd has been compiled to use a default configuration file (often /etc/vlmcsd.ini), you may use \fB-i-\fR to ignore the default configuration file.
+
+.IP "\fB-r0\fR, \fB-r1\fR (default) and \fB-r2\fR"
+These options determine how ePIDs are generated if
+
+- you did not sprecify an ePID in the command line and
+.br
+- you haven't used \fB-i\fR or
+.br
+- the file specified by \fB-i\fR cannot be opened or
+.br
+- the file specified by \fB-i\fR does not contain the \fIapplication-guid\fR for the KMS request
+
+\fB-r0\fR means there are no random ePIDs. vlmcsd simply issues default ePIDs that are built into the binary at compile time. \fBPro:\fR behaves like real KMS server that also always issues the same ePID. \fBCon\fR: Microsoft may start blacklisting again and the default ePID may not work any longer.
+
+\fB-r1\fR instructs vlmcsd to generate random ePIDs when the program starts or receives a SIGHUP signal and uses these ePIDs until it is stopped or receives another SIGHUP. Most other KMS emulators generate a new ePID on every KMS request. This is easily detectable. Microsoft could just modify sppsvc.exe in a way that it always sends two identical KMS requests in two RPC requests but over the same TCP connection. If both KMS responses contain the different ePIDs, the KMS server is not genuine. \fB-r1\fR is the default mode. \fB-r1\fR also ensures that all three ePIDs (Windows, Office 2010 and Office 2013) use the same OS build number and LCID (language id).
+
+If vlmcsd has been started by an internet superserver, \fB-r1\fR works identically to \fB-r2\fR. This is simply due to the fact that vlmcsd is started upon a connection request and does not stay in memory after servicing a KMS request.
+
+\fB-r2\fR behaves like most other KMS server emulators with random support and generates a new random ePID on every request. Use this mode with "care". However since Microsoft currently does not seem to do any verification of the ePID, you currently don't need to pay attention to ePIDs at all.
+
+.IP "\fB-C\fR \fILCID\fR"
+Do not randomize the locale id part of the ePID and use \fILCID\fR instead. The \fILCID\fR must be specified as a decimal number, e.g. 1049 for "Russian - Russia". This option has no effect if the ePID is not randomized at all, e.g. if it is selected from the command line or an ini file.
+
+By default vlmcsd generates a valid locale id that is recognized by .NET Framework 4.0. This may lead to a locale id which is unlikely to occur in your country, for instance 2155 for "Quecha - Ecuador". You may want to select the locale id of your country instead. See
+.URL "http://msdn.microsoft.com/en-us/goglobal/bb964664.aspx" "MSDN" ""
+for a list of valid \fILCID\fRs. Please note that some of them are not recognized by .NET Framework 4.0.
+
+Most other KMS emulators use a fixed \fILCID\fR of 1033 (English - US). To achive the same behavior in vlmcsd use \fB-C 1033\fR.
+
+.IP "\fB-R\fR \fIrenewal-interval\fR"
+Instructs clients to renew activation every \fIrenewal-interval\fR. The \fIrenewal-interval\fR is a number optionally immediately followed by a letter indicating the unit. Valid unit letters are s (seconds), m (minutes), h (hours), d (days) and w (weeks). If you do not specify a letter, minutes is assumed.
+
+\fB-R3d\fR for instance instructs clients to renew activation every 3 days. The default \fIrenewal-interval\fR is 10080 (identical to 7d and 1w).
+
+Due to poor implementation of Microsofts KMS Client it cannot be guaranteed that activation is renewed on time as specfied by the -R option. Don't care about that. Renewal will happen well before your activation expires (usually 180 days).
+
+Even though you can specify seconds, the granularity of this option is 1 minute. Seconds are rounded down to the next multiple of 60.
+
+.IP "\fB-A\fR \fIactivation-interval\fR"
+Instructs clients to retry activation every \fIactivation-interval\fR if it was
+unsuccessful, e.g. because it could not reach the server. The default is 120 (identical to 2h). \fIactivation-interval\fR follows the same syntax as \fIrenewal-interval\fR in the
+\fB-R\fR option.
+
+.IP "\fB-s\fR"
+Installs vlmcsd as a Windows service. This option only works with the native Windows version and Cygwin. Combine \fB-s\fR with other command line options. These will be in effect when you start the service. The service automatically starts when you reboot your machine. To start it manually, type "net start vlmcsd".
+
+If you use Cygwin, you must include your Cygwin system DLL directory (usually C:\eCygwin\ebin or C:\eCygwin64\ebin) into the PATH environment variable or the service will not start.
+
+You can reinstall the service anytime using vlmcsd -s again, e.g. with a different command line. If the service is running, it will be restarted with the new command line.
+
+When using \fB-s\fR the command line is checked for basic syntax errors only. For example "vlmcsd -s -L 1.2.3.4" reports no error but the service will not start if 1.2.3.4 is not an IP address on your system.
+
+.IP "\fB-S\fR"
+Uninstalls the vlmcsd service. Works only with the native Windows version and Cygwin. All other options will be ignored if you include -S in the command line.
+
+.IP "\fB-U\fR [\fIdomain\fR\e]\fIusername\fR"
+Can only be used together with \fB-s\fR. Starts the service as a different user than the local SYSTEM account. This is used to run the service under an account with low privileges. If you omit the domain, an account from the local computer will be used.
+
+You may use "NT AUTHORITY\eNetworkService". This is a pseudo user with low privileges. You may also use "NT AUTHORITY\eLocalService" which has more privileges but these are of no use for running vlmcsd.
+
+Make sure that the user you specify has at least execute permission for your executable. "NT AUTHORITY\eNetworkService" normally has no permission to run binaries from your home directory.
+
+For your convenience you can use the special username "/l" as a shortcut for "NT AUTHORITY\eLocalService" and "/n" for "NT AUTHORITY\eNetworkService". "vlmcsd\ \-s\ \-U\ /n" installs the service to run as "NT AUTHORITY\eNetworkService".
+
+.IP "\fB-W\fR \fIpassword\fI"
+Can only be used together with \fB-s\fR. Specifies a \fIpassword\fR for the corresponding username you use with -U. SYSTEM, "NT AUTHORITY\eNetworkService", "NT AUTHORITY\eLocalService" do not require a password.
+
+If you specify a user with even lower privileges than "NT AUTHORITY\eNetworkService", you must specify its password. You also have to grant the "Log on as a service" right to that user.
+
+.SH SIGNALS
+The following signals differ from the default behavior:
+
+.IP "\fBSIGTERM\fR, \fBSIGINT\fR"
+These signals cause vlmcsd to exit gracefully. All global semaphores and shared memory pages will be released, the pid file will be unlinked (deleted) and a shutdown message will be logged.
+
+.IP "\fBSIGHUP\fR"
+Causes vlmcsd to be restarted completely. This is useful if you started vlmcsd with an ini file. You can modify the ini file while vlmcsd is running and then sending \fBSIGHUP\fR, e.g. by typing "killall -SIGHUP vlmcsd" or "kill -SIGHUP `cat /var/run/vlmcsd.pid`".
+
+The SIGHUP handler has been implemented relatively simple. It is virtually the same as stopping vlmcsd and starting it again immediately with the following exceptions:
+
+.RS
+.IP "\(em" 3
+The new process does not get a new process id.
+.IP "\(em" 3
+If you used a pid file, it is not deleted and recreated because the process id stays the same.
+.IP "\(em" 3
+If you used the 'user' and/or 'group' directive in an ini file these are ignored. This is because once you switched to lower privileged users and groups, there is no way back. Anything else would be a severe security flaw in the OS.
+.RE
+
+Signaling is not available in the native Windows version and in the Cygwin version when it runs as Windows service.
+
+.SH SUPPORTED OPERATING SYSTEMS
+\fBvlmcsd\fR compiles and runs on Linux, Windows (no Cygwin required but explicitly supported), Mac OS X, FreeBSD, NetBSD, OpenBSD, Minix, Solaris, OpenIndiana, Android and iOS. Other POSIX or unixoid OSses may work with unmodified sources or may require minor porting efforts.
+
+.SH SUPPORTED PRODUCTS
+\fBvlmcsd\fR can answer activation requests for the following products: Windows Vista, Windows 7, Windows 8, Windows 8.1, Windows 10, Windows Server 2008, Windows Server 2008 R2, Windows Server 2012, Windows Server 2012 R2, Office 2010, Project 2010, Visio 2010, Office 2013, Project 2013, Visio 2013.
+.PP
+Office, Project and Visio must be volume license versions.
+
+.SH FILES
+.IP "\fBvlmcsd.ini\fR(5)"
+
+.SH EXAMPLES
+.IP "\fBvlmcsd -f\fR"
+Starts \fBvlmcsd\fR in foreground. Useful if you use it for the first time and want to see what's happening when a client requests activation.
+
+.IP "\fBvlmcsd -l /var/log/vlmcsd.log\fR"
+Starts \fBvlmcsd\fR as a daemon and logs everything to /var/log/vlmcsd.log.
+
+.IP "\fBvlmcsd -L 192.168.1.17"
+Starts \fBvlmcsd\fR as a daemon and listens on IP address 192.168.1.17 only. This is useful for routers that have a public and a private IP address to prevent your KMS server from becoming public.
+
+.IP "\fBvlmcsd -s -U /n -l C:\elogs\evlmcsd.log"
+Installs \fBvlmcsd\fR as a Windows service with low privileges and logs everything to C:\elogs\evlmcsd.log when the service is started with "net start vlmcsd".
+
+.SH BUGS
+An ePID specified in an ini file must not contain spaces.
+
+The maximum number of \fB-L\fR options in the command line or listen statements in the inifile is the platform default for \fIFD_SETSIZE\fR. This is 64 on Windows and 1024 on most Unixes.
+
+.SH AUTHOR
+Written by crony12, Hotbird64 and vityan666.
+With contributions from DougQaid.
+
+.SH CREDITS
+Thanks to CODYQX4, deagles, eIcn, mikmik38, nosferati87, qad, Ratiborus, ...
+
+.SH SEE ALSO
+\fBvlmcsd.ini\fR(5), \fBvlmcsd\fR(7), \fBvlmcs\fR(1), \fBvlmcsdmulti\fR(1)

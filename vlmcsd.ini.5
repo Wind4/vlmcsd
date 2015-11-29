@@ -1,0 +1,130 @@
+.TH VLMCSD.INI 5 "February 2015" "Hotbird64" "KMS Activation Manual"
+.LO 8
+
+.SH NAME
+\fBvlmcsd.ini\fR \- vlmcsd KMS emulator configuration file
+
+.SH SYNOPSIS
+.B vlmcsd.ini
+
+.SH DESCRIPTION
+\fBvlmcsd.ini\fR (or simply called the "ini file") is a configuration file for \fBvlmcsd\fR(8). By default vlmcsd does not use a configuration file. It is completely optional and for advanced users only. You must use the \fB-i\fR option on the vlmcsd command line to use an ini file. There is no default name or default location for the ini file.
+.PP
+Everything, that can be configured in the ini file, may also be specified on the command line. Any configuration option specified on the command line takes precedence over the respective configuration line in the ini file.
+.PP
+\fBBenefits of a configuration file\fR
+.PP
+While you can use the configuration file to simply modify the default behavior of vlmcsd, it can also be used to change the configuration of vlmcsd after you sent a HUP \fBsignal\fR(7). Whenever you send SIGHUP, the configuration file will be re-read. Any changes you made to the ini file will be reflected after vlmcsd received the hangup signal.
+.PP
+\fBDifferences between command line and configuration file\fR
+.PP
+If you specify an illegal option or option argument on the command line, vlmcsd displays help and exits. If you specify an incorrect \fIkeyword\fR or \fIargument\fR in the ini file, vlmcsd displays a warning with some information, ignores the respective line and continues. This is intentional and prevents vlmcsd from aborting after a SIGHUP if the configuration was modified incorrectly.
+
+.SH SYNTAX
+vlmcsd.ini is a UTF-8 encoded text file with each line being in the format \fIkeyword\fR = \fIargument\fR. The \fIkeyword\fR is not case-sensitive. The \fIargument\fR is treated literally. It is neither required nor allowed to enclose the \fIargument\fR in any form of quote characters except when quote characters are part of the argument itself. Whitespace characters are ignored only
+
+- at the beginning of a line
+.br
+- between the \fIkeyword\fR and '='
+.br
+- between '=' and the \fIargument\fR
+
+Lines, that start with '#' or ';' are treated as comments. Empty lines are ignored as well. If a \fIkeyword\fR is repeated in another line, vlmcsd will use the \fIargument\fR of the last occurence of the \fIkeyword\fR. An exception to this is the Listen \fIkeyword\fR which can be specified multiple times and causes vlmcsd to listen on more than one IP address and/or port.
+.PP
+Some \fIargument\fRs are binary arguments that need to be either TRUE or FALSE. You can use "Yes", "On" or "1" as an alias for TRUE and "No", "Off" or "0" as an alias for FALSE. Binary arguments are case-insensitive.
+
+.SH KEYWORDS
+The following \fIkeyword\fRs are defined:
+
+.IP "\fBListen\fR"
+This defines on what combinations of IP addresses and ports vlmcsd should listen. \fBListen\fR can be specified more than once. The \fIargument\fR has the form \fIipaddress\fR[:\fIport\fR]. If you omit the \fIport\fR, the default port of 1688 is used. If the \fIipaddress\fR contains colons and a \fIport\fR is used, you must enclose the \fIipaddress\fR in brackets. The default is to listen to 0.0.0.0:1688 and [::]:1688 which means listen to all IPv4 and all IPv6 addresses. See the \fB-L\fR option in \fBvlmcsd\fR(8) for more info about the syntax. If you use \fB-L\fR, \fB-P\fR, \fB-4\fR or \fB-6\fR on the command line, all \fBListen\fR keywords in the ini file will be ignored. The \fBListen\fR keyword cannot be used on Windows and Cygwin if vlmcsd has been compiled to use Microsoft RPC.  
+
+Examples:
+
+Listen = 192.168.1.123:1688
+.br
+Listen = 0.0.0.0:1234
+.br
+Listen = [fe80::1721:12ff:fe81:d36b%eth0]:1688
+
+.IP "\fBPort\fR"
+Can only be used on Windows and Cygwin if vlmcsd has been compiled to use Microsoft RPC. Causes vlmcsd to listen on that port instead of 1688. On all non-Windows operating systems or if vlmcsd has been compiled to use its own RPC implementation, you must use \fBListen\fR instead.
+
+.IP "\fBUseNDR64\fR"
+Can be TRUE or FALSE. Specifies whether you want to use the NDR64 transfer syntax. See options \fB-n0\fR and \fB-n1\fR in \fBvlmcsd\fR(8). The default is TRUE.
+
+.IP "\fBUseBTFN\fR"
+Can be TRUE or FALSE. Specifies whether you want to use bind time feature negotiation in RPC. See options \fB-b0\fR and \fB-b1\fR in \fBvlmcsd\fR(8). The default is TRUE.
+
+.IP "\fBRandomizationLevel\fR"
+The \fIargument\fR must 0, 1 or 2. This specifies the ePID randomization level. See options \fB-r0\fR, \fB-r1\fR and \fB-r2\fR in \fBvlmcsd\fR(8). The default randomization level is 1.
+
+.IP "\fBLCID\fR"
+Use a specific culture id (LCID) even if the ePID is randomized. The \fIargument\fR must be a number between 1 and 32767. While any number in that range is valid, you should use an offcial LCID. A list of assigned LCIDs can be found at http://msdn.microsoft.com/en\-us/goglobal/bb964664.aspx. On the command line you control this setting with option \fB-C\fR. 
+
+.IP "\fBMaxWorkers\fR"
+The \fIargument\fR specifies the maximum number of worker processes or threads that will be used to serve activation requests concurrently. This is the same as specifying \fB-m\fR on the command line. Minimum is 1. The maximum is platform specific and is at least 32767 but is likely to be greater on most systems. The default is no limit.
+
+.IP "\fBConnectionTimeout\fR"
+Used to control when the vlmcsd disconnects idle TPC connections. The default is 30 seconds. This is the same setting as \fB-t\fR on the command line.
+
+.IP "\fBDisconnectClientsImmediately\fR"
+Set this to TRUE to disconnect a client after it got an activation response regardless whether a timeout has occured or not. The default is FALSE. Setting this to TRUE is non-standard behavior. Use only if you are experiencing DoS or DDoS attacks. On the command line you control this behavior with options \fB-d\fR and \fB-k\fR.
+
+.IP "\fBPidFile\fR"
+Write a pid file. The \fIargument\fR is the full pathname of a pid file. The pid file contains is single line containing the process id of the vlmcsd process. It can be used to stop (SIGTERM) or restart (SIGHUP) vlmcsd. This directive can be overriden using \fB-p\fR on the command line.
+
+.IP "\fBLogFile\fR"
+Write a log file. The \fIargument\fR is the full pathname of a log file. On a unixoid OS and with Cygwin you can use the special filename 'syslog' to log to the syslog facility. This is the same as specifying \fB-l\fR on the command line.
+
+.IP "\fBLogVerbose\fR"
+Set this to either TRUE or FALSE. The default is FALSE. If set to TRUE, more details of each activation will be logged. You use \fB-v\fR and \fB-q\fR in the command line to control this setting. \fBLogVerbose\fR has an effect only if you specify a log file or redirect logging to \fBstdout\fR(3).
+
+.IP "\fBActivationInterval\fR"
+This is the same as specifying \fB-A\fR on the command line. See \fBvlmcsd\fR(8) for details. The default is 2 hours. Example: ActivationInterval = 1h
+
+.IP "\fBRenewalInterval\fR"
+This is the same as specifying \fB-R\fR on the command line. See \fBvlmcsd\fR(8) for details. The default is 7 days. Example: ActivationInterval = 3h. Please note that the KMS client decides itself when to renew activation. Even though vlmcsd sends the renewal interval you specify, it is no more than some kind of recommendation to the client. Older KMS clients did follow the recommendation from a KMS server or emulator. Newer clients do not.
+
+.IP "\fBUser\fR"
+Run vlmcsd as another, preferrably less privileged, user. The \fIargument\fR can be a user name or a numeric user id. You must have the required privileges (capabilities on Linux) to change the security context of a process without providing any credentials (a password in most cases). On most unixoid OSses 'root' is the only user who has these privileges in the default configuration. This setting is not available in the native Windows version of vlmcsd. See \fB-u\fR in \fBvlmcsd\fR(8). This setting cannot be changed on the fly by sending SIGHUP to vlmcsd.
+
+.IP "\fBGroup\fR"
+Run vlmcsd as another, preferrably less privileged, group. The \fIargument\fR can be a group name or a numeric group id. You must have the required privileges (capabilities on Linux) to change the security context of a process without providing any credentials (a password in most cases). On most unixoid OSses 'root' is the only user who has these privileges in the default configuration. This setting is not available in the native Windows version of vlmcsd. See \fB-g\fR in \fBvlmcsd\fR(8). This setting cannot be changed on the fly by sending SIGHUP to vlmcsd.
+
+.SH "SPECIAL KEYWORDS"
+Any valid GUID is being treated as a special \fBkeyword\fR in the ini file. It is used to select a specfic ePID and HwId for an application GUID. The \fIargument\fR has the form \fIePID\fR [ / \fIHwId\fR ]. KMS currently knows only 3 application GUIDs:
+
+55c92734\-d682\-4d71\-983e\-d6ec3f16059f\ (Windows)
+.br
+59a52881\-a989\-479d\-af46\-f275c6370663\ (Office 2010)
+.br
+0ff1ce15\-a989\-479d\-af46\-f275c6370663\ (Office 2013)
+
+To use specific ePIDs for Windows, Office 2010 and Office 2013 you could add the following lines to vlmcsd.ini:
+
+.SM "55c92734\-d682\-4d71\-983e\-d6ec3f16059f\ =\ 55041\-00206\-184\-207146\-03\-1062\-6002.0000\-3322013"
+.br
+.SM "59a52881\-a989\-479d\-af46\-f275c6370663\ =\ 55041\-00096\-216\-598637\-03\-17418\-6002.0000\-3312013"
+.br
+.SM "0ff1ce15\-a989\-479d\-af46\-f275c6370663\ =\ 55041\-00206-234\-742099\-03\-9217\-6002.0000\-2942013"
+
+The ePID is currently a comment only. You can specify any string up to 63 bytes. In Windows 7 Microsoft has blacklisted few ( < 10 ) ePIDs that were used in KMSv5 versions of the "ratiborus virtual machine". Microsoft has given up on blacklisting when KMS emulators appeared in the wild.
+
+Even if you can use "Activated by cool hacker guys" as an ePID, you may wish to use ePIDs that cannot be detected as non-MS ePIDs. If you don't know how these "valid" ePIDs look like exactly, do not use GUIDS in vlmcsd.ini. vlmcsd provides internal mechanisms to generate valid ePIDs.
+
+If you use non-ASCII characters in your ePID (you shouldn't do anyway), these must be in UTF-8 format. This is especially important when you run vlmcsd on Windows or cygwin because UTF-8 is not the default encoding for most editors.
+
+If you are specifying an optional HWID it follows the same syntax as in the \fB\-H\fR option in \fBvlmcsd\fR(8) ecxept that you must not enclose a HWID in quotes even if it contains spaces.
+
+.SH FILES
+.IP "\fBvlmcsd.ini\fR(5)"
+
+.SH AUTHOR
+\fBvlmcsd\fR(8) was written by crony12, Hotbird64 and vityan666. With contributions from DougQaid.
+
+.SH CREDITS
+Thanks to CODYQX4, deagles, eIcn, mikmik38, nosferati87, qad, Ratiborus, ...
+
+.SH SEE ALSO
+\fBvlmcsd\fR(8), \fBvlmcsd\fR(7), \fBvlmcs\fR(1), \fBvlmcsdmulti\fR(1)

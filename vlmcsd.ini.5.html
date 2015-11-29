@@ -1,0 +1,460 @@
+<!-- Creator     : groff version 1.22.3 -->
+<!-- CreationDate: Tue Aug 25 00:13:50 2015 -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta name="generator" content="groff -Thtml, see www.gnu.org">
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="Content-Style" content="text/css">
+<style type="text/css">
+       p       { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       pre     { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       table   { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       h1      { text-align: center }
+</style>
+<title>VLMCSD.INI</title>
+
+</head>
+<body>
+
+<h1 align="center">VLMCSD.INI</h1>
+
+<a href="#NAME">NAME</a><br>
+<a href="#SYNOPSIS">SYNOPSIS</a><br>
+<a href="#DESCRIPTION">DESCRIPTION</a><br>
+<a href="#SYNTAX">SYNTAX</a><br>
+<a href="#KEYWORDS">KEYWORDS</a><br>
+<a href="#SPECIAL KEYWORDS">SPECIAL KEYWORDS</a><br>
+<a href="#FILES">FILES</a><br>
+<a href="#AUTHOR">AUTHOR</a><br>
+<a href="#CREDITS">CREDITS</a><br>
+<a href="#SEE ALSO">SEE ALSO</a><br>
+
+<hr>
+
+
+<h2>NAME
+<a name="NAME"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>vlmcsd.ini</b>
+&minus; vlmcsd KMS emulator configuration file</p>
+
+<h2>SYNOPSIS
+<a name="SYNOPSIS"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>vlmcsd.ini</b></p>
+
+<h2>DESCRIPTION
+<a name="DESCRIPTION"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>vlmcsd.ini</b>
+(or simply called the &quot;ini file&quot;) is a
+configuration file for <b>vlmcsd</b>(8). By default vlmcsd
+does not use a configuration file. It is completely optional
+and for advanced users only. You must use the <b>-i</b>
+option on the vlmcsd command line to use an ini file. There
+is no default name or default location for the ini file.</p>
+
+<p style="margin-left:11%; margin-top: 1em">Everything,
+that can be configured in the ini file, may also be
+specified on the command line. Any configuration option
+specified on the command line takes precedence over the
+respective configuration line in the ini file.</p>
+
+<p style="margin-left:11%; margin-top: 1em"><b>Benefits of
+a configuration file</b></p>
+
+<p style="margin-left:11%; margin-top: 1em">While you can
+use the configuration file to simply modify the default
+behavior of vlmcsd, it can also be used to change the
+configuration of vlmcsd after you sent a HUP
+<b>signal</b>(7). Whenever you send SIGHUP, the
+configuration file will be re-read. Any changes you made to
+the ini file will be reflected after vlmcsd received the
+hangup signal.</p>
+
+<p style="margin-left:11%; margin-top: 1em"><b>Differences
+between command line and configuration file</b></p>
+
+<p style="margin-left:11%; margin-top: 1em">If you specify
+an illegal option or option argument on the command line,
+vlmcsd displays help and exits. If you specify an incorrect
+<i>keyword</i> or <i>argument</i> in the ini file, vlmcsd
+displays a warning with some information, ignores the
+respective line and continues. This is intentional and
+prevents vlmcsd from aborting after a SIGHUP if the
+configuration was modified incorrectly.</p>
+
+<h2>SYNTAX
+<a name="SYNTAX"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">vlmcsd.ini is a
+UTF-8 encoded text file with each line being in the format
+<i>keyword</i> = <i>argument</i>. The <i>keyword</i> is not
+case-sensitive. The <i>argument</i> is treated literally. It
+is neither required nor allowed to enclose the
+<i>argument</i> in any form of quote characters except when
+quote characters are part of the argument itself. Whitespace
+characters are ignored only</p>
+
+<p style="margin-left:11%; margin-top: 1em">- at the
+beginning of a line <br>
+- between the <i>keyword</i> and &rsquo;=&rsquo; <br>
+- between &rsquo;=&rsquo; and the <i>argument</i></p>
+
+<p style="margin-left:11%; margin-top: 1em">Lines, that
+start with &rsquo;#&rsquo; or &rsquo;;&rsquo; are treated as
+comments. Empty lines are ignored as well. If a
+<i>keyword</i> is repeated in another line, vlmcsd will use
+the <i>argument</i> of the last occurence of the
+<i>keyword</i>. An exception to this is the Listen
+<i>keyword</i> which can be specified multiple times and
+causes vlmcsd to listen on more than one IP address and/or
+port.</p>
+
+<p style="margin-left:11%; margin-top: 1em">Some
+<i>argument</i>s are binary arguments that need to be either
+TRUE or FALSE. You can use &quot;Yes&quot;, &quot;On&quot;
+or &quot;1&quot; as an alias for TRUE and &quot;No&quot;,
+&quot;Off&quot; or &quot;0&quot; as an alias for FALSE.
+Binary arguments are case-insensitive.</p>
+
+<h2>KEYWORDS
+<a name="KEYWORDS"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">The following
+<i>keyword</i>s are defined:</p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="9%">
+
+
+<p><b>Listen</b></p></td>
+<td width="2%"></td>
+<td width="78%">
+
+
+<p>This defines on what combinations of IP addresses and
+ports vlmcsd should listen. <b>Listen</b> can be specified
+more than once. The <i>argument</i> has the form
+<i>ipaddress</i>[:<i>port</i>]. If you omit the <i>port</i>,
+the default port of 1688 is used. If the <i>ipaddress</i>
+contains colons and a <i>port</i> is used, you must enclose
+the <i>ipaddress</i> in brackets. The default is to listen
+to 0.0.0.0:1688 and [::]:1688 which means listen to all IPv4
+and all IPv6 addresses. See the <b>-L</b> option in
+<b>vlmcsd</b>(8) for more info about the syntax. If you use
+<b>-L</b>, <b>-P</b>, <b>-4</b> or <b>-6</b> on the command
+line, all <b>Listen</b> keywords in the ini file will be
+ignored. The <b>Listen</b> keyword cannot be used on Windows
+and Cygwin if vlmcsd has been compiled to use Microsoft
+RPC.</p> </td></tr>
+</table>
+
+<p style="margin-left:22%; margin-top: 1em">Examples:</p>
+
+<p style="margin-left:22%; margin-top: 1em">Listen =
+192.168.1.123:1688 <br>
+Listen = 0.0.0.0:1234 <br>
+Listen = [fe80::1721:12ff:fe81:d36b%eth0]:1688</p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="6%">
+
+
+<p style="margin-top: 1em"><b>Port</b></p></td>
+<td width="5%"></td>
+<td width="78%">
+
+
+<p style="margin-top: 1em">Can only be used on Windows and
+Cygwin if vlmcsd has been compiled to use Microsoft RPC.
+Causes vlmcsd to listen on that port instead of 1688. On all
+non-Windows operating systems or if vlmcsd has been compiled
+to use its own RPC implementation, you must use
+<b>Listen</b> instead.</p></td></tr>
+</table>
+
+<p style="margin-left:11%;"><b>UseNDR64</b></p>
+
+<p style="margin-left:22%;">Can be TRUE or FALSE. Specifies
+whether you want to use the NDR64 transfer syntax. See
+options <b>-n0</b> and <b>-n1</b> in <b>vlmcsd</b>(8). The
+default is TRUE.</p>
+
+<p style="margin-left:11%;"><b>UseBTFN</b></p>
+
+<p style="margin-left:22%;">Can be TRUE or FALSE. Specifies
+whether you want to use bind time feature negotiation in
+RPC. See options <b>-b0</b> and <b>-b1</b> in
+<b>vlmcsd</b>(8). The default is TRUE.</p>
+
+<p style="margin-left:11%;"><b>RandomizationLevel</b></p>
+
+<p style="margin-left:22%;">The <i>argument</i> must 0, 1
+or 2. This specifies the ePID randomization level. See
+options <b>-r0</b>, <b>-r1</b> and <b>-r2</b> in
+<b>vlmcsd</b>(8). The default randomization level is 1.</p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="6%">
+
+
+<p><b>LCID</b></p></td>
+<td width="5%"></td>
+<td width="78%">
+
+
+<p>Use a specific culture id (LCID) even if the ePID is
+randomized. The <i>argument</i> must be a number between 1
+and 32767. While any number in that range is valid, you
+should use an offcial LCID. A list of assigned LCIDs can be
+found at
+http://msdn.microsoft.com/en&minus;us/goglobal/bb964664.aspx.
+On the command line you control this setting with option
+<b>-C</b>.</p> </td></tr>
+</table>
+
+<p style="margin-left:11%;"><b>MaxWorkers</b></p>
+
+<p style="margin-left:22%;">The <i>argument</i> specifies
+the maximum number of worker processes or threads that will
+be used to serve activation requests concurrently. This is
+the same as specifying <b>-m</b> on the command line.
+Minimum is 1. The maximum is platform specific and is at
+least 32767 but is likely to be greater on most systems. The
+default is no limit.</p>
+
+<p style="margin-left:11%;"><b>ConnectionTimeout</b></p>
+
+<p style="margin-left:22%;">Used to control when the vlmcsd
+disconnects idle TPC connections. The default is 30 seconds.
+This is the same setting as <b>-t</b> on the command
+line.</p>
+
+
+<p style="margin-left:11%;"><b>DisconnectClientsImmediately</b></p>
+
+<p style="margin-left:22%;">Set this to TRUE to disconnect
+a client after it got an activation response regardless
+whether a timeout has occured or not. The default is FALSE.
+Setting this to TRUE is non-standard behavior. Use only if
+you are experiencing DoS or DDoS attacks. On the command
+line you control this behavior with options <b>-d</b> and
+<b>-k</b>.</p>
+
+<p style="margin-left:11%;"><b>PidFile</b></p>
+
+<p style="margin-left:22%;">Write a pid file. The
+<i>argument</i> is the full pathname of a pid file. The pid
+file contains is single line containing the process id of
+the vlmcsd process. It can be used to stop (SIGTERM) or
+restart (SIGHUP) vlmcsd. This directive can be overriden
+using <b>-p</b> on the command line.</p>
+
+<p style="margin-left:11%;"><b>LogFile</b></p>
+
+<p style="margin-left:22%;">Write a log file. The
+<i>argument</i> is the full pathname of a log file. On a
+unixoid OS and with Cygwin you can use the special filename
+&rsquo;syslog&rsquo; to log to the syslog facility. This is
+the same as specifying <b>-l</b> on the command line.</p>
+
+<p style="margin-left:11%;"><b>LogVerbose</b></p>
+
+<p style="margin-left:22%;">Set this to either TRUE or
+FALSE. The default is FALSE. If set to TRUE, more details of
+each activation will be logged. You use <b>-v</b> and
+<b>-q</b> in the command line to control this setting.
+<b>LogVerbose</b> has an effect only if you specify a log
+file or redirect logging to <b>stdout</b>(3).</p>
+
+<p style="margin-left:11%;"><b>ActivationInterval</b></p>
+
+<p style="margin-left:22%;">This is the same as specifying
+<b>-A</b> on the command line. See <b>vlmcsd</b>(8) for
+details. The default is 2 hours. Example: ActivationInterval
+= 1h</p>
+
+<p style="margin-left:11%;"><b>RenewalInterval</b></p>
+
+<p style="margin-left:22%;">This is the same as specifying
+<b>-R</b> on the command line. See <b>vlmcsd</b>(8) for
+details. The default is 7 days. Example: ActivationInterval
+= 3h. Please note that the KMS client decides itself when to
+renew activation. Even though vlmcsd sends the renewal
+interval you specify, it is no more than some kind of
+recommendation to the client. Older KMS clients did follow
+the recommendation from a KMS server or emulator. Newer
+clients do not.</p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="7%">
+
+
+<p><b>User</b></p></td>
+<td width="4%"></td>
+<td width="78%">
+
+
+<p>Run vlmcsd as another, preferrably less privileged,
+user. The <i>argument</i> can be a user name or a numeric
+user id. You must have the required privileges (capabilities
+on Linux) to change the security context of a process
+without providing any credentials (a password in most
+cases). On most unixoid OSses &rsquo;root&rsquo; is the only
+user who has these privileges in the default configuration.
+This setting is not available in the native Windows version
+of vlmcsd. See <b>-u</b> in <b>vlmcsd</b>(8). This setting
+cannot be changed on the fly by sending SIGHUP to
+vlmcsd.</p> </td></tr>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="7%">
+
+
+<p><b>Group</b></p></td>
+<td width="4%"></td>
+<td width="78%">
+
+
+<p>Run vlmcsd as another, preferrably less privileged,
+group. The <i>argument</i> can be a group name or a numeric
+group id. You must have the required privileges
+(capabilities on Linux) to change the security context of a
+process without providing any credentials (a password in
+most cases). On most unixoid OSses &rsquo;root&rsquo; is the
+only user who has these privileges in the default
+configuration. This setting is not available in the native
+Windows version of vlmcsd. See <b>-g</b> in
+<b>vlmcsd</b>(8). This setting cannot be changed on the fly
+by sending SIGHUP to vlmcsd.</p></td></tr>
+</table>
+
+<h2>SPECIAL KEYWORDS
+<a name="SPECIAL KEYWORDS"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">Any valid GUID
+is being treated as a special <b>keyword</b> in the ini
+file. It is used to select a specfic ePID and HwId for an
+application GUID. The <i>argument</i> has the form
+<i>ePID</i> [ / <i>HwId</i> ]. KMS currently knows only 3
+application GUIDs:</p>
+
+
+<p style="margin-left:11%; margin-top: 1em">55c92734&minus;d682&minus;4d71&minus;983e&minus;d6ec3f16059f&nbsp;(Windows)
+<br>
+
+59a52881&minus;a989&minus;479d&minus;af46&minus;f275c6370663&nbsp;(Office
+2010) <br>
+
+0ff1ce15&minus;a989&minus;479d&minus;af46&minus;f275c6370663&nbsp;(Office
+2013)</p>
+
+<p style="margin-left:11%; margin-top: 1em">To use specific
+ePIDs for Windows, Office 2010 and Office 2013 you could add
+the following lines to vlmcsd.ini:</p>
+
+
+<p style="margin-left:11%; margin-top: 1em"><small>55c92734&minus;d682&minus;4d71&minus;983e&minus;d6ec3f16059f&nbsp;=&nbsp;55041&minus;00206&minus;184&minus;207146&minus;03&minus;1062&minus;6002.0000&minus;3322013
+<br>
+
+59a52881&minus;a989&minus;479d&minus;af46&minus;f275c6370663&nbsp;=&nbsp;55041&minus;00096&minus;216&minus;598637&minus;03&minus;17418&minus;6002.0000&minus;3312013
+<br>
+
+0ff1ce15&minus;a989&minus;479d&minus;af46&minus;f275c6370663&nbsp;=&nbsp;55041&minus;00206-234&minus;742099&minus;03&minus;9217&minus;6002.0000&minus;2942013</small></p>
+
+<p style="margin-left:11%; margin-top: 1em">The ePID is
+currently a comment only. You can specify any string up to
+63 bytes. In Windows 7 Microsoft has blacklisted few ( &lt;
+10 ) ePIDs that were used in KMSv5 versions of the
+&quot;ratiborus virtual machine&quot;. Microsoft has given
+up on blacklisting when KMS emulators appeared in the
+wild.</p>
+
+<p style="margin-left:11%; margin-top: 1em">Even if you can
+use &quot;Activated by cool hacker guys&quot; as an ePID,
+you may wish to use ePIDs that cannot be detected as non-MS
+ePIDs. If you don&rsquo;t know how these &quot;valid&quot;
+ePIDs look like exactly, do not use GUIDS in vlmcsd.ini.
+vlmcsd provides internal mechanisms to generate valid
+ePIDs.</p>
+
+<p style="margin-left:11%; margin-top: 1em">If you use
+non-ASCII characters in your ePID (you shouldn&rsquo;t do
+anyway), these must be in UTF-8 format. This is especially
+important when you run vlmcsd on Windows or cygwin because
+UTF-8 is not the default encoding for most editors.</p>
+
+<p style="margin-left:11%; margin-top: 1em">If you are
+specifying an optional HWID it follows the same syntax as in
+the <b>&minus;H</b> option in <b>vlmcsd</b>(8) ecxept that
+you must not enclose a HWID in quotes even if it contains
+spaces.</p>
+
+<h2>FILES
+<a name="FILES"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>vlmcsd.ini</b>(5)</p>
+
+<h2>AUTHOR
+<a name="AUTHOR"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>vlmcsd</b>(8)
+was written by crony12, Hotbird64 and vityan666. With
+contributions from DougQaid.</p>
+
+<h2>CREDITS
+<a name="CREDITS"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">Thanks to
+CODYQX4, deagles, eIcn, mikmik38, nosferati87, qad,
+Ratiborus, ...</p>
+
+<h2>SEE ALSO
+<a name="SEE ALSO"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>vlmcsd</b>(8),
+<b>vlmcsd</b>(7), <b>vlmcs</b>(1), <b>vlmcsdmulti</b>(1)</p>
+<hr>
+</body>
+</html>

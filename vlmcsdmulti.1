@@ -1,0 +1,53 @@
+.TH VLMCSDMULTI 1 "February 2015" "Hotbird64" "KMS Activation Manual"
+.LO 1
+
+.SH NAME
+vlmcsdmulti \- a multi-call binary containing \fBvlmcs\fR(1) and \fBvlmcsd\fR(8)
+
+.SH SYNOPSIS
+\fBvlmcsdmulti\fR vlmcs [ \fIoptions\fR ] [ \fIhostname\fR|\fIip-address\fR[:\fIport\fR] ] [ \fIoptions\fR ] | vlmcsd [ \fIoptions\fR ]
+
+.SH DESCRIPTION
+\fBvlmcsdmulti\fR is a multi-call binary that contains \fBvlmcs\fR(1) and \fBvlmcsd\fR(8) in a single binary. Since both programs share a lot of code and data, the combined binary is significantly smaller than the sum of both files.
+.PP
+\fBvlmcsdmulti\fR should not be called directly. Instead you may want to create symbolic links named vlmcs and vlmcsd which point to \fBvlmcsdmulti\fR. You then use these links to call the respective program. You may however call \fBvlmcsdmulti\fR followed by a complete command line of either \fBvlmcs\fR(1) or \fBvlmcsd\fR(8).
+.SS Creating symbolic links in unixoid operating systems
+cd to the directory containing \fBvlmcsdmulti\fR and type
+.PP
+ln -s vlmcsdmulti vlmcsd
+.br
+ln -s vlmcsdmulti vlmcs
+.PP
+You may use a destination directory, e.g.
+.PP
+ln -s vlmcsdmulti /usr/local/sbin/vlmcsd
+.br
+ln -s vlmcsdmulti /usr/local/bin/vlmcs
+.PP
+Ensure that \fBvlmcsdmulti\fR has execute permissions. You can do that by typing "chmod 755 vlmcsdmulti". See \fBchmod\fR(1) for details.
+.SS Creating symbolic links in Windows (Vista and higher only)
+cd to the directory containing \fBvlmcsdmulti\fR and type
+.PP
+mklink vlmcsd.exe vlmcsdmulti.exe
+.br
+mklink vlmcs.exe vlmcsdmulti.exe
+.PP
+You may use a destination directory, e.g.
+.PP
+mklink C:\\tools\\vlmcsd.exe vlmcsdmulti.exe
+.br
+mklink C:\\tools\\vlmcs.exe vlmcsdmulti.exe
+.SS Memory considerations
+While you definitely save disk space by using \fBvlmcsdmulti\fR you will need more RAM when you run \fBvlmcsdmulti\fR as a daemon (KMS server) instead of vlmcsd. You should consider running \fBvlmcsdmulti\fR via an internet superserver like \fBinetd\fR(8) or \fBxinetd\fR(8). 
+
+.SH BUGS
+\fBvlmcsdmulti\fR has the same bugs as \fBvlmcs\fR(1) and \fBvlmcsd\fR(8).
+
+.SH AUTHOR
+Written by Hotbird64
+
+.SH CREDITS
+Thanks to CODYQX4, crony12, deagles, DougQaid, eIcn, mikmik38, nosferati87, qad, vityan666, ...
+
+.SH SEE ALSO
+\fBvlmcs\fR(1)\fB, vlmcsd\fR(8)\fB, vlmcsd\fR(7)

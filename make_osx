@@ -1,0 +1,97 @@
+#!/bin/bash
+
+export VERBOSE=3
+export DNS_PARSER=OS
+
+rm vlmcsd-* vlmcs-* vlmcsdmulti-* *_all.* 2>/dev/null
+rm vlmcsd vlmcs vlmcsdmulti 2>/dev/null
+
+MAKEFLAGS="-j -B"
+REUSEOBJFLAGS="-j"
+CFGCC="-static-libgcc -mdynamic-no-pic -Os -flto=jobserver -fwhole-program -fno-common -fno-exceptions -fno-stack-protector -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants"
+CFCLANG="-mdynamic-no-pic -Os -flto -fno-common -fno-exceptions -fno-stack-protector -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants"
+CFGCC42="-static-libgcc -mdynamic-no-pic -Os -fno-common -fno-exceptions -fno-stack-protector -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants"
+
+make $MAKEFLAGS CLIENT_NAME=vlmcs-MacOSX-x86 PROGRAM_NAME=vlmcsd-MacOSX-x86 CC=clang CFLAGS="$CFCLANG" PLATFORMFLAGS="-m32 -march=core2 -mmacosx-version-min=10.0" && \
+rm -f vlmcs.o vlmcsd.o vlmcsdmulti.o *_all.* && \
+make $REUSEOBJFLAGS vlmcsdmulti-MacOSX-x86 MULTI_NAME=vlmcsdmulti-MacOSX-x86 CC=clang CFLAGS="$CFCLANG" PLATFORMFLAGS="-m32 -march=core2 -mmacosx-version-min=10.0" && \
+make $MAKEFLAGS vlmcsd-MacOSX-x86-threads THREADS=1 PROGRAM_NAME=vlmcsd-MacOSX-x86-threads CC=clang CFLAGS="$CFCLANG" PLATFORMFLAGS="-m32 -march=core2 -mmacosx-version-min=10.0" && \
+make $MAKEFLAGS CLIENT_NAME=vlmcs-MacOSX-x64 PROGRAM_NAME=vlmcsd-MacOSX-x64 CC=clang CFLAGS="$CFCLANG" PLATFORMFLAGS="-m64 -march=core2 -mmacosx-version-min=10.0" && \
+rm -f vlmcs.o vlmcsd.o vlmcsdmulti.o *_all.* && \
+make $REUSEOBJFLAGS vlmcsdmulti-MacOSX-x64 MULTI_NAME=vlmcsdmulti-MacOSX-x64 CC=clang CFLAGS="$CFCLANG" PLATFORMFLAGS="-m64 -march=core2 -mmacosx-version-min=10.0" && \
+make $MAKEFLAGS vlmcsd-MacOSX-x64-threads THREADS=1 PROGRAM_NAME=vlmcsd-MacOSX-x64-threads CC=clang CFLAGS="$CFCLANG" PLATFORMFLAGS="-m64 -march=core2 -mmacosx-version-min=10.0" && \
+make $MAKEFLAGS CLIENT_NAME=vlmcs-MacOSX-x86-openssl-EXPERIMENTAL PROGRAM_NAME=vlmcsd-MacOSX-x86-openssl-EXPERIMENTAL CRYPTO=openssl_with_aes_soft CC=clang CFLAGS="$CFCLANG" PLATFORMFLAGS="-m32 -march=core2 -mmacosx-version-min=10.4" && \
+make $MAKEFLAGS CLIENT_NAME=vlmcs-MacOSX-x64-openssl-EXPERIMENTAL PROGRAM_NAME=vlmcsd-MacOSX-x64-openssl-EXPERIMENTAL CRYPTO=openssl_with_aes_soft CC=clang CFLAGS="$CFCLANG" PLATFORMFLAGS="-m64 -march=core2 -mmacosx-version-min=10.4" && \
+
+#make $MAKEFLAGS CLIENT_NAME=vlmcs-iOS-7.1-armv7 PROGRAM_NAME=vlmcsd-iOS-7.1-armv7 CC=clang CFLAGS="$CFCLANG" PLATFORMFLAGS="-mthumb -m32 -arch armv7 -miphoneos-version-min=1.0 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.1.sdk" && \
+rm -f vlmcs.o vlmcsd.o vlmcsdmulti.o *_all.* && \
+#make $REUSEOBJFLAGS vlmcsdmulti-iOS-7.1-armv7 MULTI_NAME=vlmcsdmulti-iOS-7.1-armv7 CC=clang CFLAGS="$CFCLANG" PLATFORMFLAGS="-mthumb -m32 -arch armv7 -miphoneos-version-min=1.0 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.1.sdk" && \
+
+make $MAKEFLAGS CLIENT_NAME=vlmcs-iOS-8.4-armv7 PROGRAM_NAME=vlmcsd-iOS-8.4-armv7 CC=clang CFLAGS="$CFCLANG" PLATFORMFLAGS="-mthumb -m32 -arch armv7 -miphoneos-version-min=1.0 -isysroot ~/toolchains/iPhoneOS8.4.sdk" && \
+rm -f vlmcs.o vlmcsd.o vlmcsdmulti.o *_all.* && \
+make $REUSEOBJFLAGS vlmcsdmulti-iOS-8.4-armv7 MULTI_NAME=vlmcsdmulti-iOS-8.4-armv7 CC=clang CFLAGS="$CFCLANG" PLATFORMFLAGS="-mthumb -m32 -arch armv7 -miphoneos-version-min=1.0 -isysroot ~/toolchains/iPhoneOS8.4.sdk" && \
+make $MAKEFLAGS CLIENT_NAME=vlmcs-iOS-8.4-armv8-aarch64 PROGRAM_NAME=vlmcsd-iOS-8.4-armv8-aarch64 CC=clang CFLAGS="$CFCLANG" PLATFORMFLAGS="-m64 -arch arm64 -miphoneos-version-min=7.0 -isysroot ~/toolchains/iPhoneOS8.4.sdk" && \
+rm -f vlmcs.o vlmcsd.o vlmcsdmulti.o *_all.* && \
+make $REUSEOBJFLAGS vlmcsdmulti-iOS-8.4-armv8-aarch64 MULTI_NAME=vlmcsdmulti-iOS-8.4-armv8-aarch64 CC=clang CFLAGS="$CFCLANG" PLATFORMFLAGS="-m64 -arch arm64 -miphoneos-version-min=7.0 -isysroot ~/toolchains/iPhoneOS8.4.sdk" && \
+
+make $MAKEFLAGS CLIENT_NAME=vlmcs-iOS-6.1-armv7 PROGRAM_NAME=vlmcsd-iOS-6.1-armv7 CC=clang CFLAGS="$CFCLANG" PLATFORMFLAGS="-mthumb -m32 -arch armv7 -miphoneos-version-min=1.0 --sysroot ~/toolchains/iPhoneOS6.1.sdk -isysroot ~/toolchains/iPhoneOS6.1.sdk" && \
+rm -f vlmcs.o vlmcsd.o vlmcsdmulti.o *_all.* && \
+make $REUSEOBJFLAGS vlmcsdmulti-iOS-6.1-armv7 MULTI_NAME=vlmcsdmulti-iOS-6.1-armv7 CC=clang CFLAGS="$CFCLANG" PLATFORMFLAGS="-mthumb -m32 -arch armv7 -miphoneos-version-min=1.0 --sysroot ~/toolchains/iPhoneOS6.1.sdk -isysroot ~/toolchains/iPhoneOS6.1.sdk" && \
+
+make $MAKEFLAGS CLIENT_NAME=vlmcs-iOS-5.1-armv7-clang3.4 PROGRAM_NAME=vlmcsd-iOS-5.1-armv7-clang3.4 CC=clang CFLAGS="$CFCLANG" PLATFORMFLAGS="-mthumb -m32 -arch armv7 -miphoneos-version-min=1.0 --sysroot ~/toolchains/iPhoneOS5.1.sdk -isysroot ~/toolchains/iPhoneOS5.1.sdk" && \
+rm -f vlmcs.o vlmcsd.o vlmcsdmulti.o *_all.* && \
+make $REUSEOBJFLAGS vlmcsdmulti-iOS-5.1-armv7-clang3.4 MULTI_NAME=vlmcsdmulti-iOS-5.1-armv7-clang3.4 CC=clang CFLAGS="$CFCLANG" PLATFORMFLAGS="-mthumb -m32 -arch armv7 -miphoneos-version-min=1.0 --sysroot ~/toolchains/iPhoneOS5.1.sdk -isysroot ~/toolchains/iPhoneOS5.1.sdk" && \
+
+#PATH=~/toolchains/iOS5.1-MacOS-Lion/usr/bin:$PATH clang --version
+PATH=~/toolchains/iOS5.1-MacOS-Lion/usr/bin:$PATH make $MAKEFLAGS CLIENT_NAME=vlmcs-iOS-5.1-armv6-clang3.1 PROGRAM_NAME=vlmcsd-iOS-5.1-armv6-clang3.1 CC=clang CFLAGS="$CFCLANG" PLATFORMFLAGS="-arch armv6 -miphoneos-version-min=1.0 --sysroot ~/toolchains/iPhoneOS5.1.sdk -isysroot ~/toolchains/iPhoneOS5.1.sdk" && \
+rm -f vlmcs.o vlmcsd.o vlmcsdmulti.o *_all.* && \
+PATH=~/toolchains/iOS5.1-MacOS-Lion/usr/bin:$PATH make $REUSEOBJFLAGS vlmcsdmulti-iOS-5.1-armv6-clang3.1 MULTI_NAME=vlmcsdmulti-iOS-5.1-armv6-clang3.1 CC=clang CFLAGS="$CFCLANG" PLATFORMFLAGS="-arch armv6 -miphoneos-version-min=1.0 --sysroot ~/toolchains/iPhoneOS5.1.sdk -isysroot ~/toolchains/iPhoneOS5.1.sdk" && \
+
+PATH=~/toolchains/gcc4.2/usr/bin/bin:$PATH make $MAKEFLAGS CLIENT_NAME=vlmcs-iOS-4.1-armv6-llvm-gcc4.2 PROGRAM_NAME=vlmcsd-iOS-4.1-armv6-llvm-gcc4.2 CC=llvm-g++-4.2 CFLAGS="$CFGCC42" PLATFORMFLAGS="-arch armv6 -miphoneos-version-min=1.0 --sysroot ~/toolchains/iPhoneOS4.1.sdk -isysroot ~/toolchains/iPhoneOS4.1.sdk" && \
+rm -f vlmcs.o vlmcsd.o vlmcsdmulti.o *_all.* && \
+PATH=~/toolchains/gcc4.2/usr/bin/bin:$PATH make $REUSEOBJFLAGS vlmcsdmulti-iOS-4.1-armv6-llvm-gcc4.2 MULTI_NAME=vlmcsdmulti-iOS-4.1-armv6-llvm-gcc4.2 CC=llvm-g++-4.2 CFLAGS="$CFGCC42" PLATFORMFLAGS="-arch armv6 -miphoneos-version-min=1.0 --sysroot ~/toolchains/iPhoneOS4.1.sdk -isysroot ~/toolchains/iPhoneOS4.1.sdk" && \
+
+#PATH=~/toolchains/gcc4.2/usr/bin:$PATH make $MAKEFLAGS CLIENT_NAME=vlmcs-iOS-4.1-armv7-clang PROGRAM_NAME=vlmcsd-iOS-4.1-armv7-llvm-clang CC=~/toolchains/gcc4.2/usr/bin/bin/clang CFLAGS="$CFGCC42" PLATFORMFLAGS="-mthumb -arch armv7 -miphoneos-version-min=4.1 --sysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.1.sdk -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.1.sdk" && \
+#rm -f vlmcs.o vlmcsd.o vlmcsdmulti.o && \
+#PATH=~/toolchains/gcc4.2/usr/bin:$PATH make $REUSEOBJFLAGS vlmcsdmulti-iOS-4.1-armv7-llvm-clang MULTI_NAME=vlmcsdmulti-iOS-4.1-armv7-llvm-clang CC=~/toolchains/gcc4.2/usr/bin/bin/clang CFLAGS="$CFGCC42" PLATFORMFLAGS="-mthumb -arch armv7 -miphoneos-version-min=4.1 --sysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.1.sdk -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.1.sdk" && \
+
+
+PATH=~/toolchains/gcc4.2/usr/bin:$PATH make -Bj PROGRAM_NAME=vlmcsd-MacOSX-ppc CLIENT_NAME=vlmcs-MacOSX-ppc CC=gcc CFLAGS="$CFGCC42 -isysroot ~/toolchains/MacOSX10.5.sdk -arch ppc -mmacosx-version-min=10.0"
+rm -f vlmcs.o vlmcsd.o vlmcsdmulti.o *_all.* && \
+PATH=~/toolchains/gcc4.2/usr/bin:$PATH make -j vlmcsdmulti-MacOSX-ppc MULTI_NAME=vlmcsdmulti-MacOSX-ppc CC=gcc CFLAGS="$CFGCC42 -isysroot ~/toolchains/MacOSX10.5.sdk -arch ppc -mmacosx-version-min=10.0"
+
+
+make $MAKEFLAGS CLIENT_NAME=vlmcs-MacOSX-x86-gcc PROGRAM_NAME=vlmcsd-MacOSX-x86-gcc CC=gcc-5 CFLAGS="$CFGCC" PLATFORMFLAGS="-m32 -march=core2 -mmacosx-version-min=10.0" && \
+rm -f vlmcs.o vlmcsd.o vlmcsdmulti.o *_all.* && \
+make $REUSEOBJFLAGS vlmcsdmulti-MacOSX-x86-gcc MULTI_NAME=vlmcsdmulti-MacOSX-x86-gcc CC=gcc-5 CFLAGS="$CFGCC" PLATFORMFLAGS="-m32 -march=core2 -mmacosx-version-min=10.0" && \
+make $MAKEFLAGS vlmcsd-MacOSX-x86-threads-gcc THREADS=1 PROGRAM_NAME=vlmcsd-MacOSX-x86-threads-gcc CC=gcc-5 CFLAGS="$CFGCC" PLATFORMFLAGS="-m32 -march=core2 -mmacosx-version-min=10.0" && \
+make $MAKEFLAGS CLIENT_NAME=vlmcs-MacOSX-x64-gcc PROGRAM_NAME=vlmcsd-MacOSX-x64-gcc CC=gcc-5 CFLAGS="$CFGCC" PLATFORMFLAGS="-m64 -march=core2 -mmacosx-version-min=10.0" && \
+rm -f vlmcs.o vlmcsd.o vlmcsdmulti.o *_all.* && \
+make $REUSEOBJFLAGS vlmcsdmulti-MacOSX-x64-gcc MULTI_NAME=vlmcsdmulti-MacOSX-x64-gcc CC=gcc-5 CFLAGS="$CFGCC" PLATFORMFLAGS="-m64 -march=core2 -mmacosx-version-min=10.0" && \
+make $MAKEFLAGS vlmcsd-MacOSX-x64-threads-gcc THREADS=1 PROGRAM_NAME=vlmcsd-MacOSX-x64-threads-gcc CC=gcc-5 CFLAGS="$CFGCC" PLATFORMFLAGS="-m64 -march=core2 -mmacosx-version-min=10.0" && \
+
+# Sign the iOS binaries
+#ldid -S *iOS*
+
+#strip vlmcs-* vlmcsd-* vlmcsdmulti-*
+
+rm -f *.o *_all.* 
+rm -fr *.dSYM
+
+sudo cp -p vlmcs-MacOSX-x86-gcc /usr/local/bin/vlmcs
+sudo cp -p vlmcsd-MacOSX-x86-gcc /usr/local/bin/vlmcsd
+
+sudo mkdir -p /usr/local/share/man/man8
+sudo mkdir -p /usr/local/share/man/man1
+sudo mkdir -p /usr/local/share/man/man7
+sudo mkdir -p /usr/local/share/man/man5
+
+sudo cp -p vlmcsd.8 /usr/local/share/man/man8
+sudo cp -p vlmcs.1 vlmcsdmulti.1 /usr/local/share/man/man1
+sudo cp -p vlmcsd.7 /usr/local/share/man/man7
+sudo cp -p vlmcsd.ini.5 //usr/local/share/man/man5
+
+# Copy the stuff to distribution server
+scp -p vlmcsd-MacOSX-x* vlmcs-MacOSX-x* vlmcsdmulti-MacOSX-x* root@ubuntu64:x/binaries/MacOSX/intel
+scp -p vlmcsd-MacOSX-ppc* vlmcs-MacOSX-ppc* vlmcsdmulti-MacOSX-ppc* root@ubuntu64:x/binaries/MacOSX/ppc
+scp -p vlmcsd-iOS* vlmcs-iOS* vlmcsdmulti-iOS* root@ubuntu64:x/binaries/iOS/arm

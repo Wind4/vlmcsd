@@ -1,0 +1,255 @@
+.mso www.tmac
+.TH VLMCS 1 "February 2015" "Hotbird64" "KMS Activation Manual"
+.LO 1
+
+.SH NAME
+vlmcs \- a client for testing and/or charging KMS servers
+
+.SH SYNOPSIS
+\fBvlmcs\fR [ \fIoptions\fR ] [ \fItarget\fR ] [ \fIoptions\fR ]
+.PP
+\fItarget\fR can be one of the following:
+.RS
+.PP
+\fIhostname\fR|\fIipaddress\fR[:\fItcp-port\fR] or to query a specific KMS server (example: vlmcs kms.example.com:1688).
+.br
+\fR.\fIdomain\fR to automatically detect KMS servers via DNS for \fIdomain\fR (example: vlmcs .example.com). Please note the dot before \fIdomain\fR.
+.br
+\fI-\fR (a single dash) to detect KMS servers in your own domain.
+.RE
+
+If you use \fIipaddress\fR:\fIport\fR as the \fItarget\fR, the \fIipaddress\fR must be enclosed in brackets
+if it contains colons, e.g. [2001:db8:dead:beef::1]:1688. If you use a link-local IPv6 address on Unix systems, you must append a percent sign and the
+interface identifier of the source interface, for example fe80::dead:beef%eth0.
+.PP
+If you omit the \fItarget\fR, 127.0.0.1:1688 will be used except if you use \fB-i6\fR. In this case the default target is [::1]:1688. 
+
+.SH DESCRIPTION
+\fBvlmcs\fR is a program that can be used to test a KMS server that provides activation for
+several Microsoft products. The KMS server may also be an emulator. It supports
+KMS protocol versions 4, 5 and 6.
+.PP
+.B vlmcs
+generates one or more activation requests for a Microsoft KMS product and sends
+it to a KMS server. It then analyzes and displays the responses of the KMS server.
+.PP
+.B vlcms
+checks both the DCE-RPC protocol and the activation message for correctness and
+reports any errors that it finds.
+.PP
+.B vlmcs
+can also be used to "charge" a KMS server. A Microsoft KMS server sends correct activation messages only if it detects a certain minimum of clients (25 for Windows client OSses, 5 otherwise) on the network. This is Microsoft's futile attempt to prevent running a KMS server in a home environment.
+
+.SH OPTIONS
+.IP "\fB-h\fR or \fB-?"
+Show help.
+
+.IP \fB-x
+Show valid
+.IR application s
+that can be used with
+.BR "-l" "."
+
+.IP \fB-e
+Show some examples how to use vlmcs correctly.
+
+.IP \fB-v
+Be verbose. Instead of just displaying the returned ePID and the HwId
+(protocol v6 only) vlmcsd shows all details of the query and the response.
+
+.IP "\fB-l\fR \fIapplication"
+Request activation for a specific
+.IR "application" "."
+Valid applications can be displayed by using
+.BR "-x" "."
+The default
+.IR application " is"
+.IR "Windows Vista Business" "."
+The list of available applications is not complete. You may
+supply GUIDs with
+.BR "-a" ", " "-k" " and " "-s"
+to specify applications that are not listed with \fB-x\fR. The
+.B -l
+option is used as a shortcut for the most common applications.
+
+.IP "\fB-4\fR, \fB-5\fR and \fB-6"
+Force version 4, 5 or 6 of the KMS protocol. The default is to select a suitable
+version according to the
+.IR "application"
+selected. Plese note that some products (e.g. Office 2013) may use different protocols with different versions of Windows.
+
+.IP "\fB-m"
+Let the client pretend to be a virtual machine. Early versions of Microsoft's
+KMS server did not increase the client count if the request came from a virtual
+machine. Newer versions ignore this flag.
+
+.IP "\fB-d"
+Use NetBIOS names instead of DNS names. By default vlmcsd generates some random
+DNS names for each request. If you prefer NetBIOS names, you may use
+.IR "\fB-d" "."
+A real Microsoft activation client uses DNS names or NetBIOS depending on the
+client name configuration. KMS servers treat the workstation name as a comment
+that affects logging only. Clients will be identified by a GUID that can
+be specified using \fB-c\fR. \fB-d\fR has no effect if you also specify \fB-w\fR.
+
+.IP "\fB-a\fR \fIapplication-guid"
+Send requests with a specific
+.IR "application-guid" "."
+There are currently only three known valid
+.IR "application-guid" "s:"
+
+.IP
+55c92734-d682-4d71-983e-d6ec3f16059f (Windows)
+.br
+59a52881-a989-479d-af46-f275c6370663 (Office 2010)
+.br
+0ff1ce15-a989-479d-af46-f275c6370663 (Office 2013)
+
+.IP
+A Microsoft KMS server uses these GUIDs to have seperate counters for the
+already activated clients. A client that does not contact the KMS server
+within 30 days will be deleted from the database. Emulated KMS servers
+are always fully charged.
+
+.IP "\fB-k\fR \fIkms-guid\fR"
+Send requests with a specific
+.IR "kms-guid" "."
+A Microsoft KMS server uses these GUIDs as a product id to decide whether to
+grant activation or not. A list of current \fIkms-guid\fRs can be found in
+kms.c (table KmsIdList). Emulated KMS servers grant activation unconditionally
+and do not check the \fIkms-guid\fR.
+
+.IP "\fB-s\fR \fIactivation-guid\fR"
+The \fIactivation-guid\fR defines the actual product, e.g. "Windows 8.1 Professional WMC KMSCLIENT edition". A \fIactivation-guid\fR maps 1:1 to a product key. 
+However, neither a Microsoft KMS server nor emulated servers check this id.
+The \fIactivation-guid\fR is useful in logging to get a specific product description like
+"Windows 8.1 Professional WMC". A list of current \fIactivation-guid\fRs can be found in
+kms.c (table ExtendedProductList).
+
+.IP "\fB-n\fR \fIrequests"
+Send
+.I requests
+requests to the server. The default is to send at least one request and enough
+subsequent requests that the server is fully charged afterwards for
+the \fIapplication\-guid\fR you selected (explicitly with
+.BR "-a" " or implicitly by using " "-l" ")."
+
+.IP "\fB-T"
+Causes to use a new TCP connection for each request if multiple requests
+are sent with vlmcsd. This is useful when you want to test an emulated KMS
+server whether it suffers from memory leaks. To test for memory leaks use
+.B -n
+with a large number of requests (> 100000) and then test twice (with and
+without
+.BR "-T" ")."
+This option may become neccessary for future versions of Microsoft's KMS
+server because multiple requests with different
+.IR clients-guid s
+for the same
+.I kms-id-guid
+are impossible in a real KMS szenario over the same TCP connection.
+
+.IP "\fB-c\fR \fIclient-machine-guid\fR"
+Normally vlmcs generates a random \fIclient-machine-guid\fR for each request. By using this option you can specify a fixed \fIclient-machine-guid\fR
+This causes a Microsoft KMS not to increment its client count because it
+receives multiple requests for the same client. Thus do not use
+.BR "-c"
+if you want to charge a real KMS server.
+
+.IP "\fB-o\fR \fIprevious-client-machine-guid\fR"
+If the \fIclient-machine-guid\fR changes for some reason, the real KMS client stores a \fIprevious-client-machine-guid\fR which is sent
+to the KMS server. This happens rarely and usually 00000000-0000-0000-0000-000000000000 is used. You can use \fB-o\fR to specify a different
+\fIprevious-client-machine-guid\fR.
+
+.IP "\fB-G\fR \fIfilename\fR"
+Grabs ePIDs and HWIDs from a KMS server and writes the information to \fIfilename\fR
+in format suitable to be used as a configuration file (aka ini file) for \fBvlmcsd\fR(8).
+This is especially useful if you have access to a genuine KMS server and want to use
+the same data with \fBvlmcsd\fR(8).
+
+If \fIfilename\fR does not exist, it will be created.
+If you specify an existing \fIfilename\fR, it will be updated to use the information
+received from the remote KMS server and a backup \fIfilename\fR~ will be created.
+
+\fB-G\fR cannot be used with \fB-l\fR, \fB-4\fR, \fB-5\fR, \fB-6\fR, \fB-a\fR, \fB-s\fR, \fB-k\fR, \fB-r\fR and \fB-n\fR
+
+.IP "\fB-w\fR \fIworkstation-name"
+Send requests with a specific
+.IR "workstation-name" "."
+This disables the random generator for the workstation name. Since it is
+a comment only, this option does not have much effect.
+
+.IP "\fB-r\fR \fIrequired-client-count"
+Also known as the "N count policy". Tells the KMS server that successful activation requires
+\fIrequired-client-count\fR clients. The default is the
+\fIrequired-client-count\fR that the product would need if the request
+was a real activation. A Microsoft KMS server counts clients
+up to the double amount what was specified with \fB-r\fR. This option
+can be used to "overcharge" a Microsoft KMS server.
+
+.IP "\fB\-t\ \fIstatus\fR"
+Reports a specific license status to the KMS server. \fIstatus\fR is a number
+that can be from 0 to 6. 0=unlicensed, 1=licensed, 2=OOB grace, 3=OOT grace,
+4=Non-genuinue grace, 5=notification, 6=extended grace. Refer to
+.URL "http://technet.microsoft.com/en-us/library/ff686879.aspx#_Toc257201371" "TechNet" ""
+for more information. A Microsoft KMS server collects this information for
+statistics only.
+
+.IP "\fB-g\fR \fIbinding-expiration\fR"
+This tells the KMS server how long a client will stay in its current license
+status. This can be the remaining OOB time (the grace peroid that is granted between installation of a product and when activation is actuall required) or
+the remaining time when KMS activation must be renewed.
+\fIbinding-expiration\fR is specified in minutes. A Microsoft KMS server
+apparantly does not use this information.
+
+.IP "\fB-i \fIprotocol-version\fR"
+Force the use of Internet protocol \fIprotocol-version\fR. Allowed values are 4 (IPv4) and 6 (IPv6). This option is useful only if you specfiy a \fIhostname\fR and not an
+\fIip-address\fR on the command line.
+
+.IP "\fB-p\fR"
+Do not set the RPC_PF_MULTIPLEX flag in the RPC bind request. This can be used to test if the KMS server uses the same setting of this flag in the RPC bind respone. Some KMS
+emulators don't set this correctly.
+
+.IP "\fB-N0\fR and \fB-N1\fR"
+Disables (\fB-N0\fR) or enables (\fB-N1\fR) the NDR64 transfer syntax in the RPC protocol. Disable NDR64 only in case of problems. If NDR64 is not used, vlmcs cannot detect many RPC protocol errors in KMS emulators. If you want to test whether a KMS emulator fully supports NDR64, you must use the \fB-n\fR option to send at least two requests. This is because Microsoft's client always sends the first request using NDR32 syntax and subsequent requests using NDR64 syntax.
+
+.IP "\fB-B0\fR and \fB-B1\fR"
+Disables (\fB-B0\fR) or enables (\fB-B1\fR) bind time feature negotiation (BTFN) in the RPC protocol. Disable BTFN only in case of problems. If BTFN is not used, vlmcs cannot detect many RPC protocol errors in KMS emulators.
+
+.PP
+Options that do not require an argument can be specified together with a single
+dash, e.g. vlmcs -6mvT. If you specify an option more than once, the last occurence
+will be in effect.
+
+.SH FILES
+.IP "\fBvlmcsd.ini\fR(5)"
+
+.SH EXAMPLES
+.IP "\fBvlmcs kms.example.com"
+Request activation for Windows Vista using v4 protocol from kms.example.com.
+Repeat activation requests until server is charged for all Windows products.
+
+.IP "\fBvlmcs -"
+Request activation for Windows Vista using v4 protocol from a KMS server that is published via DNS for the current domain.
+
+.IP "\fBvlmcs .example.com"
+Request activation for Windows Vista using v4 protocol from a KMS server that is published via DNS for domain example.com.
+
+.IP "\fBvlmcs -6 -l Office2013 -v -n 1"
+Request exactly one activation for Office2013 using v6 protocol from
+localhost. Display verbose results.
+
+.IP "\fBvlmcs kms.bigcompany.com -G /etc/vlmcsd.ini"
+Get ePIDs and HWIDs from kms.bigcompany.com and create/update /etc/vlmcsd.ini accordingly.
+
+.SH BUGS
+Some platforms (e.g. Solaris) may have a \fBman\fR(7) system that does not handle URLs. URLs may be omitted in the documentation on those platforms. Cygwin, Linux, FreeBSD and Mac OS X are known to work correctly. 
+
+.SH AUTHOR
+Written by Hotbird64
+
+.SH CREDITS
+Thanks to CODYQX4, crony12, deagles, DougQaid, eIcn, mikmik38, nosferati87, qad, Ratiborus, vityan666, ...
+
+.SH SEE ALSO
+\fBvlmcsd\fR(7), \fBvlmcsd\fR(8), \fBvlmcsdmulti\fR(1)

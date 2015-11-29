@@ -1,0 +1,14 @@
+[
+   uuid(51C82175-844E-4750-B0D8-EC255555BC06),
+   version(1.0),
+]
+interface KMSServer
+{
+    int RequestActivation
+	(
+		[in] int requestSize, 
+		[in, size_is(requestSize)] unsigned char* request, 
+		[out] int* responseSize, 
+		[out, size_is( , *responseSize)] unsigned char** response
+	);
+}
