@@ -345,7 +345,7 @@ __pure BOOL getArgumentBool(int_fast8_t *result, const char *const argument)
 {
 	if (
 		!strncasecmp(argument, "true", 4) ||
-		!strncasecmp(argument, "on", 4) ||
+		!strncasecmp(argument, "on", 2) ||
 		!strncasecmp(argument, "yes", 3) ||
 		!strncasecmp(argument, "1", 1)
 	)

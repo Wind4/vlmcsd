@@ -21,6 +21,7 @@ mkdir -p binaries/Linux/intel/static
 mkdir -p binaries/Linux/intel/musl
 
 mkdir -p binaries/Linux/sparc32/glibc
+mkdir -p binaries/Linux/s390/glibc
 
 mkdir -p binaries/Android/arm/bionic
 mkdir -p binaries/Android/arm/static

@@ -1,5 +1,5 @@
 .mso www.tmac
-.TH VLMCSD 8 "July 2015" "Hotbird64" "KMS Activation Manual"
+.TH VLMCSD 8 "September 2015" "Hotbird64" "KMS Activation Manual"
 .LO 8
 
 .SH NAME
@@ -108,7 +108,7 @@ Use \fIePID\fR as Windows ePID. If specified, \fB-r\fR is disregarded for Window
 Use \fIePID\fR as Office 2010 ePID (including Project and Visio). If specified, \fB-r\fR is disregarded for Office 2010.
 
 .IP "\fB-3\fR \fIePID\fR"
-Use \fIePID\fR as Office 2013 ePID (including Project and Visio). If specified, \fB-r\fR is disregarded for Office 2013.
+Use \fIePID\fR as Office 2013/2016 ePID (including Project and Visio). If specified, \fB-r\fR is disregarded for Office 2013/2016.
 
 .IP "\fB-H\fR \fIHwId\fR"
 Use \fIHwId\fR for all products. All HWIDs in the ini file (see \fB-i\fR) will not be used. In an ini file you can specify a seperate HWID for each \fIapplication-guid\fR. This is not possible when entering a HWID from the command line.
@@ -189,7 +189,7 @@ Make sure that the user you specify has at least execute permission for your exe
 
 For your convenience you can use the special username "/l" as a shortcut for "NT AUTHORITY\eLocalService" and "/n" for "NT AUTHORITY\eNetworkService". "vlmcsd\ \-s\ \-U\ /n" installs the service to run as "NT AUTHORITY\eNetworkService".
 
-.IP "\fB-W\fR \fIpassword\fI"
+.IP "\fB-W\fR \fIpassword\fR"
 Can only be used together with \fB-s\fR. Specifies a \fIpassword\fR for the corresponding username you use with -U. SYSTEM, "NT AUTHORITY\eNetworkService", "NT AUTHORITY\eLocalService" do not require a password.
 
 If you specify a user with even lower privileges than "NT AUTHORITY\eNetworkService", you must specify its password. You also have to grant the "Log on as a service" right to that user.
@@ -217,10 +217,10 @@ If you used the 'user' and/or 'group' directive in an ini file these are ignored
 Signaling is not available in the native Windows version and in the Cygwin version when it runs as Windows service.
 
 .SH SUPPORTED OPERATING SYSTEMS
-\fBvlmcsd\fR compiles and runs on Linux, Windows (no Cygwin required but explicitly supported), Mac OS X, FreeBSD, NetBSD, OpenBSD, Minix, Solaris, OpenIndiana, Android and iOS. Other POSIX or unixoid OSses may work with unmodified sources or may require minor porting efforts.
+\fBvlmcsd\fR compiles and runs on Linux, Windows (no Cygwin required but explicitly supported), Mac OS X, FreeBSD, NetBSD, OpenBSD, Dragonfly BSD, Minix, Solaris, OpenIndiana, Android and iOS. Other POSIX or unixoid OSses may work with unmodified sources or may require minor porting efforts.
 
 .SH SUPPORTED PRODUCTS
-\fBvlmcsd\fR can answer activation requests for the following products: Windows Vista, Windows 7, Windows 8, Windows 8.1, Windows 10, Windows Server 2008, Windows Server 2008 R2, Windows Server 2012, Windows Server 2012 R2, Office 2010, Project 2010, Visio 2010, Office 2013, Project 2013, Visio 2013.
+\fBvlmcsd\fR can answer activation requests for the following products: Windows Vista, Windows 7, Windows 8, Windows 8.1, Windows 10, Windows Server 2008, Windows Server 2008 R2, Windows Server 2012, Windows Server 2012 R2, Office 2010, Project 2010, Visio 2010, Office 2013, Project 2013, Visio 2013, Office 2016, Project 2016, Visio 2016.
 .PP
 Office, Project and Visio must be volume license versions.
 

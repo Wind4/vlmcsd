@@ -159,7 +159,7 @@ static int getDnsRawAnswer(const char *restrict query, unsigned char** receive_b
 			char* querystring = (char*)alloca(strlen(query) + 12);
 			strcpy(querystring, "_vlmcs._tcp");
 			strcat(querystring, query);
-			bytes_received = res_query(querystring, C_IN, ns_t_srv, *receive_buffer, RECEIVE_BUFFER_SIZE);
+			bytes_received = res_query(querystring, ns_c_in, ns_t_srv, *receive_buffer, RECEIVE_BUFFER_SIZE);
 #		endif
 	}
 	else

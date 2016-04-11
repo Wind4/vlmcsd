@@ -178,7 +178,11 @@ int ProcessActivationRequest(handle_t IDL_handle, int requestSize, unsigned char
 #	endif // NO_LOG
 
 	// Discard any packet smaller than a v4 request
-	if (requestSize < (int)sizeof(REQUEST_V4)) return RPC_S_CANNOT_SUPPORT;
+	if (requestSize < (int)sizeof(REQUEST_V4))
+	{
+		if (!result) RpcStringFreeA(&clientIpAddress);
+		return RPC_S_CANNOT_SUPPORT;
+	}
 
 	*response = (uint8_t *)midl_user_allocate(MAX_RESPONSE_SIZE);
 

@@ -239,8 +239,8 @@ OPTIONS
 
 
        -3 ePID
-              Use  ePID  as Office 2013 ePID (including Project and Visio). If
-              specified, -r is disregarded for Office 2013.
+              Use ePID as Office 2013/2016 ePID (including Project and Visio).
+              If specified, -r is disregarded for Office 2013/2016.
 
 
        -H HwId
@@ -454,17 +454,18 @@ SIGNALS
 
 SUPPORTED OPERATING SYSTEMS
        vlmcsd compiles and runs on Linux,  Windows  (no  Cygwin  required  but
-       explicitly  supported),  Mac  OS  X,  FreeBSD,  NetBSD, OpenBSD, Minix,
-       Solaris, OpenIndiana, Android and iOS. Other POSIX or unixoid OSses may
-       work with unmodified sources or may require minor porting efforts.
+       explicitly  supported),  Mac  OS X, FreeBSD, NetBSD, OpenBSD, Dragonfly
+       BSD, Minix, Solaris, OpenIndiana,  Android  and  iOS.  Other  POSIX  or
+       unixoid  OSses  may  work  with unmodified sources or may require minor
+       porting efforts.
 
 
 SUPPORTED PRODUCTS
-       vlmcsd  can answer activation requests for the following products: Win‐
-       dows Vista, Windows 7, Windows 8,  Windows  8.1,  Windows  10,  Windows
-       Server  2008,  Windows  Server  2008  R2,  Windows Server 2012, Windows
-       Server 2012 R2, Office 2010, Project 2010,  Visio  2010,  Office  2013,
-       Project 2013, Visio 2013.
+       vlmcsd can answer activation requests for the following products:  Win‐
+       dows  Vista,  Windows  7,  Windows  8, Windows 8.1, Windows 10, Windows
+       Server 2008, Windows Server  2008  R2,  Windows  Server  2012,  Windows
+       Server  2012  R2,  Office  2010, Project 2010, Visio 2010, Office 2013,
+       Project 2013, Visio 2013, Office 2016, Project 2016, Visio 2016.
 
        Office, Project and Visio must be volume license versions.
 
@@ -475,24 +476,24 @@ FILES
 
 EXAMPLES
        vlmcsd -f
-              Starts  vlmcsd in foreground. Useful if you use it for the first
-              time and want to see what's happening  when  a  client  requests
+              Starts vlmcsd in foreground. Useful if you use it for the  first
+              time  and  want  to  see what's happening when a client requests
               activation.
 
 
        vlmcsd -l /var/log/vlmcsd.log
-              Starts  vlmcsd  as a daemon and logs everything to /var/log/vlm‐
+              Starts vlmcsd as a daemon and logs everything  to  /var/log/vlm‐
               csd.log.
 
 
        vlmcsd -L 192.168.1.17
               Starts vlmcsd as a daemon and listens on IP address 192.168.1.17
-              only.  This  is useful for routers that have a public and a pri‐
+              only. This is useful for routers that have a public and  a  pri‐
               vate IP address to prevent your KMS server from becoming public.
 
 
        vlmcsd -s -U /n -l C:\logs\vlmcsd.log
-              Installs vlmcsd as a Windows service  with  low  privileges  and
+              Installs  vlmcsd  as  a  Windows service with low privileges and
               logs  everything  to  C:\logs\vlmcsd.log  when  the  service  is
               started with "net start vlmcsd".
 
@@ -500,18 +501,18 @@ EXAMPLES
 BUGS
        An ePID specified in an ini file must not contain spaces.
 
-       The maximum number of -L options in the command line or  listen  state‐
+       The  maximum  number of -L options in the command line or listen state‐
        ments in the inifile is the platform default for FD_SETSIZE. This is 64
        on Windows and 1024 on most Unixes.
 
 
 AUTHOR
-       Written by crony12, Hotbird64 and vityan666.  With  contributions  from
+       Written  by  crony12, Hotbird64 and vityan666.  With contributions from
        DougQaid.
 
 
 CREDITS
-       Thanks  to  CODYQX4,  deagles,  eIcn, mikmik38, nosferati87, qad, Rati‐
+       Thanks to CODYQX4, deagles, eIcn,  mikmik38,  nosferati87,  qad,  Rati‐
        borus, ...
 
 
@@ -520,4 +521,4 @@ SEE ALSO
 
 
 
-Hotbird64                          July 2015                         VLMCSD(8)
+Hotbird64                       September 2015                       VLMCSD(8)
