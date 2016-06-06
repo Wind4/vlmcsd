@@ -74,10 +74,16 @@ extern const char *const Version;
 #define UINT_MAX 4294967295
 #endif
 
+#ifdef IS_LIBRARY
+#define MESSAGE_BUFFER_SIZE 256
+EXTERNC __declspec(EXTERNAL) extern char ErrorMessage[MESSAGE_BUFFER_SIZE];
+#endif // IS_LIBRARY
 
 extern int global_argc, multi_argc;
 extern CARGV global_argv, multi_argv;
+#ifndef _WIN32
 extern int_fast8_t nodaemon;
+#endif // _WIN32
 extern DWORD VLActivationInterval;
 extern DWORD VLRenewalInterval;
 extern int_fast8_t DisconnectImmediately;
@@ -122,8 +128,12 @@ extern uint16_t Lcid;
 #endif
 
 #if !defined(NO_SOCKETS) && !defined(USE_MSRPC)
+#if defined(SIMPLE_SOCKETS)
+extern SOCKET s_server;
+#else // !defined(SIMPLE_SOCKETS)
 extern SOCKET *SocketList;
 extern int numsockets;
+#endif // !defined(SIMPLE_SOCKETS)
 
 #if !defined(NO_LIMIT) && !__minix__
 
@@ -151,6 +161,10 @@ extern CRITICAL_SECTION logmutex;
 #endif // _WIN32
 #endif // USE_THREADS
 #endif // NO_LOG
+
+#if HAVE_FREEBIND
+extern int_fast8_t freebind;
+#endif // HAVE_FREEBIND
 
 
 #endif // INCLUDED_SHARED_GLOBALS_H

@@ -1,4 +1,4 @@
-.TH VLMCSD.INI 5 "September 2015" "Hotbird64" "KMS Activation Manual"
+.TH VLMCSD.INI 5 "June 2016" "Hotbird64" "KMS Activation Manual"
 .LO 8
 
 .SH NAME
@@ -34,10 +34,10 @@ Lines, that start with '#' or ';' are treated as comments. Empty lines are ignor
 Some \fIargument\fRs are binary arguments that need to be either TRUE or FALSE. You can use "Yes", "On" or "1" as an alias for TRUE and "No", "Off" or "0" as an alias for FALSE. Binary arguments are case-insensitive.
 
 .SH KEYWORDS
-The following \fIkeyword\fRs are defined:
+The following \fIkeyword\fRs are defined (not all keywords may be available depending on the operating system and the options used when \fBvlmcsd\fR(8) was compiled):
 
 .IP "\fBListen\fR"
-This defines on what combinations of IP addresses and ports vlmcsd should listen. \fBListen\fR can be specified more than once. The \fIargument\fR has the form \fIipaddress\fR[:\fIport\fR]. If you omit the \fIport\fR, the default port of 1688 is used. If the \fIipaddress\fR contains colons and a \fIport\fR is used, you must enclose the \fIipaddress\fR in brackets. The default is to listen to 0.0.0.0:1688 and [::]:1688 which means listen to all IPv4 and all IPv6 addresses. See the \fB-L\fR option in \fBvlmcsd\fR(8) for more info about the syntax. If you use \fB-L\fR, \fB-P\fR, \fB-4\fR or \fB-6\fR on the command line, all \fBListen\fR keywords in the ini file will be ignored. The \fBListen\fR keyword cannot be used on Windows and Cygwin if vlmcsd has been compiled to use Microsoft RPC.  
+This defines on what combinations of IP addresses and ports vlmcsd should listen. \fBListen\fR can be specified more than once. The \fIargument\fR has the form \fIipaddress\fR[:\fIport\fR]. If you omit the \fIport\fR, the default port of 1688 is used. If the \fIipaddress\fR contains colons and a \fIport\fR is used, you must enclose the \fIipaddress\fR in brackets. The default is to listen to 0.0.0.0:1688 and [::]:1688 which means listen to all IPv4 and all IPv6 addresses. See the \fB-L\fR option in \fBvlmcsd\fR(8) for more info about the syntax. If you use \fB-L\fR or \fB-P\fR on the command line, all \fBListen\fR keywords in the ini file will be ignored. The \fBListen\fR keyword cannot be used if vlmcsd has been compiled to use Microsoft RPC (Windows and Cygwin only) or simple sockets.  
 
 Examples:
 
@@ -48,7 +48,10 @@ Listen = 0.0.0.0:1234
 Listen = [fe80::1721:12ff:fe81:d36b%eth0]:1688
 
 .IP "\fBPort\fR"
-Can only be used on Windows and Cygwin if vlmcsd has been compiled to use Microsoft RPC. Causes vlmcsd to listen on that port instead of 1688. On all non-Windows operating systems or if vlmcsd has been compiled to use its own RPC implementation, you must use \fBListen\fR instead.
+Can only be used if vlmcsd has been compiled to use simple sockets or on Windows and Cygwin if \fBvlmcsd\fR(8) has been compiled to use Microsoft RPC. Otherwise you must use \fBListen\fR instead. Causes vlmcsd to listen on that port instead of 1688.
+
+.IP "\fBFreeBind\fR"
+Can be TRUE or FALSE. If TRUE, you can use the \fBListen\fR keyword with IP addresses that are currently not defined on your system. \fBvlmcsd\fR(8) will start listening on these IP addresses as soon as they become available. This keyword is only available under Linux and FreeBSD because no other OS currently supports that feature. FreeBSD supports this only for IPv4 and requires the PRIV_NETINET_BINDANY privilege which is normally assigned to proccesses of the root user.
 
 .IP "\fBUseNDR64\fR"
 Can be TRUE or FALSE. Specifies whether you want to use the NDR64 transfer syntax. See options \fB-n0\fR and \fB-n1\fR in \fBvlmcsd\fR(8). The default is TRUE.

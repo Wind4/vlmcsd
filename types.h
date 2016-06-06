@@ -6,13 +6,41 @@
 #endif // CONFIG
 #include CONFIG
 
+#define ANDROID_API_LEVEL ANDROID_HELPER1(__ANDROID_API__)
+#define ANDROID_HELPER1(s) ANDROID_HELPER2(s)
+#define ANDROID_HELPER2(s) #s
+
+#if !defined(_WIN32) && !__CYGWIN__
+#define __declspec(x) __attribute__((__visibility__("default")))
+#endif
+
+#if !defined(EXTERNAL)
+#define EXTERNAL dllimport
+#endif
+
+#ifdef __cplusplus
+#define EXTERNC extern "C"
+#else
+#define EXTERNC
+#endif
+
 #include <stdlib.h>
 #include <limits.h>
 #include <stdint.h>
 
-//#ifdef __sun__
-//#include <alloca.h>
-//#endif
+#ifdef __ANDROID__
+#include <android/api-level.h>
+#endif // __ANDROID__
+
+#ifndef _WIN32
+#include <netinet/in.h>
+#endif // _WIN32
+
+
+#if (IP_BINDANY || IP_FREEBIND || IPV6_BINDANY || IP_NONLOCALOK) && !defined(NO_FREEBIND) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
+#define HAVE_FREEBIND 1
+#endif
+
 #ifndef alloca
 #ifdef __GNUC__
 #define alloca(x) __builtin_alloca(x)
@@ -156,6 +184,7 @@ typedef uint8_t ProdListIndex_t;
 #endif // USE_MSRPC
 
 #include <windows.h>
+//#include <VersionHelpers.h>
 
 
 typedef char* sockopt_t;
@@ -183,6 +212,7 @@ typedef char* sockopt_t;
 
 #elif defined(__CYGWIN__)
 #include <windows.h>
+
 
 // Resolve conflicts between OpenSSL and MS Crypto API
 #ifdef _CRYPTO_OPENSSL

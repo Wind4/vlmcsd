@@ -6,6 +6,7 @@
 #endif // CONFIG
 #include CONFIG
 
+#include <errno.h>
 #include "kms.h"
 
 typedef int (*PRINTFUNC)(const char *const fmt, ...);
@@ -14,6 +15,13 @@ void printerrorf(const char *const fmt, ...);
 int errorout(const char* fmt, ...);
 void logRequestVerbose(const REQUEST *const Request, const PRINTFUNC p);
 void logResponseVerbose(const char *const ePID, const BYTE *const hwid, const RESPONSE *const response, const PRINTFUNC p);
+
+#ifndef NO_VERSION_INFORMATION
+void printPlatform();
+void printCommonFlags();
+void printServerFlags();
+void printClientFlags();
+#endif // NO_VERSION_INFORMATION
 
 #ifndef NO_LOG
 int logger(const char *const fmt, ...);

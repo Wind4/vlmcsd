@@ -22,6 +22,9 @@ int_fast8_t sendrecv(SOCKET sock, BYTE *data, int len, int_fast8_t do_send);
 #ifndef NO_SOCKETS
 
 void closeAllListeningSockets();
+#ifdef SIMPLE_SOCKETS
+int listenOnAllAddresses();
+#endif // SIMPLE_SOCKETS
 BOOL addListeningSocket(const char *const addr);
 __pure int_fast8_t checkProtocolStack(const int addressfamily);
 

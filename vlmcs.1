@@ -1,5 +1,5 @@
 .mso www.tmac
-.TH VLMCS 1 "February 2015" "Hotbird64" "KMS Activation Manual"
+.TH VLMCS 1 "May 2016" "Hotbird64" "KMS Activation Manual"
 .LO 1
 
 .SH NAME
@@ -11,7 +11,7 @@ vlmcs \- a client for testing and/or charging KMS servers
 \fItarget\fR can be one of the following:
 .RS
 .PP
-\fIhostname\fR|\fIipaddress\fR[:\fItcp-port\fR] or to query a specific KMS server (example: vlmcs kms.example.com:1688).
+\fIhostname\fR|\fIipaddress\fR[:\fItcp-port\fR] to query a specific KMS server (example: vlmcs kms.example.com:1688).
 .br
 \fR.\fIdomain\fR to automatically detect KMS servers via DNS for \fIdomain\fR (example: vlmcs .example.com). Please note the dot before \fIdomain\fR.
 .br
@@ -43,6 +43,9 @@ can also be used to "charge" a KMS server. A Microsoft KMS server sends correct 
 .SH OPTIONS
 .IP "\fB-h\fR or \fB-?"
 Show help.
+
+.IP "\fB-V\fR"
+Displays extended version information. This includes the compiler used to build vlmcs, the intended platform and flags (compile time options) to build vlmcs. If you have the source code of vlmcsd, you can type \fBmake help\fR (or \fBgmake help\fR on systems that do not use the GNU version of \fBmake\fR(1) by default) to see the meaning of those flags.
 
 .IP \fB-x
 Show valid

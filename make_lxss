@@ -20,7 +20,7 @@ mkdir -p binaries/Linux/intel/uclibc
 mkdir -p binaries/Linux/intel/static
 mkdir -p binaries/Linux/intel/musl
 
-mkdir -p binaries/Linux/sparc/glibc
+mkdir -p binaries/Linux/sparc32/glibc
 mkdir -p binaries/Linux/s390/glibc
 
 mkdir -p binaries/Android/arm/bionic
@@ -62,12 +62,9 @@ mkdir -p binaries/DragonFly/intel
 mkdir -p binaries/Solaris/intel
 mkdir -p binaries/Windows/intel
 mkdir -p binaries/Minix/intel
-mkdir -p binaries/Hurd/intel
 
 rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
 export STAGING_DIR=.
-
-
 
 # Windows 32-bit using MingW32-w64 toolchain on Ubuntu Linux
 export CLIENT_NAME=binaries/Windows/intel/vlmcs-Windows-x86.exe
@@ -78,10 +75,10 @@ export THREADS=1
 export CFLAGS="$SMALLCC"
 export CC=i686-w64-mingw32-gcc
 export PLATFORMFLAGS="-march=i686 -mtune=generic -fwhole-program -pipe"
-export LDFLAGS="-lws2_32 -Wl,--gc-sections,--force-exe-suffix,--large-address-aware,--nxcompat,--dynamicbase,--tsaware,--no-seh,--disable-long-section-names"
+export LDFLAGS="-lws2_32 -Wl,--gc-sections,--force-exe-suffix,--large-address-aware,--nxcompat,--dynamicbase,--tsaware"
 export FEATURES=full
 
-make $MAKEFLAGS CRYPTO=windows CAT=2 all $MULTI_NAME
+make $MAKEFLAGS CAT=2 all $MULTI_NAME
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME, $MULTI_NAME and/or $PROGRAM_NAME
@@ -91,7 +88,7 @@ fi
 export CFLAGS="$CFLAGS -flto=jobserver -fvisibility=hidden"
 export LDFLAGS="$LDFLAGS -static-libgcc"
 
-make $MAKEFLAGS CRYPTO=windows FEATURES=minimum $DLL_NAME
+make $MAKEFLAGS FEATURES=minimum $DLL_NAME
 
 if [ $? != 0 ]; then
   echo Error creating $DLL_NAME
@@ -108,28 +105,17 @@ export THREADS=1
 export CFLAGS="-pipe -fno-common -fno-exceptions -fno-stack-protector -fno-unwind-tables -fmerge-all-constants -Wno-unused-variable -Wno-missing-braces"
 export CC=i686-w64-mingw32-gcc
 export PLATFORMFLAGS="-march=i686 -mtune=generic -pipe"
-export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--large-address-aware,--nxcompat,--dynamicbase,--tsaware,--disable-long-section-names -fwhole-program"
+export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--large-address-aware,--nxcompat,--dynamicbase,--tsaware -fwhole-program"
 export FEATURES=full
 
-make $MAKEFLAGS CAT=2 MSRPC=1 CRYPTO=windows $CLIENT_NAME
+make $MAKEFLAGS CAT=2 MSRPC=1 all
 
 if [ $? != 0 ]; then
-  echo Error creating $CLIENT_NAME
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--large-address-aware,--nxcompat,--dynamicbase,--tsaware,--disable-long-section-names,--no-seh -fwhole-program"
-
-make $MAKEFLAGS CAT=2 MSRPC=1 CRYPTO=windows $PROGRAM_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $PROGRAM_NAME
-  exit $?
-fi
-
-export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--large-address-aware,--nxcompat,--dynamicbase,--tsaware,--disable-long-section-names -fwhole-program"
-
-make $MAKEFLAGS MSRPC=1 CRYPTO=windows $MULTI_NAME
+make $MAKEFLAGS MSRPC=1 $MULTI_NAME
 
 if [ $? != 0 ]; then
   echo Error creating $MULTI_NAME
@@ -147,9 +133,9 @@ export THREADS=1
 export CFLAGS="$SMALLCC"
 export CC=x86_64-w64-mingw32-gcc
 export PLATFORMFLAGS="-march=nocona -mtune=generic -fwhole-program -pipe"
-export LDFLAGS="-lws2_32 -Wl,--gc-sections,--force-exe-suffix,--nxcompat,--dynamicbase,--tsaware,--no-seh,--high-entropy-va,--disable-long-section-names"
+export LDFLAGS="-lws2_32 -Wl,--gc-sections,--force-exe-suffix,--nxcompat,--dynamicbase,--tsaware"
 
-make $MAKEFLAGS CAT=2 CRYPTO=windows all $MULTI_NAME
+make $MAKEFLAGS CAT=2 all $MULTI_NAME
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME, $MULTI_NAME and/or $PROGRAM_NAME
@@ -159,7 +145,7 @@ fi
 export CFLAGS="$CFLAGS -flto=jobserver -fvisibility=hidden"
 export LDFLAGS="$LDFLAGS -static-libgcc"
 
-make $MAKEFLAGS CRYPTO=windows FEATURES=minimum $DLL_NAME
+make $MAKEFLAGS FEATURES=minimum $DLL_NAME
 
 if [ $? != 0 ]; then
   echo Error creating $DLL_NAME
@@ -177,82 +163,19 @@ export THREADS=1
 export CFLAGS="-pipe -fno-common -fno-exceptions -fno-stack-protector -fno-unwind-tables -fmerge-all-constants -Wno-unused-variable -Wno-missing-braces"
 export CC=x86_64-w64-mingw32-gcc
 export PLATFORMFLAGS="-march=nocona -mtune=generic -pipe"
-export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--nxcompat,--dynamicbase,--tsaware,--high-entropy-va,--disable-long-section-names -fwhole-program"
+export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--nxcompat,--dynamicbase,--tsaware -fwhole-program"
 
-make $MAKEFLAGS CAT=2 CRYPTO=windows MSRPC=1 $CLIENT_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $CLIENT_NAME
-  exit $?
-fi
-
-export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--nxcompat,--dynamicbase,--tsaware,--no-seh,--high-entropy-va,--disable-long-section-names -fwhole-program"
-
-make $MAKEFLAGS CAT=2 CRYPTO=windows MSRPC=1 $PROGRAM_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $PROGRAM_NAME
-  exit $?
-fi
-
-export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--nxcompat,--dynamicbase,--tsaware,--high-entropy-va,--disable-long-section-names -fwhole-program"
-export PLATFORMFLAGS="-march=nocona -mtune=generic -pipe -flto=jobserver"
-
-make $MAKEFLAGS MSRPC=1 CRYPTO=windows $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-
-
-
-# mips1el uclibc with old tomato toolchain gcc 3.2.3 with Broadcom extensions uClibc 0.9.19
-export CLIENT_NAME=binaries/Linux/mips/little-endian/uclibc/vlmcs-mips1el-tomato-uclibc
-export PROGRAM_NAME=binaries/Linux/mips/little-endian/uclibc/vlmcsd-mips1el-tomato-uclibc
-export MULTI_NAME=binaries/Linux/mips/little-endian/uclibc/vlmcsdmulti-mips1el-tomato-uclibc
-export CC=/opt/brcm/hndtools-mipsel-uclibc/bin/mipsel-uclibc-gcc
-export CFLAGS="-DNO_BUILTIN -DNO_LIMIT -pipe -fno-common -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants"
-export PLATFORMFLAGS=""
-export LDFLAGS="-fwhole-program -Wl,-z,norelro"
-export THREADS=0
-#export TERMINAL_WIDTH=80
-
-make $MAKEFLAGS NO_DNS=1 SAFE_MODE=1
+make $MAKEFLAGS CAT=2 MSRPC=1 all
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f vlmcs.o vlmcsd.o vlmcsdmulti.o
-
-make NO_DNS=1 SAFE_MODE=1 $REUSEOBJFLAGS $MULTI_NAME
+make $MAKEFLAGS MSRPC=1 $MULTI_NAME
 
 if [ $? != 0 ]; then
   echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export CLIENT_NAME=binaries/Linux/mips/little-endian/static/vlmcs-mips1el-tomato-uclibc-static
-export PROGRAM_NAME=binaries/Linux/mips/little-endian/static/vlmcsd-mips1el-tomato-uclibc-static
-export MULTI_NAME=binaries/Linux/mips/little-endian/static/vlmcsdmulti-mips1el-tomato-uclibc-static
-export LDFLAGS="$LDFLAGS -static"
-
-make NO_DNS=1 SAFE_MODE=1 $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-rm -f vlmcs.o vlmcsd.o vlmcsdmulti.o
-
-make NO_DNS=1 SAFE_MODE=1 $REUSEOBJFLAGS
-
-if [ $? != 0 ]; then
-  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
@@ -500,7 +423,7 @@ fi
 export CLIENT_NAME=binaries/Linux/ppc/big-endian/glibc/vlmcs-ppc-glibc
 export PROGRAM_NAME=binaries/Linux/ppc/big-endian/glibc/vlmcsd-ppc-glibc
 export MULTI_NAME=binaries/Linux/ppc/big-endian/glibc/vlmcsdmulti-ppc-glibc
-export CC=~/openwrt/staging_dir/toolchain-powerpc_405_gcc-4.8-linaro_eglibc-2.19/bin/powerpc-openwrt-linux-gcc
+export CC=~/openwrt/staging_dir/toolchain-powerpc_405_gcc-4.8-linaro_eglibc-2.19/bin/powerpc-openwrt-linux-gnu-gcc
 export CFLAGS="$SMALLCC"
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program --sysroot=/opt/simplebuild/toolchains/powerpc -L/opt/simplebuild/toolchains/powerpc/lib -L/opt/simplebuild/toolchains/powerpc/usr/lib"
 export LDFLAGS="$SMALLLD"
@@ -616,13 +539,47 @@ fi
 
 
 
+
+## mips1el uclibc with old tomato toolchain gcc 3.2.3 with Broadcom extensions uClibc 0.9.19
+#export CLIENT_NAME=binaries/Linux/mips/little-endian/uclibc/vlmcs-mips1el-tomato-uclibc
+#export PROGRAM_NAME=binaries/Linux/mips/little-endian/uclibc/vlmcsd-mips1el-tomato-uclibc
+#export MULTI_NAME=binaries/Linux/mips/little-endian/uclibc/vlmcsdmulti-mips1el-tomato-uclibc
+#export CC=/opt/brcm/hndtools-mipsel-uclibc/bin/mipsel-uclibc-gcc
+#export CFLAGS="-DNO_BUILTIN -pipe -fno-common -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants"
+#export PLATFORMFLAGS=""
+#export LDFLAGS="-pipe -Wl,-z,norelro"
+#export THREADS=0
+##export TERMINAL_WIDTH=80
+#
+#make NO_DNS=1 CAT=2 $MAKEFLAGS $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME, $MULTI_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#export CLIENT_NAME=binaries/Linux/mips/little-endian/static/vlmcs-mips1el-tomato-uclibc-static
+#export PROGRAM_NAME=binaries/Linux/mips/little-endian/static/vlmcsd-mips1el-tomato-uclibc-static
+#export MULTI_NAME=binaries/Linux/mips/little-endian/static/vlmcsdmulti-mips1el-tomato-uclibc-static
+#export LDFLAGS="$LDFLAGS -static"
+#
+#make NO_DNS=1 $REUSEOBJFLAGS $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME CAT=2
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME, $MULTI_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+
+
+
+
 #Android gcc 4.8 with API Level 3 (Android 1.5 cupcake) armv7
 
 export CLIENT_NAME=binaries/Android/arm/bionic/vlmcs-android15-armv7
 export PROGRAM_NAME=binaries/Android/arm/bionic/vlmcsd-android15-armv7
 export CC=/opt/toolchains/armelv7-android-3/bin/arm-linux-androideabi-gcc
 export CFLAGS="$SMALLCC"
-export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=armv7 -mthumb"
+export PLATFORMFLAGS="-fuse-ld=bfd -flto=jobserver -fwhole-program -march=armv7 -mthumb"
 export THREADS=0
 export LDFLAGS="$SMALLLD"
 
@@ -633,26 +590,26 @@ if [ $? != 0 ]; then
   exit $?
 fi
 
-export CLIENT_NAME=binaries/Android/arm/static/vlmcs-android15-armv7-static
-export PROGRAM_NAME=binaries/Android/arm/static/vlmcsd-android15-armv7-static
-export MULTI_NAME=binaries/Android/arm/static/vlmcsdmulti-android15-armv7-static
-export LDFLAGS="$LDFLAGS -static"
-
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS
-
-if [ $? != 0 ]; then
-  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
-
+#export CLIENT_NAME=binaries/Android/arm/static/vlmcs-android15-armv7-static
+#export PROGRAM_NAME=binaries/Android/arm/static/vlmcsd-android15-armv7-static
+#export MULTI_NAME=binaries/Android/arm/static/vlmcsdmulti-android15-armv7-static
+#export LDFLAGS="$LDFLAGS -static"
+#
+#make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
 rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
+#
+#make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
 
 export LDFLAGS="$SMALLLD"
 export MULTI_NAME=binaries/Android/arm/bionic/vlmcsdmulti-android15-armv7
@@ -673,7 +630,7 @@ export CLIENT_NAME=binaries/Android/arm/bionic/vlmcs-android15-armv5
 export PROGRAM_NAME=binaries/Android/arm/bionic/vlmcsd-android15-armv5
 export CC=/opt/toolchains/armelv7-android-3/bin/arm-linux-androideabi-gcc
 export CFLAGS="$SMALLCC"
-export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=armv5te -mthumb"
+export PLATFORMFLAGS="-fuse-ld=bfd -flto=jobserver -fwhole-program -march=armv5te -mthumb"
 export THREADS=0
 export LDFLAGS="$SMALLLD"
 
@@ -684,27 +641,27 @@ if [ $? != 0 ]; then
   exit $?
 fi
 
-export CLIENT_NAME=binaries/Android/arm/static/vlmcs-android15-armv5-static
-export PROGRAM_NAME=binaries/Android/arm/static/vlmcsd-android15-armv5-static
-export MULTI_NAME=binaries/Android/arm/static/vlmcsdmulti-android15-armv5-static
-export LDFLAGS="$LDFLAGS -static"
+#export CLIENT_NAME=binaries/Android/arm/static/vlmcs-android15-armv5-static
+#export PROGRAM_NAME=binaries/Android/arm/static/vlmcsd-android15-armv5-static
+#export MULTI_NAME=binaries/Android/arm/static/vlmcsdmulti-android15-armv5-static
+#export LDFLAGS="$LDFLAGS -static"
 
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS
-
-if [ $? != 0 ]; then
-  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
-
+#make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
 rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
+#
+#make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+#
 export LDFLAGS="$SMALLLD"
 export MULTI_NAME=binaries/Android/arm/bionic/vlmcsdmulti-android15-armv5
 
@@ -717,7 +674,6 @@ fi
 
 
 
-
 #Android gcc 4.8 with API Level 16 (Android 4.1 Jelly Bean) armv7
 
 export CLIENT_NAME=binaries/Android/arm/bionic/vlmcs-android41-armv7
@@ -727,7 +683,7 @@ export CC=/opt/toolchains/armelv7-android-16/bin/arm-linux-androideabi-gcc
 export CFLAGS="$SMALLCC"
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=armv7 -mthumb -fPIE -pie"
 export THREADS=0
-export LDFLAGS="$SMALLLD"
+export LDFLAGS="$SMALLLD -fuse-ld=bfd"
 
 make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS
 
@@ -788,7 +744,7 @@ export CC=/opt/toolchains/arm64el-android-21/bin/aarch64-linux-android-gcc
 export CFLAGS="$SMALLCC"
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mtune=generic -mfix-cortex-a53-835769 -march=armv8-a -fPIE -pie"
 export THREADS=0
-export LDFLAGS="$SMALLLD"
+export LDFLAGS="$SMALLLD -fuse-ld=bfd"
 
 make NOLPTHREAD=1 NOLRESOLV=1 NO_DNS=0 $MAKEFLAGS
 
@@ -818,7 +774,7 @@ export CC=/opt/toolchains/arm64el-android-21/bin/aarch64-linux-android-gcc
 export CFLAGS="$SMALLCC"
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mtune=generic -mfix-cortex-a53-835769 -march=armv8-a"
 export THREADS=0
-export LDFLAGS="$SMALLLD -static"
+export LDFLAGS="$SMALLLD -static -fuse-ld=bfd"
 
 make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS
 
@@ -847,7 +803,7 @@ export CC=/opt/toolchains/x86-android-9/bin/i686-linux-android-gcc
 export CFLAGS="$SMALLCC"
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=atom -m32"
 export THREADS=1
-export LDFLAGS="$SMALLLD"
+export LDFLAGS="$SMALLLD -fuse-ld=bfd"
 
 make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS
 
@@ -877,7 +833,7 @@ if [ $? != 0 ]; then
   exit $?
 fi
 
-export LDFLAGS="$SMALLLD"
+export LDFLAGS="$SMALLLD -fuse-ld=bfd"
 export MULTI_NAME=binaries/Android/intel/bionic/vlmcsdmulti-android23-x86
 
 make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
@@ -899,7 +855,7 @@ export CC=/opt/toolchains/x86-android-16/bin/i686-linux-android-gcc
 export CFLAGS="$SMALLCC"
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=atom -m32 -fPIE -pie"
 export THREADS=1
-export LDFLAGS="$SMALLLD"
+export LDFLAGS="$SMALLLD -fuse-ld=bfd"
 
 make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS
 
@@ -959,7 +915,7 @@ export CC=/opt/toolchains/x86_64-android-21/bin/x86_64-linux-android-gcc
 export CFLAGS="$SMALLCC"
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=atom -m64 -fPIE -pie"
 export THREADS=0
-export LDFLAGS="$SMALLLD"
+export LDFLAGS="$SMALLLD -fuse-ld=bfd"
 
 make NOLPTHREAD=1 NOLRESOLV=1 NO_DNS=0 $MAKEFLAGS
 
@@ -989,7 +945,7 @@ export CC=/opt/toolchains/x86_64-android-21/bin/x86_64-linux-android-gcc
 export CFLAGS="$SMALLCC"
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=nocona -m64"
 export THREADS=0
-export LDFLAGS="$SMALLLD -static"
+export LDFLAGS="$SMALLLD -static -fuse-ld=bfd"
 
 make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS
 
@@ -1019,7 +975,7 @@ export CC=/opt/toolchains/mipsel-android-9/bin/mipsel-linux-android-gcc
 export CFLAGS="$SMALLCC"
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program"
 export THREADS=1
-export LDFLAGS="$SMALLLD"
+export LDFLAGS="$SMALLLD -fuse-ld=bfd"
 
 make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS
 
@@ -1031,7 +987,7 @@ fi
 export CLIENT_NAME=binaries/Android/mips/static/vlmcs-android23-mips32el-static
 export PROGRAM_NAME=binaries/Android/mips/static/vlmcsd-android23-mips32el-static
 export MULTI_NAME=binaries/Android/mips/static/vlmcsdmulti-android23-mips32el-static
-export LDFLAGS="$LDFLAGS -static"
+export LDFLAGS="$LDFLAGS -static -fuse-ld=bfd"
 
 make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS
 
@@ -1049,7 +1005,7 @@ if [ $? != 0 ]; then
   exit $?
 fi
 
-export LDFLAGS="$SMALLLD"
+export LDFLAGS="$SMALLLD -fuse-ld=bfd"
 export MULTI_NAME=binaries/Android/mips/bionic/vlmcsdmulti-android23-mips32el
 
 make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
@@ -1072,7 +1028,7 @@ export CC=/opt/toolchains/mipsel-android-16/bin/mipsel-linux-android-gcc
 export CFLAGS="$SMALLCC"
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -fPIE -pie"
 export THREADS=1
-export LDFLAGS="$SMALLLD"
+export LDFLAGS="$SMALLLD -fuse-ld=bfd"
 
 make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS
 
@@ -1244,7 +1200,7 @@ export CC=/opt/toolchains/mips64el-android-21/bin/mips64el-linux-android-gcc
 export CFLAGS="$SMALLCC"
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -fPIE -pie"
 export THREADS=0
-export LDFLAGS="$SMALLLD"
+export LDFLAGS="$SMALLLD -fuse-ld=bfd"
 
 make NOLPTHREAD=1 NOLRESOLV=1 NO_DNS=0 $MAKEFLAGS
 
@@ -1274,7 +1230,7 @@ export CC=/opt/toolchains/mips64el-android-21/bin/mips64el-linux-android-gcc
 export CFLAGS="$SMALLCC"
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program"
 export THREADS=0
-export LDFLAGS="$SMALLLD -static"
+export LDFLAGS="$SMALLLD -static -fuse-ld=bfd"
 
 make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS
 
@@ -1400,14 +1356,14 @@ fi
 #
 #
 #
-## Android with Ubuntu toolchain
-#export CLIENT_NAME=binaries/Android/arm/bionic/vlmcs-android
-#export PROGRAM_NAME=binaries/Android/arm/bionic/vlmcsd-android
-#export CC=arm-linux-androideabi-gcc
-#export CFLAGS="$SMALLCC"
-#export PLATFORMFLAGS="-flto=jobserver -fwhole-program"
-#export LDFLAGS="$SMALLLD"
-#export THREADS=0
+# Android with Ubuntu toolchain
+export CLIENT_NAME=binaries/Android/arm/bionic/vlmcs-android
+export PROGRAM_NAME=binaries/Android/arm/bionic/vlmcsd-android
+export CC=arm-linux-androideabi-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=jobserver -fwhole-program"
+export LDFLAGS="$SMALLLD -fuse-ld=bfd"
+export THREADS=0
 #
 #make $MAKEFLAGS
 #
@@ -1417,28 +1373,28 @@ fi
 #fi
 #
 #
-## Android with Ubuntu toolchain STATIC
-#export CLIENT_NAME=binaries/Android/arm/static/vlmcs-android-static
-#export PROGRAM_NAME=binaries/Android/arm/static/vlmcsd-android-static
-#export MULTI_NAME=binaries/Android/arm/static/vlmcsdmulti-android-static
-#export LDFLAGS="$LDFLAGS -static"
-#
-#make $REUSEOBJFLAGS
-#
-#if [ $? != 0 ]; then
-#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-#  exit $?
-#fi
-#
-#rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-#
-#make $REUSEOBJFLAGS $MULTI_NAME
-#
-#if [ $? != 0 ]; then
-#  echo Error creating $MULTI_NAME
-#  exit $?
-#fi
-#
+# Android with Ubuntu toolchain STATIC
+export CLIENT_NAME=binaries/Android/arm/static/vlmcs-android-static
+export PROGRAM_NAME=binaries/Android/arm/static/vlmcsd-android-static
+export MULTI_NAME=binaries/Android/arm/static/vlmcsdmulti-android-static
+export LDFLAGS="$LDFLAGS -static"
+
+make $MAKEFLAGS
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+
+make $REUSEOBJFLAGS $MULTI_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $MULTI_NAME
+  exit $?
+fi
+
 #export LDFLAGS="$SMALLLD"
 #export MULTI_NAME=binaries/Android/arm/bionic/vlmcsdmulti-android
 #
@@ -1453,42 +1409,42 @@ fi
 
 
 # Android with Ubuntu toolchain for ARMv7 CPU with thumb2 instruction set
-#export CLIENT_NAME=binaries/Android/arm/bionic/vlmcs-android-armv7
-#export PROGRAM_NAME=binaries/Android/arm/bionic/vlmcsd-android-armv7
-#export CC=arm-linux-androideabi-gcc
-#export CFLAGS="$SMALLCC"
-#export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mthumb -march=armv7 -mtune=cortex-a9"
-#export LDFLAGS="$SMALLLD"
-#export THREADS=0
-#
+export CLIENT_NAME=binaries/Android/arm/bionic/vlmcs-android-armv7
+export PROGRAM_NAME=binaries/Android/arm/bionic/vlmcsd-android-armv7
+export CC=arm-linux-androideabi-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mthumb -march=armv7 -mtune=cortex-a9"
+export LDFLAGS="$SMALLLD -fuse-ld=bfd"
+export THREADS=0
+
 #make $MAKEFLAGS
 #
 #if [ $? != 0 ]; then
 #  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
 #  exit $?
 #fi
-#
-#export CLIENT_NAME=binaries/Android/arm/static/vlmcs-android-armv7-static
-#export PROGRAM_NAME=binaries/Android/arm/static/vlmcsd-android-armv7-static
-#export MULTI_NAME=binaries/Android/arm/static/vlmcsdmulti-android-armv7-static
-#export LDFLAGS="$LDFLAGS -static"
-#
-#make $REUSEOBJFLAGS
-#
-#if [ $? != 0 ]; then
-#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-#  exit $?
-#fi
-#
-#rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-#
-#make $REUSEOBJFLAGS $MULTI_NAME
-#
-#if [ $? != 0 ]; then
-#  echo Error creating $MULTI_NAME
-#  exit $?
-#fi
-#
+
+export CLIENT_NAME=binaries/Android/arm/static/vlmcs-android-armv7-static
+export PROGRAM_NAME=binaries/Android/arm/static/vlmcsd-android-armv7-static
+export MULTI_NAME=binaries/Android/arm/static/vlmcsdmulti-android-armv7-static
+export LDFLAGS="$LDFLAGS -static"
+
+make $MAKEFLAGS
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+
+make $REUSEOBJFLAGS $MULTI_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $MULTI_NAME
+  exit $?
+fi
+
 #export LDFLAGS="$SMALLLD"
 #export MULTI_NAME=binaries/Android/arm/bionic/vlmcsdmulti-android-armv7
 #
@@ -1652,54 +1608,54 @@ fi
 
 
 # Linux x32 glibc 
-export FEATURES=full
-export MULTI_NAME=binaries/Linux/intel/glibc/vlmcsdmulti-x32-glibc
-export CLIENT_NAME=binaries/Linux/intel/glibc/vlmcs-x32-glibc
-export PROGRAM_NAME=binaries/Linux/intel/glibc/vlmcsd-x32-glibc
-export CC=gcc
-export CFLAGS="$SMALLCC"
-export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mx32 -march=nocona -mtune=generic"
-export LDFLAGS="-fuse-ld=gold $SMALLLD -Wl,--hash-style=gnu"
-export THREADS=0
-export NOPROCFS=0
-export AUXV=1
-
-make DNS_PARSER=OS $MAKEFLAGS binaries/Linux/intel/glibc/vlmcsdmulti-x32-glibc
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make DNS_PARSER=OS $REUSEOBJFLAGS
-
-if [ $? != 0 ]; then
-  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
-
-
-
-
-# Linux x32 glibc threads
-export FEATURES=full
-export PROGRAM_NAME=binaries/Linux/intel/glibc/vlmcsd-x32-glibc-threads
-export CC=gcc
-export CFLAGS="$SMALLCC"
-export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mx32 -march=nocona -mtune=generic"
-export LDFLAGS="-fuse-ld=gold $SMALLLD -Wl,--hash-style=gnu -lpthread"
-export THREADS=1
-export NOPROCFS=0
-export AUXV=1
-
-make DNS_PARSER=OS $MAKEFLAGS $PROGRAM_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $PROGRAM_NAME
-  exit $?
-fi
+#export FEATURES=full
+#export MULTI_NAME=binaries/Linux/intel/glibc/vlmcsdmulti-x32-glibc
+#export CLIENT_NAME=binaries/Linux/intel/glibc/vlmcs-x32-glibc
+#export PROGRAM_NAME=binaries/Linux/intel/glibc/vlmcsd-x32-glibc
+#export CC=gcc
+#export CFLAGS="$SMALLCC"
+#export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mx32 -march=nocona -mtune=generic"
+#export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+#export THREADS=0
+#export NOPROCFS=0
+#export AUXV=1
+#
+#make DNS_PARSER=OS $MAKEFLAGS binaries/Linux/intel/glibc/vlmcsdmulti-x32-glibc
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+#
+#rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+#
+#make DNS_PARSER=OS $REUSEOBJFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#
+#
+#
+## Linux x32 glibc threads
+#export FEATURES=full
+#export PROGRAM_NAME=binaries/Linux/intel/glibc/vlmcsd-x32-glibc-threads
+#export CC=gcc
+#export CFLAGS="$SMALLCC"
+#export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mx32 -march=nocona -mtune=generic"
+#export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu -lpthread"
+#export THREADS=1
+#export NOPROCFS=0
+#export AUXV=1
+#
+#make DNS_PARSER=OS $MAKEFLAGS $PROGRAM_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $PROGRAM_NAME
+#  exit $?
+#fi
 
 
 
@@ -2150,179 +2106,143 @@ fi
 
 
 
-#Linux armv4 little-endian uclibc
-INSTALLDIR=binaries/Linux/arm/little-endian/
-SUFFIX=-armv4el-uclibc
-export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
-export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
-export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
-export CC=/root/cross-compiler-armv4l/bin/armv4l-gcc
-export PLATFORMFLAGS="-pipe"
-export FEATURES=full
-export CFLAGS="$SMALLCC"
-export LDFLAGS="-Wl,-z,norelro -fwhole-program"
-export THREADS=0
-export NOPROCFS=1
-
-make $MAKEFLAGS SAFE_MODE=1
-
-if [ $? != 0 ]; then
-  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
-
-rm -f vlmcsd.o vlmcs.o vlmcsdmulti.o
-
-make $REUSEOBJFLAGS SAFE_MODE=1 $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
-export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
-export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
-export LDFLAGS="-Wl,-z,norelro -fwhole-program -static"
-
-make $REUSEOBJFLAGS SAFE_MODE=1 $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-rm -f vlmcsd.o vlmcs.o vlmcsdmulti.o
-
-make $REUSEOBJFLAGS SAFE_MODE=1
-
-if [ $? != 0 ]; then
-  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
+##Linux armv4 little-endian uclibc
+#INSTALLDIR=binaries/Linux/arm/little-endian/
+#SUFFIX=-armv4el-uclibc
+#export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
+#export CC=/root/cross-compiler-armv4l/bin/armv4l-gcc
+#export PLATFORMFLAGS="-pipe"
+#export FEATURES=full
+#export CFLAGS="$SMALLCC"
+#export LDFLAGS="-Wl,-z,norelro -fwhole-program"
+#export THREADS=0
+#export NOPROCFS=1
+#
+#make $MAKEFLAGS $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME CAT=2
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME, $MULTI_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+#export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+#export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+#export LDFLAGS="-Wl,-z,norelro -fwhole-program -static"
+#
+#make $REUSEOBJFLAGS $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME CAT=2
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME, $MULTI_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
 
 
 
 
 
-# mips1 little-endian with openssl 0.9.8 support dreambox toolchain
-INSTALLDIR=binaries/Linux/mips/little-endian/glibc/
-SUFFIX=-mips1el-glibc-openssl0.9.8-soft-EXPERIMENTAL
-export CRYPTO=openssl_with_aes_soft
-export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
-export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
-export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
-export CC=/opt/simplebuild/toolchains/mipsoe20/bin/mipsel-unknown-linux-gnu-gcc
-export PLATFORMFLAGS="-flto=jobserver -fwhole-program"
-export FEATURES=full
-export CFLAGS="$SMALLCC"
-export LDFLAGS="$SMALLLD"
-export THREADS=0
-export NOPROCFS=0
-
-make $MAKEFLAGS
-
-if [ $? != 0 ]; then
-  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
-
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-
-
-
-# mips1 little-endian dreambox toolchain
-INSTALLDIR=binaries/Linux/mips/little-endian/glibc/
-SUFFIX=-mips1el-glibc
-export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
-export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
-export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
-export CC=/opt/simplebuild/toolchains/mipsoe20/bin/mipsel-unknown-linux-gnu-gcc
-export PLATFORMFLAGS="-flto=jobserver -fwhole-program"
-export FEATURES=full
-export CFLAGS="$SMALLCC"
-export LDFLAGS="$SMALLLD"
-export THREADS=0
-export CRYPTO=internal
-
-make $MAKEFLAGS
-
-if [ $? != 0 ]; then
-  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
-
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-
+## mips1 little-endian with openssl 0.9.8 support dreambox toolchain
+#INSTALLDIR=binaries/Linux/mips/little-endian/glibc/
+#SUFFIX=-mips1el-glibc-openssl0.9.8-soft-EXPERIMENTAL
+#export CRYPTO=openssl_with_aes_soft
+#export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+#export CC=/opt/simplebuild/toolchains/mipsoe20/bin/mipsel-unknown-linux-gnu-gcc
+#export PLATFORMFLAGS="-flto=jobserver -fwhole-program"
+#export FEATURES=full
+#export CFLAGS="$SMALLCC"
+#export LDFLAGS="$SMALLLD"
+#export THREADS=0
+#export NOPROCFS=0
+#
+#make $MAKEFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+#
+#make $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+#
+#
+#
+#
+## mips1 little-endian dreambox toolchain
+#INSTALLDIR=binaries/Linux/mips/little-endian/glibc/
+#SUFFIX=-mips1el-glibc
+#export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+#export CC=/opt/simplebuild/toolchains/mipsoe20/bin/mipsel-unknown-linux-gnu-gcc
+#export PLATFORMFLAGS="-flto=jobserver -fwhole-program"
+#export FEATURES=full
+#export CFLAGS="$SMALLCC"
+#export LDFLAGS="$SMALLLD"
+#export THREADS=0
+#export CRYPTO=internal
+#
+#make $MAKEFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+#
+#make $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+#
+#
 
 
 # Linux mips1 little-endian uclibc 
-INSTALLDIR=binaries/Linux/mips/little-endian/
-SUFFIX=-mips1el-uclibc
-export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
-export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
-export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
-export CC=/root/cross-compiler-mipsel/bin/mipsel-gcc
-export PLATFORMFLAGS="-pipe"
-export FEATURES=full
-export CFLAGS="$SMALLCC"
-export LDFLAGS="-Wl,-z,norelro -fwhole-program"
-export THREADS=0
-export CRYPTO=internal
-export NOPROCFS=1
-
-make $MAKEFLAGS SAFE_MODE=1 
-
-if [ $? != 0 ]; then
-  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
-
-rm vlmcsd.o vlmcs.o vlmcsdmulti.o
-
-make $REUSEOBJFLAGS SAFE_MODE=1 $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
-export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
-export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
-export LDFLAGS="-Wl,-z,norelro -fwhole-program -static"
-
-make $REUSEOBJFLAGS SAFE_MODE=1 $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-rm vlmcsd.o vlmcs.o vlmcsdmulti.o
-
-make $REUSEOBJFLAGS SAFE_MODE=1
-
-if [ $? != 0 ]; then
-  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
+#INSTALLDIR=binaries/Linux/mips/little-endian/
+#SUFFIX=-mips1el-uclibc
+#export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
+#export CC=/root/cross-compiler-mipsel/bin/mipsel-gcc
+#export PLATFORMFLAGS="-pipe"
+#export FEATURES=full
+#export CFLAGS="$SMALLCC"
+#export LDFLAGS="-Wl,-z,norelro -fwhole-program"
+#export THREADS=0
+#export CRYPTO=internal
+#export NOPROCFS=1
+#
+#make $MAKEFLAGS CAT=2 $CLIENT_NAME $MULTI_NAME $PROGRAM_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME, $MULTI_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+#export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+#export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+#export LDFLAGS="-Wl,-z,norelro -fwhole-program -static"
+#
+#make $REUSEOBJFLAGS CAT=2 $CLIENT_NAME $MULTI_NAME $PROGRAM_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME, $MULTI_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
 
 
 
@@ -2394,6 +2314,32 @@ fi
 
 
 
+## Linux PowerPC glibc with SSL support and Dreambox 500 toolchain
+#INSTALLDIR=binaries/Linux/ppc/big-endian/glibc/
+#SUFFIX=-ppc-glibc-openssl0.9.8-soft-EXPERIMENTAL
+#export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+#export CC=/opt/simplebuild/toolchains/powerpc/bin/powerpc-linux-gcc
+#export PLATFORMFLAGS="-pipe"
+#export FEATURES=full
+#export CFLAGS="-fno-common -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants"
+#export LDFLAGS="-Wl,--no-gc-sections -Wl,-z,norelro"
+#export THREADS=0
+#export CRYPTO=internal
+#
+#make NO_DNS=1 $MAKEFLAGS CAT=2 $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME, $MULTI_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+
+
+
+
+
+
 #Linux PowerPC uclibc OpenWRT toolchain
 INSTALLDIR=binaries/Linux/ppc/big-endian/
 SUFFIX=-ppc-uclibc
@@ -2450,248 +2396,224 @@ fi
 
 
 
-#Fritzbox 7170 (mips32r2 little-endian) device specific, May or may not run on other devices
-INSTALLDIR=binaries/Linux/mips/little-endian/
-SUFFIX=-mips32r2el-Fritzbox-71xx-72xx-uclibc
-export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
-export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
-export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
-export CC=/opt/simplebuild/toolchains/fritz71xx/bin/mipsel-linux-uclibc-gcc
-export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=4kec -mtune=4kec"
-export FEATURES=full
-export CFLAGS="$SMALLCC"
-export LDFLAGS="$SMALLLD"
-export THREADS=0
-export CRYPTO=internal
+##Fritzbox 7170 (mips32r2 little-endian) device specific, May or may not run on other devices
+#INSTALLDIR=binaries/Linux/mips/little-endian/
+#SUFFIX=-mips32r2el-Fritzbox-71xx-72xx-uclibc
+#export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
+#export CC=/opt/simplebuild/toolchains/fritz71xx/bin/mipsel-linux-uclibc-gcc
+#export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=4kec -mtune=4kec"
+#export FEATURES=full
+#export CFLAGS="$SMALLCC"
+#export LDFLAGS="$SMALLLD"
+#export THREADS=0
+#export CRYPTO=internal
+#
+#make NOLRESOLV=1 $MAKEFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
 
-make NOLRESOLV=1 $MAKEFLAGS
-
-if [ $? != 0 ]; then
-  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
-
-export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
-export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
-export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
-export LDFLAGS="$SMALLLD -static"
-
-make NOLRESOLV=1 $REUSEOBJFLAGS
-
-if [ $? != 0 ]; then
-  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
-
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLRESOLV=1 $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
-export LDFLAGS="$SMALLLD"
-
-make NOLRESOLV=1 $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-
-
-
-#Fritzbox 7370 (mips32r2 big-endian) device specific, May or may not run on other devices
-INSTALLDIR=binaries/Linux/mips/big-endian/
-SUFFIX=-mips16-Fritzbox-33xx-73xx-74xx-63xx-64xx-uclibc
-export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
-export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
-export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
-export CC=/opt/simplebuild/toolchains/fritz73xxOS62/bin/mips-linux-cc
-export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=24kc -mtune=24kc -mips16 -mdsp"
-export FEATURES=full
-export CFLAGS="$SMALLCC"
-export LDFLAGS="$SMALLLD"
-export THREADS=0
-export CRYPTO=internal
-
-make NOLRESOLV=1 $MAKEFLAGS
-
-if [ $? != 0 ]; then
-  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
-
-export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
-export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
-export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
-export LDFLAGS="$SMALLLD -static"
-
-make NOLRESOLV=1 $REUSEOBJFLAGS
-
-if [ $? != 0 ]; then
-  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
-
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLRESOLV=1 $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
-export LDFLAGS="$SMALLLD"
-
-make NOLRESOLV=1 $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
+#export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+#export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+#export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+#export LDFLAGS="$SMALLLD -static"
+#
+#make NOLRESOLV=1 $REUSEOBJFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+#
+#make NOLRESOLV=1 $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+#
+#export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
+#export LDFLAGS="$SMALLLD"
+#
+#make NOLRESOLV=1 $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
 
 
 
 
-#Fritzbox 7370 (mips32r2 big-endian) device specific with _PEDANTIC, May or may not run on other devices
-INSTALLDIR=binaries/Linux/mips/big-endian/uclibc/
-SUFFIX=-mips16-Fritzbox-33xx-73xx-74xx-63xx-64xx-uclibc-pedantic
-export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
-export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
-export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
-export CC=/opt/simplebuild/toolchains/fritz73xxOS62/bin/mips-linux-cc
-export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=24kc -mtune=24kc -mips16 -mdsp"
-export FEATURES=full
-export CFLAGS="$SMALLCC -D_PEDANTIC"
-export LDFLAGS="$SMALLLD"
-export THREADS=0
-export CRYPTO=internal
-
-make NOLRESOLV=1 $MAKEFLAGS $PROGRAM_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $PROGRAM_NAME
-  exit $?
-fi
-
-
-
-
-#Fritzbox 7370 (mips32r2 big-endian) device specific with simple sockets and some features disabled, May or may not run on other devices
-INSTALLDIR=binaries/Linux/mips/big-endian/uclibc/
-SUFFIX=-mips16-Fritzbox-33xx-73xx-74xx-63xx-64xx-uclibc-simple
-export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
-export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
-export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
-export CC=/opt/simplebuild/toolchains/fritz73xxOS62/bin/mips-linux-cc
-export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=24kc -mtune=24kc -mips16 -mdsp"
-export FEATURES=full
-export CFLAGS="$SMALLCC -DNO_USER_SWITCH -DSIMPLE_SOCKETS -DNO_PID_FILE -DNO_USER_SWITCH -DNO_USER_SWITCH"
-export LDFLAGS="$SMALLLD"
-export THREADS=0
-export CRYPTO=internal
-
-make NOLRESOLV=1 $MAKEFLAGS $PROGRAM_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $PROGRAM_NAME
-  exit $?
-fi
-
-
-
-
-#Fritzbox 7370 (mips32r2 big-endian) device specific inetd start only, May or may not run on other devices
-INSTALLDIR=binaries/Linux/mips/big-endian/uclibc/
-SUFFIX=-mips16-Fritzbox-33xx-73xx-74xx-63xx-64xx-uclibc-inetd
-export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
-export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
-export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
-export CC=/opt/simplebuild/toolchains/fritz73xxOS62/bin/mips-linux-cc
-export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=24kc -mtune=24kc -mips16 -mdsp"
-export FEATURES=inetd
-export CFLAGS="$SMALLCC"
-export LDFLAGS="$SMALLLD"
-export THREADS=0
-export CRYPTO=internal
-
-make NOLRESOLV=1 $MAKEFLAGS $PROGRAM_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $PROGRAM_NAME
-  exit $?
-fi
+##Fritzbox 7370 (mips32r2 big-endian) device specific, May or may not run on other devices
+#INSTALLDIR=binaries/Linux/mips/big-endian/
+#SUFFIX=-mips16-Fritzbox-33xx-73xx-74xx-63xx-64xx-uclibc
+#export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
+#export CC=/opt/simplebuild/toolchains/fritz73xxOS62/bin/mips-linux-cc
+#export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=24kc -mtune=24kc -mips16 -mdsp"
+#export FEATURES=full
+#export CFLAGS="$SMALLCC"
+#export LDFLAGS="$SMALLLD"
+#export THREADS=0
+#export CRYPTO=internal
+#
+#make NOLRESOLV=1 $MAKEFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+#export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+#export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+#export LDFLAGS="$SMALLLD -static"
+#
+#make NOLRESOLV=1 $REUSEOBJFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+#
+#make NOLRESOLV=1 $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+#
+#export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
+#export LDFLAGS="$SMALLLD"
+#
+#make NOLRESOLV=1 $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
 
 
 
 
-#Fritzbox 7370 (mips32r2 big-endian) device specific with pthreads, May or may not run on other devices
-INSTALLDIR=binaries/Linux/mips/big-endian/uclibc/
-SUFFIX=-mips16-Fritzbox-33xx-73xx-74xx-63xx-64xx-uclibc-threads
-export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
-export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
-export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
-export CC=/opt/simplebuild/toolchains/fritz73xxOS62/bin/mips-linux-cc
-export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=24kc -mtune=24kc -mips16 -mdsp"
-export FEATURES=full
-export CFLAGS="$SMALLCC"
-export LDFLAGS="$SMALLLD -lpthread"
-export THREADS=1
-
-make NOLRESOLV=1 $MAKEFLAGS $PROGRAM_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $PROGRAM_NAME
-  exit $?
-fi
-
-
-
-
-#Fritzbox 7370 (mips32r2 big-endian) device specific with OpenSSL support, May or may not run on other devices
-INSTALLDIR=binaries/Linux/mips/big-endian/uclibc/
-SUFFIX=-mips16-Fritzbox-33xx-73xx-74xx-63xx-64xx-uclibc-openssl0.9.8-soft-EXPERIMENTAL
-export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
-export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
-export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
-export CC=/opt/simplebuild/toolchains/fritz73xxOS62/bin/mips-linux-cc
-export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=24kc -mtune=24kc -mips16 -mdsp"
-export FEATURES=full
-export CFLAGS="$SMALLCC"
-export LDFLAGS="$SMALLLD"
-export THREADS=0
-export CRYPTO=openssl_with_aes_soft
-export OPENSSL_HMAC=0
-
-make NOLRESOLV=1 $MAKEFLAGS
-
-if [ $? != 0 ]; then
-  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
-
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLRESOLV=1 $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-unset OPENSSL_HMAC
+##Fritzbox 7370 (mips32r2 big-endian) device specific with _PEDANTIC, May or may not run on other devices
+#INSTALLDIR=binaries/Linux/mips/big-endian/uclibc/
+#SUFFIX=-mips16-Fritzbox-33xx-73xx-74xx-63xx-64xx-uclibc-pedantic
+#export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+#export CC=/opt/simplebuild/toolchains/fritz73xxOS62/bin/mips-linux-cc
+#export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=24kc -mtune=24kc -mips16 -mdsp"
+#export FEATURES=full
+#export CFLAGS="$SMALLCC -D_PEDANTIC"
+#export LDFLAGS="$SMALLLD"
+#export THREADS=0
+#export CRYPTO=internal
+#
+#make NOLRESOLV=1 $MAKEFLAGS $PROGRAM_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $PROGRAM_NAME
+#  exit $?
+#fi
+#
 
 
 
+##Fritzbox 7370 (mips32r2 big-endian) device specific inetd start only, May or may not run on other devices
+#INSTALLDIR=binaries/Linux/mips/big-endian/uclibc/
+#SUFFIX=-mips16-Fritzbox-33xx-73xx-74xx-63xx-64xx-uclibc-inetd
+#export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+#export CC=/opt/simplebuild/toolchains/fritz73xxOS62/bin/mips-linux-cc
+#export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=24kc -mtune=24kc -mips16 -mdsp"
+#export FEATURES=inetd
+#export CFLAGS="$SMALLCC"
+#export LDFLAGS="$SMALLLD"
+#export THREADS=0
+#export CRYPTO=internal
+#
+#make NOLRESOLV=1 $MAKEFLAGS $PROGRAM_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#
+#
+#
+##Fritzbox 7370 (mips32r2 big-endian) device specific with pthreads, May or may not run on other devices
+#INSTALLDIR=binaries/Linux/mips/big-endian/uclibc/
+#SUFFIX=-mips16-Fritzbox-33xx-73xx-74xx-63xx-64xx-uclibc-threads
+#export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+#export CC=/opt/simplebuild/toolchains/fritz73xxOS62/bin/mips-linux-cc
+#export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=24kc -mtune=24kc -mips16 -mdsp"
+#export FEATURES=full
+#export CFLAGS="$SMALLCC"
+#export LDFLAGS="$SMALLLD -lpthread"
+#export THREADS=1
+#
+#make NOLRESOLV=1 $MAKEFLAGS $PROGRAM_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#
+#
+#
+##Fritzbox 7370 (mips32r2 big-endian) device specific with OpenSSL support, May or may not run on other devices
+#INSTALLDIR=binaries/Linux/mips/big-endian/uclibc/
+#SUFFIX=-mips16-Fritzbox-33xx-73xx-74xx-63xx-64xx-uclibc-openssl0.9.8-soft-EXPERIMENTAL
+#export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+#export CC=/opt/simplebuild/toolchains/fritz73xxOS62/bin/mips-linux-cc
+#export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=24kc -mtune=24kc -mips16 -mdsp"
+#export FEATURES=full
+#export CFLAGS="$SMALLCC"
+#export LDFLAGS="$SMALLLD"
+#export THREADS=0
+#export CRYPTO=openssl_with_aes_soft
+#export OPENSSL_HMAC=0
+#
+#make NOLRESOLV=1 $MAKEFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+#
+#make NOLRESOLV=1 $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+#
+#unset OPENSSL_HMAC
+#
+#
+#
 #make $MAKEFLAGS CLIENT_NAME=binaries/Linux/mips/big-endian/uclibc/vlmcs-mips32-uclibc CFLAGS="$SMALL -pipe -flto=jobserver -fwhole-program" PROGRAM_NAME=binaries/Linux/mips/big-endian/uclibc/vlmcsd-mips32-uclibc CC=/opt/toolchains/mips32eb-uclibc-0.9.33/usr/bin/mips-linux-cc && \
-# Linux mips32 big-endian uclibc
+#Linux mips32 big-endian uclibc
 INSTALLDIR=binaries/Linux/mips/big-endian/uclibc/
 SUFFIX=-mips32-uclibc
 export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
@@ -3209,7 +3131,7 @@ fi
 
 
 #Linux Sparc32v7 glibc
-INSTALLDIR=binaries/Linux/sparc/glibc/
+INSTALLDIR=binaries/Linux/sparc32/glibc/
 SUFFIX=-sparc32v7-glibc
 export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
 export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
@@ -3218,7 +3140,7 @@ export CC=/opt/toolchains/sparc32-glibc-gcc-4.7.4/bin/sparc-buildroot-linux-gnu-
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mcpu=v7"
 export FEATURES=full
 export CFLAGS="$SMALLCC"
-export LDFLAGS="$SMALLLD"
+export LDFLAGS="$SMALLLD -lpthread"
 export THREADS=0
 export CRYPTO=internal
 
@@ -3393,38 +3315,38 @@ fi
 
 
 
-# mips32 little-endian DD-WRT toolchain with gcc 4.1.0
-export CC=/opt/simplebuild/toolchains/ddwrt410/bin/mipsel-linux-gcc
-INSTALLDIR=binaries/Linux/mips/little-endian/
-SUFFIX=-mips32el-ddwrt-gcc$($CC -dumpversion)-uclibc
-export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
-export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
-export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
-export PLATFORMFLAGS="-pipe -mips32"
-export FEATURES=full
-export CFLAGS="$SMALLCC"
-export LDFLAGS="-fwhole-program"
-export THREADS=0
-export CRYPTO=internal
-
-make $MAKEFLAGS CAT=2 SAFE_MODE=1 $PROGRAM_NAME $MULTI_NAME $CLIENT_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $PROGRAM_NAME, $MULTI_NAME and/or $CLIENT_NAME
-  exit $?
-fi
-
-export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
-export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
-export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
-export LDFLAGS="-fwhole-program -static"
-
-make $REUSEOBJFLAGS CAT=2 SAFE_MODE=1 $PROGRAM_NAME $MULTI_NAME $CLIENT_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $PROGRAM_NAME, $MULTI_NAME and/or $CLIENT_NAME
-  exit $?
-fi
+## mips32 little-endian DD-WRT toolchain with gcc 4.1.0
+#export CC=/opt/simplebuild/toolchains/ddwrt410/bin/mipsel-linux-gcc
+#INSTALLDIR=binaries/Linux/mips/little-endian/
+#SUFFIX=-mips32el-ddwrt-gcc$($CC -dumpversion)-uclibc
+#export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
+#export PLATFORMFLAGS="-pipe -mips32"
+#export FEATURES=full
+#export CFLAGS="$SMALLCC"
+#export LDFLAGS="-fwhole-program"
+#export THREADS=0
+#export CRYPTO=internal
+#
+#make $MAKEFLAGS CAT=2 $PROGRAM_NAME $MULTI_NAME $CLIENT_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $PROGRAM_NAME, $MULTI_NAME and/or $CLIENT_NAME
+#  exit $?
+#fi
+#
+#export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+#export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+#export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+#export LDFLAGS="-fwhole-program -static"
+#
+#make $REUSEOBJFLAGS CAT=2 $PROGRAM_NAME $MULTI_NAME $CLIENT_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $PROGRAM_NAME, $MULTI_NAME and/or $CLIENT_NAME
+#  exit $?
+#fi
 
 
 
@@ -3485,67 +3407,67 @@ fi
 
 
 
-#Linux armv6 hard-float little-endian. Used on Raspberry Pi with Raspbian.
-#The hard-float ABI cannot be combined with thumb.
-#You may wish to use armv5el-thumb instead because the binary is smaller
-INSTALLDIR=binaries/Linux/arm/little-endian/glibc/
-SUFFIX=-armv6hf-Raspberry-glibc
-export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
-export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
-export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
-export CC=/opt/toolchains/armhfv6-glibc-2.19/bin/arm-linux-gcc
-export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=armv6zk -mfpu=vfp -mfloat-abi=hard -mtune=arm1176jzf-s"
-export FEATURES=full
-export CFLAGS="$SMALLCC"
-export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
-export THREADS=0
-export CRYPTO=internal
-
-make $MAKEFLAGS
-
-if [ $? != 0 ]; then
-  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
-
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-
+##Linux armv6 hard-float little-endian. Used on Raspberry Pi with Raspbian.
+##The hard-float ABI cannot be combined with thumb.
+##You may wish to use armv5el-thumb instead because the binary is smaller
+#INSTALLDIR=binaries/Linux/arm/little-endian/glibc/
+#SUFFIX=-armv6hf-Raspberry-glibc
+#export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+#export CC=/opt/toolchains/armhfv6-glibc-2.19/bin/arm-linux-gcc
+#export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=armv6zk -mfpu=vfp -mfloat-abi=hard -mtune=arm1176jzf-s"
+#export FEATURES=full
+#export CFLAGS="$SMALLCC"
+#export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+#export THREADS=0
+#export CRYPTO=internal
+#
+#make $MAKEFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+#
+#make $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
 
 
-# Linux arm big-endian uclibc
-INSTALLDIR=binaries/Linux/arm/big-endian/
-SUFFIX=-armeb-nslu2-uclibc
-export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
-export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
-export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
-export CC=/opt/simplebuild/toolchains/nslu2open/bin/armeb-linux-uclibc-gcc
-export PLATFORMFLAGS="-pipe"
-export FEATURES=full
-export CFLAGS="$SMALLCC"
-export LDFLAGS="-Wl,-z,norelo"
-export THREADS=0
 
-make $MAKEFLAGS SAFE_MODE=1 CAT=2 $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME
 
-if [ $? != 0 ]; then
-  echo Error creating $CLIENT_NAME, $MULTI_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
+## Linux arm big-endian uclibc
+#INSTALLDIR=binaries/Linux/arm/big-endian/
+#SUFFIX=-armeb-nslu2-uclibc
+#export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
+#export CC=/opt/simplebuild/toolchains/nslu2open/bin/armeb-linux-uclibc-gcc
+#export PLATFORMFLAGS="-pipe"
+#export FEATURES=full
+#export CFLAGS="$SMALLCC"
+#export LDFLAGS="-Wl,-z,norelo"
+#export THREADS=0
+#
+#make $MAKEFLAGS CAT=2 $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME, $MULTI_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
 
 export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
 export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
 export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
 export LDFLAGS="-Wl,-z,norelo -static"
 
-make $REUSEOBJFLAGS SAFE_MODE=1 CAT=2 $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME
+make $REUSEOBJFLAGS CAT=2 $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME, $MULTI_NAME and/or $PROGRAM_NAME
@@ -3555,9 +3477,9 @@ fi
 
 # Strip off unnecessary stuff from binaries
 
-#find binaries -xdev -name 'vlmcs*' -exec /opt/toolchains/mips32el-mips16-glibc-2.18/usr/bin/mipsel-linux-strip -s --strip-unneeded --remove-section=.note.gnu.gold-version --remove-section=.comment --remove-section=.note --remove-section=.note.gnu.build-id --remove-section=.note.ABI-tag {} \; 2>/dev/null
-#find binaries -xdev -name 'vlmcs*' -exec strip -s --strip-unneeded --remove-section=.note.gnu.gold-version --remove-section=.comment --remove-section=.note --remove-section=.note.gnu.build-id --remove-section=.note.ABI-tag {} \; 2>/dev/null
-find binaries -xdev -name 'vlmcs*' ! -name '*-NetBSD-*' ! -name '*-Windows-*' ! -name '*-cygwin-*' ! -name '*-MacOSX-*' ! -name '*-iOS-*' -exec sstrip -z {} \;
+find binaries -xdev -name 'vlmcs*' -exec /opt/toolchains/mips32el-mips16-glibc-2.18/usr/bin/mipsel-linux-strip -s --strip-unneeded --remove-section=.note.gnu.gold-version --remove-section=.comment --remove-section=.note --remove-section=.note.gnu.build-id --remove-section=.note.ABI-tag {} \; 2>/dev/null
+find binaries -xdev -name 'vlmcs*' -exec strip -s --strip-unneeded --remove-section=.note.gnu.gold-version --remove-section=.comment --remove-section=.note --remove-section=.note.gnu.build-id --remove-section=.note.ABI-tag {} \; 2>/dev/null
+find binaries -xdev -name 'vlmcs*' -exec sstrip -z {} \; 2>/dev/null
 
 make alldocs
 
@@ -3565,11 +3487,7 @@ rm *.o
 
 #cp -p binaries/Linux/intel/glibc/vlmcs-x32-glibc /usr/local/bin/vlmcs
 
-if [ `lsb_release -is` == "Debian" ]; then
-  cp -pf binaries/Linux/intel/glibc/vlmcsdmulti-x86-glibc /usr/local/sbin/vlmcsdmulti
-else
-  cp -pf binaries/Linux/intel/glibc/vlmcsdmulti-x32-glibc /usr/local/sbin/vlmcsdmulti
-fi
+cp -pf binaries/Linux/intel/glibc/vlmcsdmulti-x64-glibc /usr/local/sbin/vlmcsdmulti
 
 ln -s vlmcsdmulti /usr/local/sbin/vlmcsd 2>/dev/null
 ln -s ../sbin/vlmcsdmulti /usr/local/bin/vlmcs 2>/dev/null

@@ -1,5 +1,5 @@
 .mso www.tmac
-.TH VLMCSD 8 "September 2015" "Hotbird64" "KMS Activation Manual"
+.TH VLMCSD 8 "June 2016" "Hotbird64" "KMS Activation Manual"
 .LO 8
 
 .SH NAME
@@ -27,6 +27,9 @@ All options that do no require an argument may be combined with a single dash, f
 .IP "\fB-h\fR or \fB-?\fR"
 Displays help.
 
+.IP "\fB-V\fR"
+Displays extended version information. This includes the compiler used to build vlmcsd, the intended platform and flags (compile time options) to build vlmcsd. If you have the source code of vlmcsd, you can type \fBmake help\fR (or \fBgmake help\fR on systems that do not use the GNU version of \fBmake\fR(1) by default) to see the meaning of those flags.
+
 .IP "\fB-L\fR \fIipaddress\fR[:\fIport\fR]"
 Instructs vlmcsd to listen on \fIipaddress\fR with optional \fIport\fR (default 1688). You can use this option more than once. If you do not specify \fB-L\fR at least once, IP addresses 0.0.0.0 (IPv4) and :: (IPv6) are used. If the IP address contains colons (IPv6) you must enclose the IP address in brackets if you specify the optional port, e.g. [2001:db8::dead:beef]:1688.
 .PP
@@ -39,11 +42,8 @@ If you specify a link local IPv6 address (fe80::/10, usually starting with fe80:
 .IP "\fB-P\fR \fIport"
 Use TCP \fIport\fR for all subsequent \fB-L\fR statements that do not include an optional port. If you use \fB-P\fR and \fB-L\fR, \fB-P\fR must be specified before \fB-L\fR.
 
-.IP "\fB-4\fR and \fB-6\fR"
-Used to control the use of IPv4 and IPv4 if you did not use -L. If you specify both \fB-4\fR and \fB-6\fR or none, vlmcsd uses both protocols. If you specify only one, that protocol will be used only. \fBThese options are deprecated and will be removed.\fR
-
-.IP "\fB-I\fR"
-This option is deprecated and does nothing. It is provided for compatibility with svn681 and earlier versions only. It will be removed in a future release.
+.IP "\fB-F0\fR and \fB-F1\fR
+Allow (\fB-F1\fR) or disallow (\fB-F0\fR) binding to IP addresses that are currently not configured on your system. The default is \fB-F0\fR. \fB-F1\fR allows you to bind to an IP address that may be configured after you started \fBvlmcsd\fR. \fBvlmcsd\fR will listen on that address as soon as it becomes available. This feature is only available under Linux (IPv4 and IPv6) and FreeBSD (IPv4 only). FreeBSD allows this feature only for the root user (more correctly: processes that have the PRIV_NETINET_BINDANY privilege). Linux does not require a capability for this.
 
 .IP "\fB-t\fR \fIseconds\fR"
 Timeout the TCP connection with the client after \fIseconds\fR seconds. After sending an activation request. RPC keeps the TCP connection for a while. The default is 30 seconds. You may specify a shorter period to free ressources on your device faster. This is useful for devices with limited main memory or if you used \fB-m\fR to limit the concurrent clients that may request activation. Microsoft RPC clients disconnect after 30 seconds by default. Setting \fIseconds\fR to a greater value does not make much sense.
@@ -78,9 +78,6 @@ The native Windows version never daemonizes and always behaves as if \fB-D\fR ha
 
 .IP "\fB-e\fR"
 If specified, vlmcsd ignores \fB-l\fR and writes all logging output to \fBstdout\fR(3). This is mainly useful for testing and debugging and often combined with \fB-D\fR.
-
-.IP "\fB-f\fR"
-This flag combines \fB-D\fR and \fB-e\fR. So typing "vlmcsd -f" is identical to "vlmcsd -De". The purpose of \fB-f\fR is to provide compatibility with previous versions of vlmcsd. \fBThis option is deprecated and will be removed.\fR
 
 .IP "\fB-v\fR"
 Use verbose logging. Logs every parameter of the base request and the base response. It also logs the HWID of the KMS server if KMS protocol version 6 is used. This option is mainly for debugging purposes. It only has an effect if some form of logging is used. Thus \fB-v\fR does not make sense if not used with \fB-l\fR, \fB-e\fR or \fB-f\fR.

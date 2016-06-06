@@ -66,7 +66,9 @@ SYNTAX
 
 
 KEYWORDS
-       The following keywords are defined:
+       The following keywords are defined (not all keywords may  be  available
+       depending  on  the operating system and the options used when vlmcsd(8)
+       was compiled):
 
 
        Listen This defines on what combinations of IP addresses and ports vlm‐
@@ -77,10 +79,10 @@ KEYWORDS
               brackets. The default is to listen to 0.0.0.0:1688 and [::]:1688
               which means listen to all IPv4 and all IPv6 addresses.  See  the
               -L  option  in  vlmcsd(8) for more info about the syntax. If you
-              use -L, -P, -4 or -6 on the command line, all Listen keywords in
-              the  ini file will be ignored. The Listen keyword cannot be used
-              on Windows and Cygwin if vlmcsd has been compiled to use  Micro‐
-              soft RPC.
+              use -L or -P on the command line, all Listen keywords in the ini
+              file  will be ignored. The Listen keyword cannot be used if vlm‐
+              csd has been compiled to use Microsoft RPC (Windows  and  Cygwin
+              only) or simple sockets.
 
               Examples:
 
@@ -89,11 +91,21 @@ KEYWORDS
               Listen = [fe80::1721:12ff:fe81:d36b%eth0]:1688
 
 
-       Port   Can  only  be used on Windows and Cygwin if vlmcsd has been com‐
-              piled to use Microsoft RPC. Causes vlmcsd to listen on that port
-              instead of 1688. On all non-Windows operating systems or if vlm‐
-              csd has been compiled to use its  own  RPC  implementation,  you
-              must use Listen instead.
+       Port   Can only be used if vlmcsd has been compiled to use simple sock‐
+              ets or on Windows and Cygwin if vlmcsd(8) has been  compiled  to
+              use Microsoft RPC. Otherwise you must use Listen instead. Causes
+              vlmcsd to listen on that port instead of 1688.
+
+
+       FreeBind
+              Can be TRUE or FALSE. If TRUE, you can use  the  Listen  keyword
+              with IP addresses that are currently not defined on your system.
+              vlmcsd(8) will start listening on these IP addresses as soon  as
+              they  become  available.  This  keyword  is only available under
+              Linux and FreeBSD because no other OS  currently  supports  that
+              feature.  FreeBSD  supports  this only for IPv4 and requires the
+              PRIV_NETINET_BINDANY privilege which  is  normally  assigned  to
+              proccesses of the root user.
 
 
        UseNDR64
@@ -265,4 +277,4 @@ SEE ALSO
 
 
 
-Hotbird64                       September 2015                   VLMCSD.INI(5)
+Hotbird64                          June 2016                     VLMCSD.INI(5)

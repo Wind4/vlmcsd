@@ -51,6 +51,7 @@ const KmsIdList ProductList[] = {
 };
 #endif
 
+#ifndef IS_LIBRARY
 // Application ID is used by KMS server to count KeyManagementServiceCurrentCount
 // Do not change the order of this list. Append items as necessary
 const KmsIdList AppList[] = {
@@ -59,6 +60,7 @@ const KmsIdList AppList[] = {
 	/* 002 */ { { 0x0FF1CE15, 0xA989, 0x479D, { 0xaf, 0x46, 0xf2, 0x75, 0xc6, 0x37, 0x06, 0x63 } } /*"0FF1CE15-A989-479D-AF46-F275C6370663"*/, FRIENDLY_NAME_OFFICE2013, EPID_OFFICE2013,	0,	0},
 	/* 003 */ { { 0x00000000, 0x0000, 0x0000, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } }, NULL, NULL, 0, 0 }
 };
+#endif // IS_LIBRARY
 
 #ifndef NO_EXTENDED_PRODUCT_LIST
 const KmsIdList ExtendedProductList [] = {
@@ -258,7 +260,7 @@ static const struct KMSHostOS { uint16_t Type; uint16_t Build; } HostOS[] =
     { 55041, 7601 }, // Windows Server 2008 R2 SP1
     {  5426, 9200 }, // Windows Server 2012
     {  6401, 9600 }, // Windows Server 2012 R2
-	{  3612, 10240}, // Windows Server 2016
+	//{  3612, 10240}, // Windows Server 2016
 };
 
 // GroupID and PIDRange
@@ -377,9 +379,10 @@ static int getRandomServerType()
 #	ifndef USE_MSRPC
 	else
 	{
-		// return 9200/9600/10240 if NDR64 is in use, otherwise 6002/7601
-		if (UseRpcNDR64) return (rand() % 3) + 2;
-		return (rand() % 2);
+		// return 9200/9600 if NDR64 is in use, otherwise 6002/7601
+		return (rand() % 2) + (UseRpcNDR64 ? 2 : 0);
+		// if (UseRpcNDR64) return (rand() % 3) + 2;
+		// return (rand() % 2);
 	}
 #	endif // USE_MSRPC
 }
@@ -424,12 +427,12 @@ static void generateRandomPid(const int index, char *const szPid, int serverType
 	strcat(szPid, itoc(numberBuffer, HostOS[serverType].Build, 0));
 	strcat(szPid, ".0000-");
 
-#	define minTime ((time_t)1436958000) // Release Date Windows 10 RTM Escrow
+#	define minTime ((time_t)1382029200) // Release Date Win 2012R2
 
 	time_t maxTime, kmsTime;
 	time(&maxTime);
 
-	if (maxTime < minTime) // Just in case the system time is < 07/15/2015 1:00 pm
+	if (maxTime < (time_t)BUILD_TIME) // Just in case the system time is < 10/17/2013 1:00 pm
 		maxTime = (time_t)BUILD_TIME;
 
 	kmsTime = (rand32() % (maxTime - minTime)) + minTime;
@@ -519,6 +522,7 @@ static void logRequest(const REQUEST *const baseRequest)
 /*
  * Converts a utf-8 ePID string to UCS-2 and writes it to a RESPONSE struct
  */
+#ifndef IS_LIBRARY
 static void getEpidFromString(RESPONSE *const Response, const char *const pid)
 {
 	size_t length = utf8_to_ucs2(Response->KmsPID, pid, PID_BUFFER_SIZE, PID_BUFFER_SIZE * 3);
@@ -567,6 +571,7 @@ static void getEpid(RESPONSE *const baseResponse, const char** EpidSource, const
 	}
 	getEpidFromString(baseResponse, pid);
 }
+#endif // IS_LIBRARY
 
 
 #if !defined(NO_LOG) && defined(_PEDANTIC)
@@ -627,6 +632,7 @@ static void logResponse(const RESPONSE *const baseResponse, const BYTE *const hw
 /*
  * Creates the unencrypted base response
  */
+#ifndef IS_LIBRARY
 static BOOL __stdcall CreateResponseBaseCallback(const REQUEST *const baseRequest, RESPONSE *const baseResponse, BYTE *const hwId, const char* const ipstr)
 {
 	const char* EpidSource;
@@ -663,13 +669,19 @@ static BOOL __stdcall CreateResponseBaseCallback(const REQUEST *const baseReques
 
 RequestCallback_t CreateResponseBase = &CreateResponseBaseCallback;
 
+#else // IS_LIBRARY
+
+RequestCallback_t CreateResponseBase = NULL;
+
+#endif // IS_LIBRARY
+
+
 ////TODO: Move to helpers.c
 void get16RandomBytes(void* ptr)
 {
 	int i;
 	for (i = 0; i < 4; i++)	((DWORD*)ptr)[i] = rand32();
 }
-
 
 /*
  * Creates v4 response

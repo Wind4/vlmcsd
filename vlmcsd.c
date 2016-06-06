@@ -7,6 +7,10 @@
 #error Microsoft RPC is only available on Windows and Cygwin
 #endif
 
+#if defined(USE_MSRPC) && defined(SIMPLE_SOCKETS)
+#error You can only define either USE_MSRPC or SIMPLE_SOCKETS but not both
+#endif
+
 #if defined(NO_SOCKETS) && defined(USE_MSRPC)
 #error Cannot use inetd mode with Microsoft RPC
 #endif
@@ -66,18 +70,20 @@
 #include "ntservice.h"
 #include "helpers.h"
 
+#ifdef ENABLE_DEPRECATED_OPTIONS
+static const char* const optstring = "N:B:m:t:w:0:3:H:A:R:u:g:L:p:i:P:l:r:U:W:C:F:SsfeDd46VvIqkZ";
+#else // !ENABLE_DEPRECATED_OPTIONS
+static const char* const optstring = "N:B:m:t:w:0:3:H:A:R:u:g:L:p:i:P:l:r:U:W:C:F:SseDdVvqkZ";
+#endif // !ENABLE_DEPRECATED_OPTIONS
 
-static const char* const optstring = "N:B:m:t:w:0:3:H:A:R:u:g:L:p:i:P:l:r:U:W:C:SsfeDd46VvIdqkZ";
-
-#if !defined(NO_SOCKETS)
-#if !defined(USE_MSRPC)
+#if !defined(NO_SOCKETS) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 static uint_fast8_t maxsockets = 0;
-static int_fast8_t haveIPv6Stack = 0;
-static int_fast8_t haveIPv4Stack = 0;
+
+#ifdef ENABLE_DEPRECATED_OPTIONS
 static int_fast8_t v6required = 0;
 static int_fast8_t v4required = 0;
-#endif // !defined(USE_MSRPC)
-#endif // !defined(NO_SOCKETS)
+#endif // ENABLE_DEPRECATED_OPTIONS
+#endif // !defined(NO_SOCKETS) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 
 #ifdef _NTSERVICE
 static int_fast8_t installService = 0;
@@ -107,11 +113,16 @@ static IniFileParameter_t IniFileParameterList[] =
 		{ "RandomizationLevel", INI_PARAM_RANDOMIZATION_LEVEL },
 		{ "LCID", INI_PARAM_LCID },
 #	endif // NO_RANDOM_EPID
-#	ifdef USE_MSRPC
+#	if !defined(NO_SOCKETS) && (defined(USE_MSRPC) || defined(SIMPLE_SOCKETS))
 		{ "Port", INI_PARAM_PORT },
-#	endif // USE_MSRPC
+#	endif // defined(USE_MSRPC) || defined(SIMPLE_SOCKETS)
 #	if !defined(NO_SOCKETS) && !defined(USE_MSRPC)
+#	ifndef SIMPLE_SOCKETS
 		{ "Listen", INI_PARAM_LISTEN },
+#	endif // SIMPLE_SOCKETS
+#	if HAVE_FREEBIND
+		{ "FreeBind", INI_PARAM_FREEBIND },
+#	endif // HAVE_FREEBIND
 #	if !defined(NO_LIMIT) && !__minix__
 		{ "MaxWorkers", INI_PARAM_MAX_WORKERS },
 #	endif // !defined(NO_LIMIT) && !__minix__
@@ -200,10 +211,10 @@ static char GetNumericId(gid_t *restrict id, const char *const c)
 	gid_t temp;
 
 	temp = (gid_t)strtoll(c, &endptr, 10);
-
 	if (!*endptr) *id = temp;
+	if (*endptr || temp == (gid_t)-1) errno = EINVAL;
 
-	return *endptr;
+	return *endptr || *id == (gid_t)-1;
 }
 
 
@@ -267,14 +278,15 @@ static __noreturn void usage()
 			"  -C <LCID>\t\tuse fixed <LCID> in random ePIDs\n"
 			#endif // NO_RANDOM_EPID
 			#ifndef NO_SOCKETS
-			#ifndef USE_MSRPC
-			"  -4\t\t\tuse IPv4\n"
-			"  -6\t\t\tuse IPv6\n"
+			#if !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 			"  -L <address>[:<port>]\tlisten on IP address <address> with optional <port>\n"
 			"  -P <port>\t\tset TCP port <port> for subsequent -L statements (default 1688)\n"
-			#else // USE_MSRPC
+			#if HAVE_FREEBIND
+			"  -F0, -F1\t\tdisable/enable binding to foreign IP addresses\n"
+			#endif // HAVE_FREEBIND
+			#else // defined(USE_MSRPC) || defined(SIMPLE_SOCKETS)
 			"  -P <port>\t\tuse TCP port <port> (default 1688)\n"
-			#endif // USE_MSRPC
+			#endif // defined(USE_MSRPC) || defined(SIMPLE_SOCKETS)
 			#if !defined(NO_LIMIT) && !__minix__
 			"  -m <clients>\t\tHandle max. <clients> simultaneously (default no limit)\n"
 			#endif // !defined(NO_LIMIT) && !__minix__
@@ -293,11 +305,8 @@ static __noreturn void usage()
 			#endif // NO_LOG
 			#ifndef _WIN32 //
 			"  -D			run in foreground\n"
-			"  -f			run in foreground"
-			#ifndef NO_LOG
-			" and log to stdout"
-			#endif // NO_LOG
-			"\n"
+			#else // _WIN32
+			"  -D			does nothing. Provided for compatibility with POSIX versions only\n"
 			#endif // _WIN32
 			#endif // NO_SOCKETS
 			#ifndef USE_MSRPC
@@ -329,8 +338,10 @@ static __noreturn void usage()
 			"  -q\t\t\tdon't log verbose (default)\n"
 			#endif // NO_VERBOSE_LOG
 			#endif // NO_LOG
-			"  -V			display version information and exit"
-			"\n",
+			#ifndef NO_VERSION_INFORMATION
+			"  -V			display version information and exit\n"
+			#endif // NO_VERSION_INFORMATION
+			,
 			Version, global_argv[0]);
 
 	exit(!0);
@@ -507,20 +518,21 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 
 #	endif // NO_RANDOM_EPID
 
-#	ifdef USE_MSRPC
+#	if (defined(USE_MSRPC) || defined(SIMPLE_SOCKETS)) && !defined(NO_SOCKETS)
 
 		case INI_PARAM_PORT:
 			defaultport = allocateStringArgument(iniarg);
 			break;
 
-#	endif // USE_MSRPC
+#	endif // (defined(USE_MSRPC) || defined(SIMPLE_SOCKETS)) && !defined(NO_SOCKETS
 
-#	if !defined(NO_SOCKETS) && !defined(USE_MSRPC)
+#	if !defined(NO_SOCKETS) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 
 		case INI_PARAM_LISTEN:
 			maxsockets++;
 			return TRUE;
 
+#	endif // !defined(NO_SOCKETS) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 #	if !defined(NO_LIMIT) && !__minix__
 
 		case INI_PARAM_MAX_WORKERS:
@@ -532,7 +544,6 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 			break;
 
 #	endif // !defined(NO_LIMIT) && !__minix__
-#	endif // NO_SOCKETS
 
 #	ifndef NO_PID_FILE
 
@@ -592,6 +603,14 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 			break;
 
 #	endif // USE_MSRPC
+
+#	if HAVE_FREEBIND
+
+		case INI_PARAM_FREEBIND:
+			success = getIniFileArgumentBool(&freebind, iniarg);
+			break;
+
+#	endif // HAVE_FREEBIND
 
 		default:
 			return FALSE;
@@ -729,7 +748,7 @@ static BOOL handleIniFileParameter(const char *s)
 }
 
 
-#if !defined(NO_SOCKETS) && !defined(USE_MSRPC)
+#if !defined(NO_SOCKETS) && !defined(SIMPLE_SOCKETS) && !defined(USE_MSRPC)
 static BOOL setupListeningSocketsFromIniFile(const char *s)
 {
 	if (!maxsockets) return TRUE;
@@ -740,7 +759,7 @@ static BOOL setupListeningSocketsFromIniFile(const char *s)
 	IniFileErrorMessage = IniFileErrorBuffer;
 	return addListeningSocket(s);
 }
-#endif // !defined(NO_SOCKETS) && !defined(USE_MSRPC)
+#endif // !defined(NO_SOCKETS) && !defined(SIMPLE_SOCKETS) && !defined(USE_MSRPC)
 
 
 static BOOL readIniFile(const uint_fast8_t pass)
@@ -775,7 +794,7 @@ static BOOL readIniFile(const uint_fast8_t pass)
 					!setEpidFromIniFileLine(&s, appIndex) ||
 					!setHwIdFromIniFileLine(&s, appIndex);
 		}
-#		if !defined(NO_SOCKETS) && !defined(USE_MSRPC)
+#		if !defined(NO_SOCKETS) && !defined(SIMPLE_SOCKETS) && !defined(USE_MSRPC)
 		else if (pass == INI_FILE_PASS_2)
 		{
 			lineParseError = !setupListeningSocketsFromIniFile(s);
@@ -784,7 +803,7 @@ static BOOL readIniFile(const uint_fast8_t pass)
 		{
 			return FALSE;
 		}
-#		endif // NO_SOCKETS
+#		endif // !defined(NO_SOCKETS) &&  && !defined(SIMPLE_SOCKETS) && !defined(USE_MSRPC)
 
 		if (lineParseError)
 		{
@@ -1065,10 +1084,21 @@ static void parseGeneralArguments() {
 		#ifndef NO_SOCKETS
 
 		#ifndef USE_MSRPC
+		#ifdef ENABLE_DEPRECATED_OPTIONS
+		#ifndef SIMPLE_SOCKETS
 		case '4':
 		case '6':
+			printerrorf("Warning: Option -%c is deprecated. Use -L instead.\n", o);
+			/* no break */
+		#endif // SIMPLE_SOCKETS
+		#endif // ENABLE_DEPRECATED_OPTIONS
 		case 'P':
+			if (o == 'P') defaultport = optarg;
+			#ifdef SIMPLE_SOCKETS
+			ignoreIniFileParameter(INI_PARAM_PORT);
+			#else // !SIMPLE_SOCKETS
 			ignoreIniFileParameter(INI_PARAM_LISTEN);
+			#endif // !SIMPLE_SOCKETS
 			break;
 		#else // USE_MSRPC
 		case 'P':
@@ -1129,19 +1159,44 @@ static void parseGeneralArguments() {
 		#endif // NO_LOG
 
 		#ifndef NO_SOCKETS
-		#ifndef USE_MSRPC
+		#if !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 		case 'L':
 			maxsockets++;
 			ignoreIniFileParameter(INI_PARAM_LISTEN);
 			break;
-		#endif // USE_MSRPC
+		#if HAVE_FREEBIND
+		case 'F':
+			if (!getArgumentBool(&freebind, optarg)) usage();
+			ignoreIniFileParameter(INI_PARAM_FREEBIND);
+			break;
+		#endif // HAVE_FREEBIND
+		#endif // !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 
+		#if defined(ENABLE_DEPRECATED_OPTIONS)
 		case 'f':
+			#if !defined(_WIN32) || !defined(NO_LOG)
+			printerrorf
+			(
+				"Warning: Option -f is deprecated. Use -"
+			#ifdef _WIN32
+				"e"
+			#else // !_WIN32
+				"de"
+			#endif // !_WIN32
+				" instead.\n"
+			);
+			#ifndef _WIN32
 			nodaemon = 1;
+			#endif // _WIN32
 			#ifndef NO_LOG
 			logstdout = 1;
 			#endif
+			#if defined(_PEDANTIC) && defined(_WIN32) && defined(NO_LOG)
+			printerrorf("Warning: Option -f has no effect in a Windows version of vlmcsd that has been compiled with logging disabled.\n");
+			#endif // defined(_PEDANTIC) && defined(_WIN32) && defined(NO_LOG)
+			#endif // !defined(_WIN32) || !defined(NO_LOG)
 			break;
+		#endif // ENABLE_DEPRECATED_OPTIONS
 
 		#ifdef _NTSERVICE
 		case 'U':
@@ -1165,7 +1220,13 @@ static void parseGeneralArguments() {
         #endif // _NTSERVICE
 
 		case 'D':
+			#ifndef _WIN32
 			nodaemon = 1;
+			#else // _WIN32
+			#ifdef _PEDANTIC
+			printerrorf("Warning: Option -D has no effect in the Windows version of vlmcsd.\n");
+			#endif // _PEDANTIC
+			#endif // _WIN32
 			break;
 
 		#ifndef NO_LOG
@@ -1175,10 +1236,10 @@ static void parseGeneralArguments() {
 		#endif // NO_LOG
 		#endif // NO_SOCKETS
 
-		#ifndef _WIN32
+		#if !defined(_WIN32) && defined(ENABLE_DEPRECATED_OPTIONS)
 		case 'I': // Backward compatibility with svn681 and earlier
 			break;
-		#endif // _WIN32
+		#endif // !defined(_WIN32) && defined(ENABLE_DEPRECATED_OPTIONS)
 
 		#ifndef NO_RANDOM_EPID
 		case 'r':
@@ -1210,8 +1271,8 @@ static void parseGeneralArguments() {
 			#endif // NO_SIGHUP
 			if (GetGid())
 			{
-				printerrorf("Fatal: setgid for %s failed.\n", optarg);
-				exit(!0);
+				printerrorf("Fatal: %s for %s failed: %s\n", "setgid", gname, strerror(errno));
+				exit(errno);
 			}
 			break;
 
@@ -1223,8 +1284,8 @@ static void parseGeneralArguments() {
 			#endif // NO_SIGHUP
 			if (GetUid())
 			{
-				printerrorf("Fatal: setuid for %s failed.\n", optarg);
-				exit(!0);
+				printerrorf("Fatal: %s for %s failed: %s\n", "setuid", uname, strerror(errno));
+				exit(errno);
 			}
 			break;
 		#endif // NO_USER_SWITCH && !_WIN32
@@ -1259,12 +1320,21 @@ static void parseGeneralArguments() {
 			break;
 		#endif // !USE_MSRPC
 
+		#ifndef NO_VERSION_INFORMATION
 		case 'V':
 			#ifdef _NTSERVICE
 			if (IsNTService) break;
 			#endif
-			printf("vlmcsd %s\n", Version);
+			#if defined(__s390__) && !defined(__zarch__) && !defined(__s390x__)
+			printf("vlmcsd %s %i-bit\n", Version, sizeof(void*) == 4 ? 31 : (int)sizeof(void*) << 3);
+			#else
+			printf("vlmcsd %s %i-bit\n", Version, (int)sizeof(void*) << 3);
+			#endif // defined(__s390__) && !defined(__zarch__) && !defined(__s390x__)
+			printPlatform();
+			printCommonFlags();
+			printServerFlags();
 			exit(0);
+		#endif // NO_VERSION_INFORMATION
 
 		default:
 			usage();
@@ -1429,7 +1499,7 @@ static void allocateSemaphore(void)
 #endif // !defined(NO_LIMIT) && !defined(NO_SOCKETS) && !__minix__
 
 
-#if !defined(NO_SOCKETS) && !defined(USE_MSRPC)
+#if !defined(NO_SOCKETS) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 int setupListeningSockets()
 {
 	int o;
@@ -1437,14 +1507,16 @@ int setupListeningSockets()
 
 	SocketList = (SOCKET*)vlmcsd_malloc((size_t)allocsockets * sizeof(SOCKET));
 
-	haveIPv4Stack = checkProtocolStack(AF_INET);
-	haveIPv6Stack = checkProtocolStack(AF_INET6);
+	int_fast8_t haveIPv4Stack = checkProtocolStack(AF_INET);
+	int_fast8_t haveIPv6Stack = checkProtocolStack(AF_INET6);
 
 	// Reset getopt since we've alread used it
 	optReset();
 
 	for (opterr = 0; ( o = getopt(global_argc, (char* const*)global_argv, optstring) ) > 0; ) switch (o)
 	{
+#	ifdef ENABLE_DEPRECATED_OPTIONS
+
 	case '4':
 
 		if (!haveIPv4Stack)
@@ -1465,18 +1537,19 @@ int setupListeningSockets()
 		v6required = 1;
 		break;
 
-	case 'L':
-
-		addListeningSocket(optarg);
-		break;
+#	endif // ENABLE_DEPRECATED_OPTIONS
 
 	case 'P':
 
 		defaultport = optarg;
 		break;
 
-	default:
+	case 'L':
 
+		addListeningSocket(optarg);
+		break;
+
+	default:
 		break;
 	}
 
@@ -1498,8 +1571,13 @@ int setupListeningSockets()
 	// maxsocket results from first pass parsing the arguments
 	if (!maxsockets)
 	{
+#		ifdef ENABLE_DEPRECATED_OPTIONS
 		if (haveIPv6Stack && (v6required || !v4required)) addListeningSocket("::");
 		if (haveIPv4Stack && (v4required || !v6required)) addListeningSocket("0.0.0.0");
+#		else // !ENABLE_DEPRECATED_OPTIONS
+		if (haveIPv6Stack) addListeningSocket("::");
+		if (haveIPv4Stack) addListeningSocket("0.0.0.0");
+#		endif // !ENABLE_DEPRECATED_OPTIONS
 	}
 
 	if (!numsockets)
@@ -1510,7 +1588,7 @@ int setupListeningSockets()
 
 	return 0;
 }
-#endif // !defined(NO_SOCKETS) && !defined(USE_MSRPC)
+#endif // !defined(NO_SOCKETS) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 
 
 int server_main(int argc, CARGV argv)
@@ -1566,7 +1644,7 @@ int newmain()
 	#endif // USE_MSRPC
 
 	// Windows can never daemonize
-	nodaemon = 1;
+	//nodaemon = 1;
 
 	#else // __CYGWIN__
 
@@ -1585,7 +1663,9 @@ int newmain()
 	{
 		InetdMode = 1;
 		nodaemon = 1;
+		#ifndef SIMPLE_SOCKETS
 		maxsockets = 0;
+		#endif // SIMPLE_SOCKETS
 		#ifndef NO_LOG
 		logstdout = 0;
 		#endif // NO_LOG
@@ -1614,9 +1694,13 @@ int newmain()
 	#if !defined(NO_SOCKETS) && !defined(USE_MSRPC)
 	if (!InetdMode)
 	{
+		#ifdef SIMPLE_SOCKETS
+		if ((error = listenOnAllAddresses())) return error;
+		#else // !SIMPLE_SOCKETS
 		if ((error = setupListeningSockets())) return error;
+		#endif // !SIMPLE_SOCKETS
 	}
-	#endif // NO_SOCKETS
+	#endif // !defined(NO_SOCKETS) && !defined(USE_MSRPC)
 
 	// After sockets have been set up, we may switch to a lower privileged user
 	#if !defined(_WIN32) && !defined(NO_USER_SWITCH)
@@ -1625,16 +1709,25 @@ int newmain()
 	if (!IsRestarted)
 	{
 	#endif // NO_SIGHUP
-		if (gid != INVALID_GID && setgid(gid))
+		if (gid != INVALID_GID)
 		{
-			printerrorf("Fatal: setgid for %s failed.\n", gname);
-			return !0;
+			if (setgid(gid))
+			{
+				printerrorf("Fatal: %s for %s failed: %s\n", "setgid", gname, strerror(errno));
+				return errno;
+			}
+
+			if (setgroups(1, &gid))
+			{
+				printerrorf("Fatal: %s for %s failed: %s\n", "setgroups", gname, strerror(errno));
+				return errno;
+			}
 		}
 
 		if (uid != INVALID_UID && setuid(uid))
 		{
-			printerrorf("Fatal: setuid for %s failed.\n", uname);
-			return !0;
+			printerrorf("Fatal: %s for %s failed: %s\n", "setuid", uname, strerror(errno));
+			return errno;
 		}
 	#ifndef NO_SIGHUP
 	}

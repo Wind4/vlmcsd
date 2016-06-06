@@ -29,7 +29,14 @@ __stdcall BOOL KmsCallBack(const REQUEST *const baseRequest, RESPONSE *const bas
 
 int main(int argc, char** argv)
 {
-	printf("libvlmcs-test.c: Program start\n");
+	int version = GetLibKmsVersion();
+
+	if (version < 0x30001)
+	{
+		fprintf(stderr, "KMS library version %u.%u or greater required\n", (unsigned int)(version >> 16), (unsigned int)(version & 0xffff));
+	}
+
+	printf("%s: Program start\n", GetEmulatorVersion());
 	StartKmsServer(1688, KmsCallBack);
 	return 0;
 }

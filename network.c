@@ -207,8 +207,88 @@ SOCKET connectToAddress(const char *const addr, const int AddressFamily, int_fas
 	return s;
 }
 
+// fix for lame tomato toolchain
+#	if !defined(IPV6_V6ONLY) && defined(__linux__)
+#	define IPV6_V6ONLY (26)
+#	endif // !defined(IPV6_V6ONLY) && defined(__linux__)
+
 
 #ifndef NO_SOCKETS
+#ifdef SIMPLE_SOCKETS
+
+static int_fast8_t allowSocketReuse(SOCKET s)
+{
+#	if !defined(_WIN32) && !defined(__CYGWIN__)
+	BOOL socketOption = TRUE;
+#	else // _WIN32
+	BOOL socketOption = FALSE;
+#	endif // _WIN32
+
+	if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (sockopt_t)&socketOption, sizeof(socketOption)))
+	{
+#		ifdef _PEDANTIC
+		printerrorf("Warning: %s does not support socket option SO_REUSEADDR: %s\n", ipstr, vlmcsd_strerror(socket_errno));
+#		endif // _PEDANTIC
+	}
+
+	return 0;
+}
+
+
+int listenOnAllAddresses()
+{
+	uint32_t port_listen;
+
+	if (!stringToInt(defaultport, 1, 65535, &port_listen))
+	{
+		printerrorf("Fatal: Port must be numeric between 1 and 65535.\n");
+		exit(!0);
+	}
+
+	struct sockaddr_in6 addr;
+	memset(&addr, 0, sizeof(addr));
+	addr.sin6_family = AF_INET6;
+	addr.sin6_port = BE16((uint16_t)port_listen);
+	addr.sin6_addr = in6addr_any;
+	BOOL v6only = FALSE;
+
+	s_server = socket(AF_INET6, SOCK_STREAM, 0);
+
+	if (s_server == INVALID_SOCKET
+			|| allowSocketReuse(s_server)
+			|| setsockopt(s_server, IPPROTO_IPV6, IPV6_V6ONLY, (sockopt_t)&v6only, sizeof(v6only))
+			|| bind(s_server, (struct sockaddr *)&addr, sizeof(addr))
+			|| listen(s_server, SOMAXCONN) )
+	{
+		socketclose(s_server);
+		struct sockaddr_in addr = {
+				.sin_family = AF_INET,
+				.sin_port   = BE16((uint16_t)port_listen),
+		};
+
+		addr.sin_addr.s_addr = BE32(INADDR_ANY);
+		s_server = socket(AF_INET, SOCK_STREAM, 0);
+
+		if ( s_server == INVALID_SOCKET
+				|| allowSocketReuse(s_server)
+				|| bind(s_server, (struct sockaddr *)&addr, sizeof(addr))
+				|| listen(s_server, SOMAXCONN) )
+		{
+			int error = socket_errno;
+			printerrorf("Fatal: Cannot bind to TCP port %u: %s\n", port_listen, vlmcsd_strerror(error));
+			return error;
+		}
+	}
+
+	#ifndef NO_LOG
+	logger("Listening on TCP port %u\n", port_listen);
+	#endif // NO_LOG
+
+	return 0;
+}
+
+#else // !SIMPLE_SOCKETS
+
 
 // Create a Listening socket for addrinfo sa and return socket s
 // szHost and szPort are for logging only
@@ -249,20 +329,67 @@ static int listenOnAddress(const struct addrinfo *const ai, SOCKET *s)
 
 	BOOL socketOption = TRUE;
 
-	// fix for lame tomato toolchain
-#	ifndef IPV6_V6ONLY
-#	ifdef __linux__
-#	define IPV6_V6ONLY (26)
-#	endif // __linux__
-#	endif // IPV6_V6ONLY
-
 #	ifdef IPV6_V6ONLY
-	if (ai->ai_family == AF_INET6) setsockopt(*s, IPPROTO_IPV6, IPV6_V6ONLY, (sockopt_t)&socketOption, sizeof(socketOption));
+	if (ai->ai_family == AF_INET6 && setsockopt(*s, IPPROTO_IPV6, IPV6_V6ONLY, (sockopt_t)&socketOption, sizeof(socketOption)))
+	{
+#		ifdef _PEDANTIC
+#		if defined(_WIN32) || defined(__CYGWIN__)
+//		if (IsWindowsVistaOrGreater()) //Doesn't work with older version of MingW32-w64 toolchain
+	    if ((GetVersion() & 0xff) > 5)
+#		endif // _WIN32
+		printerrorf("Warning: %s does not support socket option IPV6_V6ONLY: %s\n", ipstr, vlmcsd_strerror(socket_errno));
+#		endif // _PEDANTIC
+	}
 #	endif
 
 #	ifndef _WIN32
-	setsockopt(*s, SOL_SOCKET, SO_REUSEADDR, (sockopt_t)&socketOption, sizeof(socketOption));
-#	endif
+	if (setsockopt(*s, SOL_SOCKET, SO_REUSEADDR, (sockopt_t)&socketOption, sizeof(socketOption)))
+	{
+#		ifdef _PEDANTIC
+		printerrorf("Warning: %s does not support socket option SO_REUSEADDR: %s\n", ipstr, vlmcsd_strerror(socket_errno));
+#		endif // _PEDANTIC
+	}
+#	endif // _WIN32
+
+#	if HAVE_FREEBIND
+#	if (defined(IP_NONLOCALOK) || __FreeBSD_kernel__ || __FreeBSD__) && !defined(IPV6_BINDANY)
+#	define IPV6_BINDANY 64
+#	endif // (defined(IP_NONLOCALOK) || __FreeBSD_kernel__ || __FreeBSD__) && !defined(IPV6_BINDANY)
+
+	if (freebind)
+	{
+#		if defined(IP_FREEBIND) // Linux
+		if (setsockopt(*s, IPPROTO_IP, IP_FREEBIND, (sockopt_t)&socketOption, sizeof(socketOption)))
+		{
+			printerrorf("Warning: Cannot use FREEBIND on %s: %s\n", ipstr, vlmcsd_strerror(socket_errno));
+		}
+#		endif // defined(IP_FREEBIND)
+
+#		if defined(IP_BINDANY) // FreeBSD IPv4
+		if (ai->ai_family == AF_INET && setsockopt(*s, IPPROTO_IP, IP_BINDANY, (sockopt_t)&socketOption, sizeof(socketOption)))
+		{
+			printerrorf("Warning: Cannot use BINDANY on %s: %s\n", ipstr, vlmcsd_strerror(socket_errno));
+		}
+#		endif // defined(IP_BINDANY)
+
+#		if defined(IPV6_BINDANY) // FreeBSD IPv6
+		if (ai->ai_family == AF_INET6 && setsockopt(*s, IPPROTO_IP, IPV6_BINDANY, (sockopt_t)&socketOption, sizeof(socketOption)))
+		{
+#			ifdef _PEDANTIC // FreeBSD defines the symbol but doesn't have BINDANY in IPv6 (Kame stack doesn't have it)
+			printerrorf("Warning: Cannot use BINDANY on %s: %s\n", ipstr, vlmcsd_strerror(socket_errno));
+#			endif
+		}
+#		endif // defined(IPV6_BINDANY)
+
+#		if defined(IP_NONLOCALOK) && !defined(IP_BINDANY) // FreeBSD with GNU userspace IPv4
+		if (ai->ai_family == AF_INET && setsockopt(*s, IPPROTO_IP, IP_NONLOCALOK, (sockopt_t)&socketOption, sizeof(socketOption)))
+		{
+			printerrorf("Warning: Cannot use BINDANY on %s: %s\n", ipstr, vlmcsd_strerror(socket_errno));
+		}
+#		endif // defined(IP_NONLOCALOK) && !defined(IP_BINDANY)
+	}
+
+#	endif // HAVE_FREEBIND
 
 	if (bind(*s, ai->ai_addr, ai->ai_addrlen) || listen(*s, SOMAXCONN))
 	{
@@ -278,7 +405,6 @@ static int listenOnAddress(const struct addrinfo *const ai, SOCKET *s)
 
 	return 0;
 }
-
 
 // Adds a listening socket for an address string,
 // e.g. 127.0.0.1:1688 or [2001:db8:dead:beef::1]:1688
@@ -366,10 +492,18 @@ static SOCKET network_accept_any()
     else
         return accept(sock, NULL, NULL);
 }
+#endif // !SIMPLE_SOCKETS
 
 
 void closeAllListeningSockets()
 {
+#	ifdef SIMPLE_SOCKETS
+
+	shutdown(s_server, VLMCSD_SHUT_RDWR);
+	socketclose(s_server);
+
+#	else // !SIMPLE_SOCKETS
+
 	int i;
 
 	for (i = 0; i < numsockets; i++)
@@ -377,6 +511,8 @@ void closeAllListeningSockets()
 		shutdown(SocketList[i], VLMCSD_SHUT_RDWR);
 		socketclose(SocketList[i]);
 	}
+
+	#endif // !SIMPLE_SOCKETS
 }
 #endif // NO_SOCKETS
 
@@ -641,13 +777,16 @@ int runServer()
 		return 0;
 	}
 
-	// Standalone mode
 	for (;;)
 	{
 		int error;
 		SOCKET s_client;
 
+		#ifdef SIMPLE_SOCKETS
+		if ( (s_client = accept(s_server, NULL, NULL)) == INVALID_SOCKET )
+		#else // Standalone mode fully featured sockets
 		if ( (s_client = network_accept_any()) == INVALID_SOCKET )
+		#endif // Standalone mode fully featured sockets
 		{
 			error = socket_errno;
 

@@ -46,7 +46,10 @@ static void CreateRequestBase(REQUEST *Request);
 
 
 // KMS Parameters
+#ifndef NO_VERBOSE_LOG
 static int_fast8_t verbose = FALSE;
+#endif
+
 static int_fast8_t VMInfo = FALSE;
 static int_fast8_t dnsnames = TRUE;
 static int FixedRequests = 0;
@@ -160,7 +163,9 @@ __noreturn static void clientUsage(const char* const programName)
 
 		"Options:\n\n"
 
+#		ifndef NO_VERBOSE_LOG
 		"  -v Be verbose\n"
+#		endif
 		"  -l <app>\n"
 		"  -4 Force V4 protocol\n"
 		"  -5 Force V5 protocol\n"
@@ -170,7 +175,8 @@ __noreturn static void clientUsage(const char* const programName)
 #		endif // USE_MSRPC
 		"  -e Show some valid examples\n"
 		"  -x Show valid Apps\n"
-		"  -d no DNS names, use Netbios names (no effect if -w is used)\n\n"
+		"  -d no DNS names, use Netbios names (no effect if -w is used)\n"
+		"  -V show version information and exit\n\n"
 
 		"Advanced options:\n\n"
 
@@ -420,7 +426,7 @@ static BOOL findLicensePackByName(const char* const name, LicensePack* const lp)
 	#endif // Both Lists are available
 }
 
-static const char* const client_optstring = "+N:B:i:l:a:s:k:c:w:r:n:t:g:G:o:pPTv456mexd";
+static const char* const client_optstring = "+N:B:i:l:a:s:k:c:w:r:n:t:g:G:o:pPTv456mexdV";
 
 
 //First pass. We handle only "-l". Since -a -k -s -4 -5 and -6 are exceptions to -l, we process -l first
@@ -584,10 +590,14 @@ static void parseCommandLinePass2(const char *const programName, const int argc,
 				dnsnames = FALSE;
 				break;
 
+#			ifndef NO_VERBOSE_LOG
+
 			case 'v': // Be verbose
 
 				verbose = TRUE;
 				break;
+
+#			endif // NO_VERBOSE_LOG
 
 			case 'm': // Pretend to be a virtual machine
 
@@ -623,6 +633,21 @@ static void parseCommandLinePass2(const char *const programName, const int argc,
 				incompatibleOptions |= VLMCS_OPTION_NO_GRAB_INI;
 				break;
 
+#			ifndef NO_VERSION_INFORMATION
+
+			case 'V':
+#				if defined(__s390__) && !defined(__zarch__) && !defined(__s390x__)
+				printf("vlmcs %s %i-bit\n", Version, sizeof(void*) == 4 ? 31 : (int)sizeof(void*) << 3);
+#				else
+				printf("vlmcs %s %i-bit\n", Version, (int)sizeof(void*) << 3);
+#				endif // defined(__s390__) && !defined(__zarch__) && !defined(__s390x__)
+				printPlatform();
+				printCommonFlags();
+				printClientFlags();
+				exit(0);
+
+#			endif // NO_VERSION_INFORMATION
+
 			default:
 				clientUsage(programName);
 	}
@@ -651,8 +676,10 @@ static void checkRpcLevel(const REQUEST* request, RESPONSE* response)
 	if (UseRpcBTFN && UseRpcNDR64 && RpcFlags.HasNDR64 && !RpcFlags.HasBTFN)
 		errorout("\nWARNING: Server's RPC protocol has NDR64 but no BTFN.\n");
 
+#	ifndef NO_BASIC_PRODUCT_LIST
 	if (!IsEqualGuidLEHE(&request->KMSID, &ProductList[15].guid) && UseRpcBTFN && !RpcFlags.HasBTFN)
 		errorout("\nWARNING: A server with pre-Vista RPC activated a product other than Office 2010.\n");
+#	endif // NO_BASIC_PRODUCT_LIST
 }
 #endif // USE_MSRPC
 
@@ -690,7 +717,9 @@ static void displayResponse(const RESPONSE_RESULT result, const REQUEST* request
 	}
 
 	// Read KMSPID from Response
+#	ifndef NO_VERBOSE_LOG
 	if (!verbose)
+#	endif // NO_VERBOSE_LOG
 	{
 		printf(" -> %s", ePID);
 
@@ -705,6 +734,7 @@ static void displayResponse(const RESPONSE_RESULT result, const REQUEST* request
 
 		printf("\n");
 	}
+#	ifndef NO_VERBOSE_LOG
 	else
 	{
 		printf(
@@ -715,6 +745,7 @@ static void displayResponse(const RESPONSE_RESULT result, const REQUEST* request
 		logResponseVerbose(ePID, hwid, response, &printf);
 		printf("\n");
 	}
+#	endif // NO_VERBOSE_LOG
 }
 
 
@@ -760,6 +791,7 @@ static void connectRpc(RpcCtx *s)
 
 		if (!NoSrvRecordPriority) sortSrvRecords(serverlist, numServers);
 
+#		ifndef NO_VERBOSE_LOG
 		if (verbose /*&& !ServerListAlreadyPrinted*/)
 		{
 			for (i = 0; i < numServers; i++)
@@ -775,6 +807,7 @@ static void connectRpc(RpcCtx *s)
 			printf("\n");
 			//ServerListAlreadyPrinted = TRUE;
 		}
+#		endif // NO_VERBOSE_LOG
 	}
 	else // Just use the server supplied on the command line
 	{
@@ -794,16 +827,21 @@ static void connectRpc(RpcCtx *s)
 
 		if (*s == INVALID_RPCCTX) continue;
 
-		if (verbose)
-			printf("\nPerforming RPC bind ...\n");
+#		ifndef NO_VERBOSE_LOG
+		if (verbose) printf("\nPerforming RPC bind ...\n");
 
 		if (rpcBindClient(*s, verbose))
+#		else
+		if (rpcBindClient(*s, FALSE))
+#		endif
 		{
 			errorout("Warning: Could not bind RPC\n");
 			continue;
 		}
 
+#		ifndef NO_VERBOSE_LOG
 		if (verbose) printf("... successful\n");
+#		endif
 
 		return;
 	}
@@ -1298,13 +1336,14 @@ static void CreateRequestBase(REQUEST *Request)
 		Request->WorkstationName[size] = 0;
 	}
 
-	//Show Details
+#	ifndef NO_VERBOSE_LOG
 	if (verbose)
 	{
 		printf("\nRequest Parameters\n==================\n\n");
 		logRequestVerbose(Request, &printf);
 		printf("\n");
 	}
+#	endif // NO_VERBOSE_LOG
 }
 
 

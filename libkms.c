@@ -7,9 +7,13 @@
 #endif // CONFIG
 #include CONFIG
 
+#ifdef EXTERNAL
+#undef EXTERNAL
+#endif
+
 #define EXTERNAL dllexport
 
-#define DLLVERSION 0x30000
+#define DLLVERSION 0x30001
 
 #include "libkms.h"
 #include "shared_globals.h"
@@ -23,6 +27,10 @@
 #include <errno.h>
 #include <netinet/in.h>
 #endif // WIN32
+
+#ifdef IS_LIBRARY
+char ErrorMessage[MESSAGE_BUFFER_SIZE];
+#endif // IS_LIBRARY
 
 static int_fast8_t IsServerStarted = FALSE;
 
@@ -42,6 +50,7 @@ EXTERNC __declspec(EXTERNAL) DWORD __cdecl SendActivationRequest
 
 EXTERNC __declspec(EXTERNAL) DWORD __cdecl StartKmsServer(const int port, RequestCallback_t requestCallback)
 {
+#ifndef SIMPLE_SOCKETS
 	char listenAddress[64];
 
 	if (IsServerStarted) return !0;
@@ -97,6 +106,39 @@ EXTERNC __declspec(EXTERNAL) DWORD __cdecl StartKmsServer(const int port, Reques
 
 	IsServerStarted = FALSE;
 	return 0;
+
+#	else // SIMPLE_SOCKETS
+
+	if (IsServerStarted) return !0;
+	int error;
+
+#	ifdef _WIN32
+#	ifndef USE_MSRPC
+	// Windows Sockets must be initialized
+	WSADATA wsadata;
+
+	if ((error = WSAStartup(0x0202, &wsadata)))
+	{
+		return error;
+	}
+#	endif // USE_MSRPC
+#	endif // _WIN32
+
+	defaultport = vlmcsd_malloc(16);
+	snprintf((char*)defaultport, (size_t)16, "%i", port);
+
+	CreateResponseBase = requestCallback;
+	error = listenOnAllAddresses();
+	if (error) return error;
+
+	IsServerStarted = TRUE;
+	runServer();
+	IsServerStarted = FALSE;
+
+	return 0;
+
+
+#	endif // SIMPLE_SOCKETS
 }
 
 
@@ -105,7 +147,11 @@ EXTERNC __declspec(EXTERNAL) DWORD __cdecl StopKmsServer()
 	if (!IsServerStarted) return !0;
 
 	closeAllListeningSockets();
+
+#	ifndef SIMPLE_SOCKETS
 	if (SocketList) free(SocketList);
+#	endif
+
 	return 0;
 }
 
@@ -113,5 +159,11 @@ EXTERNC __declspec(EXTERNAL) DWORD __cdecl StopKmsServer()
 EXTERNC __declspec(EXTERNAL) int __cdecl GetLibKmsVersion()
 {
 	return DLLVERSION;
+}
+
+
+EXTERNC __declspec(EXTERNAL) const char* const __cdecl GetEmulatorVersion()
+{
+	return VERSION;
 }
 

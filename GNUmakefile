@@ -5,7 +5,10 @@
 PROGRAM_NAME ?= vlmcsd
 CLIENT_NAME ?= vlmcs
 MULTI_NAME ?= vlmcsdmulti
+OBJ_NAME ?= libkms-static.o
+A_NAME ?= libkms.a
 CONFIG ?= config.h
+COMPILER_LANGUAGE ?= c
 
 # crypto library to use for standard algos, could save ~1-2kb ;)
 # can be either 'openssl', 'polarssl' or anything other for internal impl
@@ -34,49 +37,72 @@ endif
 ifneq (,$(findstring androideabi,$(TARGETPLATFORM)))
   ANDROID := 1
   UNIX := 1
+  ELF := 1
 endif
 
 ifneq (,$(findstring minix,$(TARGETPLATFORM)))
   MINIX := 1
   UNIX := 1
+  ELF := 1
 endif
 
 ifneq (,$(findstring mingw,$(TARGETPLATFORM)))
   MINGW := 1
   WIN := 1
+  PE := 1 
 endif
 
 ifneq (,$(findstring cygwin,$(TARGETPLATFORM)))
   CYGWIN := 1
   WIN := 1
+  PE := 1
+endif
+
+ifneq (,$(findstring cygnus,$(TARGETPLATFORM)))
+  CYGWIN := 1
+  WIN := 1
+  PE := 1
 endif
 
 ifneq (,$(findstring freebsd,$(TARGETPLATFORM)))
   FREEBSD := 1
   UNIX := 1
   BSD := 1
+  ELF := 1
 endif
 
 ifneq (,$(findstring netbsd,$(TARGETPLATFORM)))
   NETBSD := 1
   UNIX := 1
   BSD := 1
+  ELF := 1
 endif
 
 ifneq (,$(findstring openbsd,$(TARGETPLATFORM)))
   OPENBSD := 1
   UNIX := 1
   BSD := 1
+  ELF := 1
 endif
 
 ifneq (,$(findstring solaris,$(TARGETPLATFORM)))
   SOLARIS := 1
   UNIX := 1
+  ELF := 1
 endif
 
 ifneq (,$(findstring linux,$(TARGETPLATFORM)))
   LINUX := 1
   UNIX := 1
+  ELF := 1
+endif
+
+ifneq (,$(findstring gnu,$(TARGETPLATFORM)))
+ifeq (,$(findstring linux,$(TARGETPLATFORM)))
+  UNIX := 1
+  HURD := 1
+  ELF := 1
+endif
 endif
 
 ifeq ($(CYGWIN),1)
@@ -89,11 +115,24 @@ else
   DLL_NAME ?= libkms.so
 endif
 
-BASECFLAGS = -DCONFIG=\"$(CONFIG)\" -DBUILD_TIME=$(shell date '+%s') -g -Os -fno-strict-aliasing -fomit-frame-pointer -ffunction-sections -fdata-sections
+BASECFLAGS = -DVLMCSD_COMPILER=\"$(notdir $(CC))\" -DVLMCSD_PLATFORM=\"$(TARGETPLATFORM)\" -DCONFIG=\"$(CONFIG)\" -DBUILD_TIME=$(shell date '+%s') -g -Os -fno-strict-aliasing -fomit-frame-pointer -ffunction-sections -fdata-sections
 BASELDFLAGS = 
 STRIPFLAGS =
 CLIENTLDFLAGS =
 SERVERLDFLAGS =
+
+ifndef SAFE_MODE
+  BASECFLAGS += -fvisibility=hidden -pipe -fno-common -fno-exceptions -fno-stack-protector -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants
+  
+  ifeq ($(ELF),1)
+    BASELDFLAGS += -Wl,-z,norelro
+  endif
+
+  ifneq (,$(findstring gcc,$(notdir $(CC))))
+    BASECFLAGS += -flto
+  endif
+
+endif
 
 ifeq ($(NOLIBS),1)
   NOLRESOLV=1
@@ -105,20 +144,24 @@ ifneq ($(NO_DNS),1)
   ifneq ($(NOLRESOLV),1)
 
     ifeq ($(MINGW),1)
-      BASELDFLAGS += -ldnsapi
+      CLIENTLDFLAGS += -ldnsapi
     endif
 
     ifeq ($(LINUX),1)
-      BASELDFLAGS += -lresolv
+      CLIENTLDFLAGS += -lresolv
+    endif
+
+    ifeq ($(HURD),1)
+      CLIENTLDFLAGS += -lresolv
     endif
 
     ifeq ($(DARWIN),1)
-      BASELDFLAGS += -lresolv
+      CLIENTLDFLAGS += -lresolv
     endif
 
     ifeq ($(CYGWIN),1)
       DNS_PARSER := internal
-      BASELDFLAGS += -lresolv
+      CLIENTLDFLAGS += -lresolv
     endif
 
     ifeq ($(OPENBSD),1)
@@ -126,7 +169,7 @@ ifneq ($(NO_DNS),1)
     endif
 
     ifeq ($(SOLARIS),1)
-      BASELDFLAGS += -lresolv
+      CLIENTLDFLAGS += -lresolv
     endif
 
   endif
@@ -155,16 +198,18 @@ else
   STRIPFLAGS += -s
 endif
 
+LIBRARY_CFLAGS = -DSIMPLE_SOCKETS -DNO_TIMEOUT -DNO_SIGHUP -DNO_CL_PIDS -DNO_EXTENDED_PRODUCT_LIST -DNO_BASIC_PRODUCT_LIST -DNO_LOG -DNO_RANDOM_EPID -DNO_INI_FILE -DNO_INI_FILE -DNO_HELP -DNO_CUSTOM_INTERVALS -DNO_PID_FILE -DNO_USER_SWITCH -DNO_VERBOSE_LOG -DNO_LIMIT -DNO_VERSION_INFORMATION
+
 ifeq ($(FEATURES), embedded)
-  BASECFLAGS += -DNO_HELP -DNO_USER_SWITCH -DNO_BASIC_PRODUCT_LIST -DNO_CUSTOM_INTERVALS -DNO_PID_FILE -DNO_VERBOSE_LOG
+  BASECFLAGS += -DNO_HELP -DNO_USER_SWITCH -DNO_BASIC_PRODUCT_LIST -DNO_CUSTOM_INTERVALS -DNO_PID_FILE -DNO_VERBOSE_LOG -DNO_VERSION_INFORMATION
 else ifeq ($(FEATURES), autostart)
-  BASECFLAGS += -DNO_HELP 
+  BASECFLAGS += -DNO_HELP -DNO_VERSION_INFORMATION
 else ifeq ($(FEATURES), minimum)
-  BASECFLAGS += -DNO_TIMEOUT -DNO_SIGHUP -DNO_CL_PIDS -DNO_EXTENDED_PRODUCT_LIST -DNO_BASIC_PRODUCT_LIST -DNO_LOG -DNO_RANDOM_EPID -DNO_INI_FILE -DNO_INI_FILE -DNO_HELP -DNO_CUSTOM_INTERVALS -DNO_PID_FILE -DNO_USER_SWITCH -DNO_VERBOSE_LOG -DNO_LIMIT
+  BASECFLAGS += $(LIBRARY_CFLAGS)
 else ifeq ($(FEATURES), most)
   BASECFLAGS += -DNO_SIGHUP -DNO_PID_FILE -DNO_LIMIT
 else ifeq ($(FEATURES), inetd)
-  BASECFLAGS += -DNO_SIGHUP -DNO_SOCKETS -DNO_PID_FILE -DNO_LIMIT
+  BASECFLAGS += -DNO_SIGHUP -DNO_SOCKETS -DNO_PID_FILE -DNO_LIMIT -DNO_VERSION_INFORMATION
 else ifeq ($(FEATURES), fixedepids)
   BASECFLAGS += -DNO_SIGHUP -DNO_CL_PIDS -DNO_RANDOM_EPID -DNO_INI_FILE
 endif
@@ -202,7 +247,7 @@ ifdef HWID
 endif
 
 ifdef TERMINAL_WIDTH
-  BASECFLAGS += -DTERMINAL_FIXED_WIDTH=$(TERMINAL_WIDTH)
+  BASECFLAGS += -DTERMINAL_FIXED_WIDTH=$(TERMINAL_WIDTH) -DDISPLAY_WIDTH=\"$(TERMINAL_WIDTH)\"
 endif
 
 ifeq ($(NOPROCFS), 1)
@@ -216,13 +261,15 @@ endif
 ifneq ($(ANDROID), 1)
 ifneq ($(MINIX), 1)
 ifneq ($(NOLPTHREAD), 1)
-  ifeq ($(findstring NO_LIMIT,$(CFLAGS) $(BASECFLAGS)),)
-    BASELDFLAGS += -lpthread
+
+  ifeq ($(THREADS), 1)
+    SERVERLDFLAGS += -lpthread
+  endif
+  
+  ifeq (,$(findstring NO_LIMIT,$(CFLAGS) $(BASECFLAGS)))  
+    SERVERLDFLAGS += -lpthread
   endif
 
-  ifneq ($(findstring USE_THREADS,$(BASECFLAGS)),)
-    BASELDFLAGS += -lpthread
-  endif
 endif
 endif
 endif
@@ -283,6 +330,7 @@ ifeq ($(MSRPC),1)
   VLMCSD_SRCS += msrpc-server.c
   VLMCS_SRCS += msrpc-client.c
   MULTI_SRCS += msrpc-server.c msrpc-client.c
+  DLL_SRCS += msrpc-server.c
   BASECFLAGS += -DUSE_MSRPC -Wno-unknown-pragmas
   BASELDFLAGS += -lrpcrt4
 else
@@ -312,7 +360,6 @@ else ifeq ($(CRYPTO), polarssl)
 else ifeq ($(CRYPTO), windows)
 	BASECFLAGS += -D_CRYPTO_WINDOWS
 	SRCS += crypto_windows.c
-	#BASELDFLAGS += -lpolarssl
 else
 	BASECFLAGS += -D_CRYPTO_INTERNAL
 	SRCS += crypto_internal.c
@@ -332,9 +379,12 @@ endif
 
 ifeq ($(VERBOSE),3)
     COMPILER := $(shell printf "%-40s" $(notdir $(CC)))
+    ARCHIVER := $(shell printf "%-40s" $(notdir $(AR)))
 endif
 
-ifeq ($(CAT),2)
+ARCMD := AR
+
+ifdef CAT
     LDCMD := CC/LD
 else
     LDCMD := LD    
@@ -344,99 +394,96 @@ endif
 
 %.o: %.c 
   ifeq ($(VERBOSE),1)
-	$(CC) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(PLATFORMFLAGS) -c $<
+	$(CC) -x$(COMPILER_LANGUAGE) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(PLATFORMFLAGS) -c $<
   ifeq ($(DEPENDENCIES),1)
-	$(CC) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(PLATFORMFLAGS) -MM -MF $*.d $<
+	$(CC) -x$(COMPILER_LANGUAGE) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(PLATFORMFLAGS) -MM -MF $*.d $<
   endif
   else
 	@echo "$(COMPILER)	CC	$@ <- $<"
-	@$(CC) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(PLATFORMFLAGS) -c $<
+	@$(CC) -x$(COMPILER_LANGUAGE) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(PLATFORMFLAGS) -c $<
   ifeq ($(DEPENDENCIES),1)
 	@echo "$(COMPILER)	DEP     $*.d <- $<"
-	@$(CC) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(PLATFORMFLAGS) -MM -MF $*.d $<
+	@$(CC) -x$(COMPILER_LANGUAGE) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(PLATFORMFLAGS) -MM -MF $*.d $<
   endif
-  endif
-
-vlmcsd_all.c: $(VLMCSD_SRCS)
-  ifeq ($(VERBOSE),1)
-	cat $^ > $@
-  else
-	@echo "$(COMPILER)	CAT	$@ <- $^"
-	@cat $^ > $@
-  endif
-
-vlmcs_all.c: $(VLMCS_SRCS)
-  ifeq ($(VERBOSE),1)
-	cat $^ > $@
-  else
-	@echo "$(COMPILER)	CAT	$@ <- $^"
-	@cat $^ > $@
-  endif
-
-vlmcsdmulti_all.c: $(MULTI_SRCS)
-  ifeq ($(VERBOSE),1)
-	cat $^ > $@
-  else
-	@echo "$(COMPILER)	CAT	$@ <- $^"
-	@cat $^ > $@
   endif
 
 ifdef CAT
-ifeq ($(CAT),2)
-$(PROGRAM_NAME): vlmcsd_all.c
+  BUILDCOMMAND = cat $^ | $(CC) -x$(COMPILER_LANGUAGE) -o $@ -
+  VLMCSD_PREREQUISITES = $(VLMCSD_SRCS)
+  VLMCS_PREREQUISITES = $(VLMCS_SRCS)
+  MULTI_PREREQUISITES = $(MULTI_SRCS)
+  DLL_PREREQUISITES = $(DLL_SRCS)
+  OBJ_PREREQUISITES = $(DLL_SRCS)
 else
-$(PROGRAM_NAME): vlmcsd_all.o
+  BUILDCOMMAND = $(CC) -o $@ $^
+  VLMCSD_PREREQUISITES = $(VLMCSD_OBJS)
+  VLMCS_PREREQUISITES = $(VLMCS_OBJS)
+  MULTI_PREREQUISITES = $(MULTI_OBJS)
+  DLL_PREREQUISITES = $(DLL_OBJS)
+  OBJ_PREREQUISITES = $(DLL_OBJS)
 endif
+
+ifeq ($(VERBOSE),1)
+  BUILDCOMMANDPREFIX = +
 else
-$(PROGRAM_NAME): $(VLMCSD_OBJS)
+  BUILDCOMMANDPREFIX = +@
 endif
-  ifeq ($(VERBOSE),1)
-	+$(CC) -o $@ $^ $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(BASELDFLAGS) $(LDFLAGS)
-  else
-	+@echo "$(COMPILER)	$(LDCMD)	$@ <- $^"
-	+@$(CC) -o $@ $^ $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(BASELDFLAGS) $(LDFLAGS)
+
+INFOCOMMAND = +@echo "$(COMPILER)	$(LDCMD)	$@ <- $^"
+ARINFOCOMMAND = +@echo "$(ARCHIVER)	$(ARCMD)	$@ <. $^"
+
+VLMCSD_COMMAND = $(BUILDCOMMANDPREFIX)$(BUILDCOMMAND) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(BASELDFLAGS) $(LDFLAGS) $(SERVERLDFLAGS)
+VLMCS_COMMAND = $(BUILDCOMMANDPREFIX)$(BUILDCOMMAND) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(BASELDFLAGS) $(LDFLAGS) $(CLIENTLDFLAGS)
+MULTI_COMMAND = $(BUILDCOMMANDPREFIX)$(BUILDCOMMAND) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(BASELDFLAGS) $(LDFLAGS) $(CLIENTLDFLAGS) $(SERVERLDFLAGS)
+DLL_COMMAND = $(BUILDCOMMANDPREFIX)$(BUILDCOMMAND) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(BASELDFLAGS) $(LDFLAGS) $(SERVERLDFLAGS) -fvisibility=hidden -shared -DIS_LIBRARY=1 $(LIBRARY_CFLAGS) -UNO_SOCKETS -UUSE_MSRPC
+OBJ_COMMAND = $(BUILDCOMMANDPREFIX)$(BUILDCOMMAND) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(BASELDFLAGS) $(LDFLAGS) $(SERVERLDFLAGS) -fvisibility=hidden -c -DIS_LIBRARY=1 $(LIBRARY_CFLAGS) -UNO_SOCKETS -UUSE_MSRPC
+  
+$(PROGRAM_NAME): $(VLMCSD_PREREQUISITES)
+  ifneq ($(VERBOSE),1)
+	$(INFOCOMMAND)
   endif
+	$(VLMCSD_COMMAND)
+
+$(CLIENT_NAME): $(VLMCS_PREREQUISITES)
+  ifneq ($(VERBOSE),1)
+	$(INFOCOMMAND)
+  endif
+	$(VLMCS_COMMAND)
+
+$(MULTI_NAME): $(MULTI_PREREQUISITES)
+  ifneq ($(VERBOSE),1)
+	$(INFOCOMMAND)
+  endif
+	$(MULTI_COMMAND)
+
+$(DLL_NAME): $(DLL_PREREQUISITES)
+  ifneq ($(VERBOSE),1)
+	$(INFOCOMMAND)
+  endif
+	$(DLL_COMMAND)
+
+ifndef CAT
+$(OBJ_NAME):
+	+@echo Cannot make $@ without CAT defined. Please create $(A_NAME)
+else
+$(OBJ_NAME): $(OBJ_PREREQUISITES)
+  ifneq ($(VERBOSE),1)
+	$(INFOCOMMAND)
+  endif
+	$(OBJ_COMMAND)
+endif
 
 ifdef CAT
-ifeq ($(CAT),2)
-$(CLIENT_NAME): vlmcs_all.c
+$(A_NAME): $(OBJ_NAME)
 else
-$(CLIENT_NAME): vlmcs_all.o
+$(A_NAME): BASECFLAGS += -fvisibility=hidden -DIS_LIBRARY=1 $(LIBRARY_CFLAGS) -UNO_SOCKETS -UUSE_MSRPC
+$(A_NAME): $(DLL_OBJS)
 endif
-else
-$(CLIENT_NAME): $(VLMCS_OBJS)
-endif
-  ifeq ($(VERBOSE),1)
-	+$(CC) -o $@ $^ $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(BASELDFLAGS) $(LDFLAGS)
-  else
-	+@echo "$(COMPILER)	$(LDCMD)	$@ <- $^"
-	+@$(CC) -o $@ $^ $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(BASELDFLAGS) $(LDFLAGS)
+  ifneq ($(VERBOSE),1)
+	$(ARINFOCOMMAND)
   endif
-
-ifdef CAT
-ifeq ($(CAT),2)
-$(MULTI_NAME): vlmcsdmulti_all.c
-else
-$(MULTI_NAME): vlmcsdmulti_all.o
-endif
-else
-$(MULTI_NAME): $(MULTI_OBJS)
-endif
-  ifeq ($(VERBOSE),1)
-	+$(CC) -o $@ $^ $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(BASELDFLAGS) $(LDFLAGS)
-  else
-	+@echo "$(COMPILER)	$(LDCMD)	$@ <- $^"
-	+@$(CC) -o $@ $^ $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(BASELDFLAGS) $(LDFLAGS)
-  endif
-
-$(DLL_NAME): $(DLL_SRCS)
-  ifeq ($(VERBOSE),1)
-	+$(CC) -o $@ $^ $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(BASELDFLAGS) $(LDFLAGS) -shared -DIS_LIBRARY=1 -UNO_SOCKETS -UUSE_MSRPC
-  else
-	+@echo "$(COMPILER)	$(LDCMD)	$@ <- $^"
-	+@$(CC) -o $@ $^ $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(BASELDFLAGS) $(LDFLAGS) -shared -DIS_LIBRARY=1 -UNO_SOCKETS -UUSE_MSRPC
-  endif
-
+	+@rm -f $@
+	$(BUILDCOMMANDPREFIX)$(AR) rcs $@ $^
 
 %.pdf : %
   ifeq ($(shell uname), Darwin)
@@ -467,10 +514,10 @@ htmldocs : $(HTMLDOCS)
 alldocs : $(UNIXDOCS) $(HTMLDOCS) $(PDFDOCS) $(DOSDOCS)
 
 clean:
-	rm -f *.o *.d *_all.c $(PROGRAM_NAME) $(MULTI_NAME) $(DLL_NAME) $(CLIENT_NAME) $(PDFDOCS) $(DOSDOCS) $(UNIXDOCS) $(HTMLDOCS)
+	rm -f *.o *.d *_all.c libkms_all_*.c $(PROGRAM_NAME) $(MULTI_NAME) $(DLL_NAME) $(CLIENT_NAME) $(PDFDOCS) $(DOSDOCS) $(UNIXDOCS) $(HTMLDOCS) $(OBJ_NAME) $(A_NAME) *.a
 
 help:
-	@echo "Type:"
+	@echo "Type"
 	@echo "    ${MAKE}          - to build $(PROGRAM_NAME) and $(CLIENT_NAME)"
 	@echo "    ${MAKE} clean    - to remove $(PROGRAM_NAME) and $(CLIENT_NAME)"
 	@echo "    ${MAKE} help     - to see this help"
@@ -485,8 +532,9 @@ help:
 	@echo "    ${MAKE} $(CLIENT_NAME) - to build the client only."
 	@echo "    ${MAKE} $(MULTI_NAME) - to build $(PROGRAM_NAME) and $(CLIENT_NAME) in a single multi-call binary"
 	@echo "    ${MAKE} $(DLL_NAME) - to build the shared library $(DLL_NAME)"
+	@echo "    ${MAKE} $(A_NAME) - to build the static library $(A_NAME)"
 	@echo ""
-	@echo "Options:"
+	@echo "Options"
 	@echo "    CONFIG=<x>                   Compile <x> as instead of config.h."
 	@echo "    INI=<x>                      Compile $(PROGRAM_NAME) with default ini file <x>"
 	@echo "    PROGRAM_NAME=<x>             Use <x> as output file name for the KMS server. Defaults to vlmcsd."
@@ -498,7 +546,10 @@ help:
 	@echo "    CRYPTO=openssl_with_aes_soft EXPERIMENTAL: Use openssl for SHA256/HMAC and AES calculations (software)."
 	@echo "    CRYPTO=polarssl              Use polarssl instead of internal crypto code for SHA256/HMAC calculations."
 	@echo "    CRYPTO=windows               Use Windows CryptoAPI instead of internal crypto code for SHA256/HMAC calculations."
+	@echo "    MSRPC=1                      Use Microsoft RPC instead of vlmcsd's internal RPC. Only works with Windows and Cygwin targets."
 	@echo "    CC=<x>                       Use compiler <x>. Supported compilers are gcc, icc, tcc and clang. Others may or may not work."
+	@echo "    AR=<x>                       Use <x> instead of ar to build $(A_NAME). Set to gcc-ar if you want to use gcc's LTO feature."
+	@echo "    COMPILER_LANGUAGE=<x>        May be c or c++."
 	@echo "    TERMINAL_WIDTH=<x>           Assume a fixed terminal width of <x> columns. Use in case of problems only."  
 	@echo "    VLMCSD_VERSION=<x>           Sets <x> as your version identifier. Defaults to \"private build\"."
 	@echo "    CFLAGS=<x>                   Pass <x> as additional arguments to the compiler."
@@ -522,7 +573,7 @@ help:
 	@echo "    FEATURES=minimum             Compiles only basic features of $(PROGRAM_NAME)."
 	@echo "    FEATURES=fixedepids          $(PROGRAM_NAME) only uses bultin internal ePIDs."
 	@echo ""
-	@echo "Useful CFLAGS to save memory when running $(PROGRAM_NAME) on very small embedded devices (finer control than FEATURES=):"
+	@echo "Useful CFLAGS to save memory when running $(PROGRAM_NAME) on very small embedded devices (finer control than FEATURES=)"
 	@echo "    -DNO_EXTENDED_PRODUCT_LIST   Don't compile the detailed product list."
 	@echo "    -DNO_BASIC_PRODUCT_LIST      Don't compile the basic product list."
 	@echo "    -DNO_VERBOSE_LOG             Don't support verbose logging. Removes -v option."
@@ -533,26 +584,29 @@ help:
 	@echo "    -DNO_USER_SWITCH             Don't support changing uid/gid after program start. Removes -u and -g options."
 	@echo "    -DNO_HELP                    Don't support command line help."
 	@echo "    -DNO_CUSTOM_INTERVALS        Don't support custom intervals for retry and refresh activation. Removes -A and -R options."
+	@echo "    -DNO_FREEBIND                Don't support binding to foreign IP addresses. Removes -F0 and -F1 options. Only affects FreeBSD and Linux."
+	@echo "    -DSIMPLE_SOCKETS             Compile $(PROGRAM_NAME) with basic socket support only. Removes -L option."
 	@echo "    -DNO_SOCKETS                 Don't support standalone operation. Requires an internet superserver to start $(PROGRAM_NAME)."
 	@echo "    -DNO_CL_PIDS                 Don't support specifying ePIDs and HwId from the command line in $(PROGRAM_NAME)."
 	@echo "    -DNO_LIMIT                   Don't support limiting concurrent clients in $(PROGRAM_NAME)."
 	@echo "    -DNO_SIGHUP                  Don't support SIGHUP handling in $(PROGRAM_NAME)."
+	@echo "    -DNO_VERSION_INFORMATION     Don't support displaying version information in $(PROGRAM_NAME) and $(CLIENT_NAME). Removes -V option."
+	@echo "    -DENABLE_DEPRECATED_OPTIONS  Enable command line options that provide compatibility with previous versions of $(PROGRAM_NAME)."
 	@echo ""
 	@echo "Troubleshooting options"
-	@echo "    CAT=1                        Combine all sources in a single file."
-	@echo "    CAT=2                        Combine all sources in a single file and don't create a *.o file."
+	@echo "    CAT=1                        Combine all sources in a single in-memory file and compile directly to target."
 	@echo "    NOPROCFS=1                   Don't rely on a properly mounted proc filesystem in /proc."
 	@echo "    AUXV=1                       Use /proc/self/auxv (requires Linux with glibc >= 2.16 or musl.)"
 	@echo "    NOLPTHREAD=1                 Disable detection if -lpthread is required (for use with Android NDK)."
-	@echo "    NOLRESOLV=1                  Disable detection if -lresolv is requires  (for use with Android NDK)."
+	@echo "    NOLRESOLV=1                  Disable detection if -lresolv is required  (for use with Android NDK)."
 	@echo "    NOLIBS=1                     Do not attempt to autodetect any library dependencies."
 	@echo "    OPENSSL_HMAC=0               Compile for openssl versions that don't have HMAC support (required on some embedded devices)."
 	@echo "    NO_TIMEOUT=1                 Do not set timeouts for sockets (for systems that don't support it)."
 	@echo "    CHILD_HANDLER=1              Install a handler for SIGCHLD (for systems that don't support SA_NOCLDWAIT)."
-	@echo "    NO_DNS=1                     Compile vlmcs without support for detecting KMS servers via DNS."
+	@echo "    NO_DNS=1                     Compile $(CLIENT_NAME) without support for detecting KMS servers via DNS."
 	@echo "    DNS_PARSER=internal          Use $(CLIENT_NAME) internal DNS parsing routines. No effect on MingW (native Windows)."
 	@echo ""
-	@echo "Other useful CFLAGS:"
+	@echo "Other useful CFLAGS"
 	@echo "    -DSUPPORT_WINE               Add code that the Windows version of $(PROGRAM_NAME) runs on Wine if MSRPC=1"
 	@echo "    -D_PEDANTIC                  Report rare error/warning conditions instead of silently ignoring them."
 	@echo "    -DINCLUDE_BETAS              Include SKU / activation IDs for obsolete beta/preview products."
