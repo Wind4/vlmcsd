@@ -278,9 +278,9 @@ $(MULTI_NAME): BASECFLAGS += -DMULTI_CALL_BINARY=1
 
 all: $(CLIENT_NAME) $(PROGRAM_NAME)
 
-ifdef CAT
+#ifdef CAT
   allmulti: $(CLIENT_NAME) $(PROGRAM_NAME) $(MULTI_NAME)
-endif
+#endif
 
 ifneq ($(strip $(VLMCSD_VERSION)),)
   BASECFLAGS += -DVERSION=\"$(VLMCSD_VERSION),\ built\ $(shell date -u '+%Y-%m-%d %H:%M:%S' | sed -e 's/ /\\ /g')\ UTC\" 
@@ -301,12 +301,12 @@ VLMCS_SRCS = vlmcs.c $(SRCS)
 VLMCS_OBJS = $(VLMCS_SRCS:.c=.o)
 
 MULTI_SRCS = vlmcsd.c vlmcs.c vlmcsdmulti.c $(SRCS)
-MULTI_OBJS = $(MULTI_SRCS:.c=.o)
+MULTI_OBJS = $(SRCS:.c=.o) vlmcsd-m.o vlmcs-m.o vlmcsdmulti-m.o
 
 DLL_SRCS = libkms.c $(SRCS)
 DLL_OBJS = $(DLL_SRCS:.c=.o)
 
-PDFDOCS = vlmcs.1.pdf vlmcsd.7.pdf vlmcsd.8.pdf vlmcsdmulti.1.pdf vlmcsd.ini.5.pdf
+PDFDOCS = vlmcs.1.pdf vlmcsd.7.pdf vlmcsd.8.pdf vlmcsdmulti.1.pdf vlmcsd.ini.5.pdf vlmcsd-floppy.7.pdf
 HTMLDOCS = $(PDFDOCS:.pdf=.html)
 UNIXDOCS = $(PDFDOCS:.pdf=.unix.txt)
 DOSDOCS = $(PDFDOCS:.pdf=.dos.txt)
@@ -315,11 +315,13 @@ ifneq ($(NO_DNS),1)
 
   VLMCS_SRCS += dns_srv.c
   MULTI_SRCS += dns_srv.c
+  MULTI_OBJS += dns_srv.o
 
 ifeq ($(DNS_PARSER),internal)
 ifneq ($(MINGW),1)
   VLMCS_SRCS += ns_parse.c ns_name.c
   MULTI_SRCS += ns_parse.c ns_name.c
+  MULTI_OBJS += ns_parse.o ns_name.o
   BASECFLAGS += "-DDNS_PARSER_INTERNAL"
 endif
 endif
@@ -330,6 +332,7 @@ ifeq ($(MSRPC),1)
   VLMCSD_SRCS += msrpc-server.c
   VLMCS_SRCS += msrpc-client.c
   MULTI_SRCS += msrpc-server.c msrpc-client.c
+  MULTI_OBJS += msrpc-server-m.o msrpc-client-m.o
   DLL_SRCS += msrpc-server.c
   BASECFLAGS += -DUSE_MSRPC -Wno-unknown-pragmas
   BASELDFLAGS += -lrpcrt4
@@ -340,6 +343,7 @@ endif
 ifeq "$(WIN)" "1"
 	VLMCSD_SRCS += ntservice.c
 	MULTI_SRCS += ntservice.c
+	MULTI_OBJS += ntservice.o
 endif
 
 ifeq ($(CRYPTO), openssl_with_aes)
@@ -402,10 +406,26 @@ endif
 	@echo "$(COMPILER)	CC	$@ <- $<"
 	@$(CC) -x$(COMPILER_LANGUAGE) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(PLATFORMFLAGS) -c $<
   ifeq ($(DEPENDENCIES),1)
-	@echo "$(COMPILER)	DEP     $*.d <- $<"
+	@echo "$(COMPILER)	DEP	$*.d <- $<"
 	@$(CC) -x$(COMPILER_LANGUAGE) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(PLATFORMFLAGS) -MM -MF $*.d $<
   endif
   endif
+
+%-m.o: %.c
+  ifeq ($(VERBOSE),1)
+	$(CC) -x$(COMPILER_LANGUAGE) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(PLATFORMFLAGS) -o $@ -c $<
+  ifeq ($(DEPENDENCIES),1)
+	$(CC) -x$(COMPILER_LANGUAGE) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(PLATFORMFLAGS) -MM -MF $*.d $<
+  endif
+  else
+	@echo "$(COMPILER)	CC	$@ <- $<"
+	@$(CC) -x$(COMPILER_LANGUAGE) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(PLATFORMFLAGS) -o $@ -c $<
+  ifeq ($(DEPENDENCIES),1)
+	@echo "$(COMPILER)	DEP	$*.d <- $<"
+	@$(CC) -x$(COMPILER_LANGUAGE) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(PLATFORMFLAGS) -MM -MF $*.d $<
+  endif
+  endif
+
 
 ifdef CAT
   BUILDCOMMAND = cat $^ | $(CC) -x$(COMPILER_LANGUAGE) -o $@ -
@@ -515,6 +535,9 @@ alldocs : $(UNIXDOCS) $(HTMLDOCS) $(PDFDOCS) $(DOSDOCS)
 
 clean:
 	rm -f *.o *.d *_all.c libkms_all_*.c $(PROGRAM_NAME) $(MULTI_NAME) $(DLL_NAME) $(CLIENT_NAME) $(PDFDOCS) $(DOSDOCS) $(UNIXDOCS) $(HTMLDOCS) $(OBJ_NAME) $(A_NAME) *.a
+
+dnsclean:
+	rm -f dns_srv.o
 
 help:
 	@echo "Type"

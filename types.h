@@ -37,6 +37,12 @@
 #endif // _WIN32
 
 
+#if __linux__ // Some versions of uclibc do not define IP_FREEBIND in the correct header file
+#ifndef IP_FREEBIND
+#define IP_FREEBIND 15
+#endif // IP_FREEBIND
+#endif // __linux__
+
 #if (IP_BINDANY || IP_FREEBIND || IPV6_BINDANY || IP_NONLOCALOK) && !defined(NO_FREEBIND) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 #define HAVE_FREEBIND 1
 #endif

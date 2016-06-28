@@ -111,7 +111,7 @@ export PLATFORMFLAGS="-march=i686 -mtune=generic -pipe"
 export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--large-address-aware,--nxcompat,--dynamicbase,--tsaware,--disable-long-section-names -fwhole-program"
 export FEATURES=full
 
-make $MAKEFLAGS CAT=2 MSRPC=1 CRYPTO=windows $CLIENT_NAME
+make $MAKEFLAGS MSRPC=1 CRYPTO=windows $CLIENT_NAME $MULTI_NAME
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME
@@ -120,21 +120,13 @@ fi
 
 export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--large-address-aware,--nxcompat,--dynamicbase,--tsaware,--disable-long-section-names,--no-seh -fwhole-program"
 
-make $MAKEFLAGS CAT=2 MSRPC=1 CRYPTO=windows $PROGRAM_NAME
+make $REUSEOBJFLAGS CAT=1 MSRPC=1 CRYPTO=windows $PROGRAM_NAME
 
 if [ $? != 0 ]; then
   echo Error creating $PROGRAM_NAME
   exit $?
 fi
 
-export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--large-address-aware,--nxcompat,--dynamicbase,--tsaware,--disable-long-section-names -fwhole-program"
-
-make $MAKEFLAGS MSRPC=1 CRYPTO=windows $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -179,7 +171,7 @@ export CC=x86_64-w64-mingw32-gcc
 export PLATFORMFLAGS="-march=nocona -mtune=generic -pipe"
 export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--nxcompat,--dynamicbase,--tsaware,--high-entropy-va,--disable-long-section-names -fwhole-program"
 
-make $MAKEFLAGS CAT=2 CRYPTO=windows MSRPC=1 $CLIENT_NAME
+make $MAKEFLAGS CRYPTO=windows MSRPC=1 $CLIENT_NAME $MULTI_NAME
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME
@@ -188,22 +180,13 @@ fi
 
 export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--nxcompat,--dynamicbase,--tsaware,--no-seh,--high-entropy-va,--disable-long-section-names -fwhole-program"
 
-make $MAKEFLAGS CAT=2 CRYPTO=windows MSRPC=1 $PROGRAM_NAME
+make $REUSEOBJFLAGS CAT=2 CRYPTO=windows MSRPC=1 $PROGRAM_NAME
 
 if [ $? != 0 ]; then
   echo Error creating $PROGRAM_NAME
   exit $?
 fi
 
-export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--nxcompat,--dynamicbase,--tsaware,--high-entropy-va,--disable-long-section-names -fwhole-program"
-export PLATFORMFLAGS="-march=nocona -mtune=generic -pipe -flto=jobserver"
-
-make $MAKEFLAGS MSRPC=1 CRYPTO=windows $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -219,19 +202,10 @@ export LDFLAGS="-fwhole-program -Wl,-z,norelro"
 export THREADS=0
 #export TERMINAL_WIDTH=80
 
-make $MAKEFLAGS NO_DNS=1 SAFE_MODE=1
+make $MAKEFLAGS NO_DNS=1 SAFE_MODE=1 allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
-
-rm -f vlmcs.o vlmcsd.o vlmcsdmulti.o
-
-make NO_DNS=1 SAFE_MODE=1 $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
   exit $?
 fi
 
@@ -240,21 +214,13 @@ export PROGRAM_NAME=binaries/Linux/mips/little-endian/static/vlmcsd-mips1el-toma
 export MULTI_NAME=binaries/Linux/mips/little-endian/static/vlmcsdmulti-mips1el-tomato-uclibc-static
 export LDFLAGS="$LDFLAGS -static"
 
-make NO_DNS=1 SAFE_MODE=1 $REUSEOBJFLAGS $MULTI_NAME
+make NO_DNS=1 SAFE_MODE=1 $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $MULTI_NAME
   exit $?
 fi
 
-rm -f vlmcs.o vlmcsd.o vlmcsdmulti.o
-
-make NO_DNS=1 SAFE_MODE=1 $REUSEOBJFLAGS
-
-if [ $? != 0 ]; then
-  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
 
 
 
@@ -268,7 +234,7 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program"
 export LDFLAGS="$SMALLLD"
 export THREADS=0
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -280,31 +246,14 @@ export PROGRAM_NAME=binaries/Linux/mips/little-endian/static/vlmcsd-mips32el-ope
 export MULTI_NAME=binaries/Linux/mips/little-endian/static/vlmcsdmulti-mips32el-openwrt-uclibc-static
 export LDFLAGS="$LDFLAGS -static"
 
-make $REUSEOBJFLAGS
+make $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
 
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export MULTI_NAME=binaries/Linux/mips/little-endian/uclibc/vlmcsdmulti-mips32el-openwrt-uclibc
-export LDFLAGS="$SMALLLD"
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -318,7 +267,7 @@ export PLATFORMFLAGS="-mips32 -mips16 -flto=jobserver -fwhole-program"
 export LDFLAGS="$SMALLLD"
 export THREADS=0
 
-make $MAKEFLAGS 
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -330,31 +279,13 @@ export PROGRAM_NAME=binaries/Linux/mips/little-endian/static/vlmcsd-mips16el-asu
 export MULTI_NAME=binaries/Linux/mips/little-endian/static/vlmcsdmulti-mips16el-asus-rt-n66u-uclibc-static
 export LDFLAGS="$LDFLAGS -static"
 
-make $REUSEOBJFLAGS
+make $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export MULTI_NAME=binaries/Linux/mips/little-endian/uclibc/vlmcsdmulti-mips16el-asus-rt-n66u-uclibc
-export LDFLAGS="$SMALLLD"
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -367,7 +298,7 @@ export PROGRAM_NAME=binaries/Linux/mips/little-endian/uclibc/vlmcsd-mips16el-ope
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mips16"
 export LDFLAGS="$SMALLLD"
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -379,29 +310,10 @@ export PROGRAM_NAME=binaries/Linux/mips/little-endian/static/vlmcsd-mips16el-ope
 export MULTI_NAME=binaries/Linux/mips/little-endian/static/vlmcsdmulti-mips16el-openwrt-uclibc-static
 export LDFLAGS="$LDFLAGS -static"
 
-make $REUSEOBJFLAGS
+make $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
-
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export MULTI_NAME=binaries/Linux/mips/little-endian/uclibc/vlmcsdmulti-mips16el-openwrt-uclibc
-export LDFLAGS="$SMALLLD"
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
   exit $?
 fi
 
@@ -419,21 +331,13 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=mips32 -mips16"
 export LDFLAGS="$SMALLLD"
 export THREADS=0
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -448,21 +352,13 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program"
 export LDFLAGS="$SMALLLD"
 export THREADS=0
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -477,21 +373,13 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program"
 export LDFLAGS="$SMALLLD"
 export THREADS=0
 
-make DNS_PARSER=OS $MAKEFLAGS
+make DNS_PARSER=OS $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -506,21 +394,13 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program --sysroot=/opt/simplebuild
 export LDFLAGS="$SMALLLD"
 export THREADS=0
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -536,21 +416,13 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mips32"
 export LDFLAGS="$SMALLLD"
 export THREADS=0
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -567,21 +439,13 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mips32 -mips16"
 export LDFLAGS="$SMALLLD"
 export THREADS=0
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -598,21 +462,14 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mips32"
 export LDFLAGS="$SMALLLD"
 export THREADS=0
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
 
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -626,7 +483,7 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=armv7 -mthumb"
 export THREADS=0
 export LDFLAGS="$SMALLLD"
 
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -638,29 +495,10 @@ export PROGRAM_NAME=binaries/Android/arm/static/vlmcsd-android15-armv7-static
 export MULTI_NAME=binaries/Android/arm/static/vlmcsdmulti-android15-armv7-static
 export LDFLAGS="$LDFLAGS -static"
 
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
-
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export LDFLAGS="$SMALLLD"
-export MULTI_NAME=binaries/Android/arm/bionic/vlmcsdmulti-android15-armv7
-
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
   exit $?
 fi
 
@@ -677,7 +515,7 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=armv5te -mthumb"
 export THREADS=0
 export LDFLAGS="$SMALLLD"
 
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -689,31 +527,13 @@ export PROGRAM_NAME=binaries/Android/arm/static/vlmcsd-android15-armv5-static
 export MULTI_NAME=binaries/Android/arm/static/vlmcsdmulti-android15-armv5-static
 export LDFLAGS="$LDFLAGS -static"
 
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export LDFLAGS="$SMALLLD"
-export MULTI_NAME=binaries/Android/arm/bionic/vlmcsdmulti-android15-armv5
-
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -729,21 +549,13 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=armv7 -mthumb -fPIE
 export THREADS=0
 export LDFLAGS="$SMALLLD"
 
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -790,21 +602,13 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mtune=generic -mfix-corte
 export THREADS=0
 export LDFLAGS="$SMALLLD"
 
-make NOLPTHREAD=1 NOLRESOLV=1 NO_DNS=0 $MAKEFLAGS
+make NOLPTHREAD=1 NOLRESOLV=1 NO_DNS=0 $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLPTHREAD=1 NOLRESOLV=1 NO_DNS=0 $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -820,21 +624,13 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mtune=generic -mfix-corte
 export THREADS=0
 export LDFLAGS="$SMALLLD -static"
 
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -849,7 +645,7 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=atom -m32"
 export THREADS=1
 export LDFLAGS="$SMALLLD"
 
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -861,31 +657,13 @@ export PROGRAM_NAME=binaries/Android/intel/static/vlmcsd-android23-x86-static
 export MULTI_NAME=binaries/Android/intel/static/vlmcsdmulti-android23-x86-static
 export LDFLAGS="$LDFLAGS -static"
 
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export LDFLAGS="$SMALLLD"
-export MULTI_NAME=binaries/Android/intel/bionic/vlmcsdmulti-android23-x86
-
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -901,21 +679,13 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=atom -m32 -fPIE -pi
 export THREADS=1
 export LDFLAGS="$SMALLLD"
 
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -961,21 +731,13 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=atom -m64 -fPIE -pi
 export THREADS=0
 export LDFLAGS="$SMALLLD"
 
-make NOLPTHREAD=1 NOLRESOLV=1 NO_DNS=0 $MAKEFLAGS
+make NOLPTHREAD=1 NOLRESOLV=1 NO_DNS=0 $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLPTHREAD=1 NOLRESOLV=1 NO_DNS=0 $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -991,21 +753,13 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=nocona -m64"
 export THREADS=0
 export LDFLAGS="$SMALLLD -static"
 
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -1021,7 +775,7 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program"
 export THREADS=1
 export LDFLAGS="$SMALLLD"
 
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -1033,31 +787,13 @@ export PROGRAM_NAME=binaries/Android/mips/static/vlmcsd-android23-mips32el-stati
 export MULTI_NAME=binaries/Android/mips/static/vlmcsdmulti-android23-mips32el-static
 export LDFLAGS="$LDFLAGS -static"
 
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export LDFLAGS="$SMALLLD"
-export MULTI_NAME=binaries/Android/mips/bionic/vlmcsdmulti-android23-mips32el
-
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -1074,21 +810,13 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program -fPIE -pie"
 export THREADS=1
 export LDFLAGS="$SMALLLD"
 
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -1246,21 +974,13 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program -fPIE -pie"
 export THREADS=0
 export LDFLAGS="$SMALLLD"
 
-make NOLPTHREAD=1 NOLRESOLV=1 NO_DNS=0 $MAKEFLAGS
+make NOLPTHREAD=1 NOLRESOLV=1 NO_DNS=0 $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLPTHREAD=1 NOLRESOLV=1 NO_DNS=0 $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -1276,21 +996,13 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program"
 export THREADS=0
 export LDFLAGS="$SMALLLD -static"
 
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -1501,7 +1213,6 @@ fi
 
 
 
-
 # Linux x86 glibc
 export MULTI_NAME=binaries/Linux/intel/glibc/vlmcsdmulti-x86-glibc
 export CLIENT_NAME=binaries/Linux/intel/glibc/vlmcs-x86-glibc
@@ -1512,16 +1223,8 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program -m32 -march=i686 -mtune=ge
 export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
 export THREADS=0
 
-make $MAKEFLAGS binaries/Linux/intel/glibc/vlmcsdmulti-x86-glibc
 
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -1580,35 +1283,16 @@ export FEATURES=full
 export MULTI_NAME=binaries/Linux/intel/static/vlmcsdmulti-x86-musl-static
 export CLIENT_NAME=binaries/Linux/intel/static/vlmcs-x86-musl-static
 export PROGRAM_NAME=binaries/Linux/intel/static/vlmcsd-x86-musl-static
-export CC=/opt/toolchains/i386_i486_gcc-4.9-linaro_musl-1.1.6/bin/i486-openwrt-linux-musl-gcc-4.9.2
+#export CC=/opt/toolchains/i386_i486_gcc-4.9-linaro_musl-1.1.6/bin/i486-openwrt-linux-musl-gcc-4.9.2
+export CC=/opt/toolchains/i486-musl-gcc-5.3.0-binutils-2.25.1/bin/i486-Hotbird-linux-musl-gcc.br_real
 export CFLAGS="$SMALLCC"
-export PLATFORMFLAGS="-flto=jobserver -fwhole-program -m32 -march=i686 -mtune=generic"
+export PLATFORMFLAGS="-flto=jobserver -fwhole-program -m32 -march=i486 -mtune=generic"
 export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu -static"
 export THREADS=0
 export NOPROCFS=0
 export AUXV=1
 
-make $MAKEFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
-export MULTI_NAME=binaries/Linux/intel/musl/vlmcsdmulti-x86-musl
-
-make $MAKEFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-export LDFLAGS="$LDFLAGS -static"
-
-make $REUSEOBJFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -1617,9 +1301,10 @@ fi
 
 export CLIENT_NAME=binaries/Linux/intel/musl/vlmcs-x86-musl
 export PROGRAM_NAME=binaries/Linux/intel/musl/vlmcsd-x86-musl
+export MULTI_NAME=binaries/Linux/intel/musl/vlmcsdmulti-x86-musl
 export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
 
-make $REUSEOBJFLAGS
+make $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -1632,9 +1317,9 @@ fi
 # Linux x86 musl static threads
 export FEATURES=full
 export PROGRAM_NAME=binaries/Linux/intel/static/vlmcsd-x86-musl-static-threads
-export CC=/opt/toolchains/i386_i486_gcc-4.9-linaro_musl-1.1.6/bin/i486-openwrt-linux-musl-gcc-4.9.2
+export CC=/opt/toolchains/i486-musl-gcc-5.3.0-binutils-2.25.1/bin/i486-Hotbird-linux-musl-gcc.br_real
 export CFLAGS="$SMALLCC"
-export PLATFORMFLAGS="-flto=jobserver -fwhole-program -m32 -march=i686 -mtune=generic"
+export PLATFORMFLAGS="-flto=jobserver -fwhole-program -m32 -march=i486 -mtune=generic"
 export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu -static"
 export THREADS=1
 export NOPROCFS=0
@@ -1664,16 +1349,7 @@ export THREADS=0
 export NOPROCFS=0
 export AUXV=1
 
-make DNS_PARSER=OS $MAKEFLAGS binaries/Linux/intel/glibc/vlmcsdmulti-x32-glibc
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make DNS_PARSER=OS $REUSEOBJFLAGS
+make DNS_PARSER=OS $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -1709,29 +1385,21 @@ export FEATURES=full
 export MULTI_NAME=binaries/Linux/arm/little-endian/glibc/vlmcsdmulti-armv4el-glibc
 export CLIENT_NAME=binaries/Linux/arm/little-endian/glibc/vlmcs-armv4el-glibc
 export PROGRAM_NAME=binaries/Linux/arm/little-endian/glibc/vlmcsd-armv4el-glibc
-export CC=/opt/toolchains/armelv5t-glibc-2.20/bin/arm-linux-gcc
+export CC=/opt/toolchains/armelv5t-glibc-2.23-gcc-6.1.0-binutils-2.26/usr/bin/arm-Hotbird-linux-gnueabi-gcc
 export CFLAGS="$SMALLCC"
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=armv4 -marm"
-export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+export LDFLAGS="$SMALLLD -static-libgcc"
 export THREADS=0
 export NOPROCFS=0
 export AUXV=0
 
-make $MAKEFLAGS
+make $MAKEFLAGS DNS_PARSER=internal allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -1741,28 +1409,20 @@ fi
 export MULTI_NAME=binaries/Linux/arm/little-endian/glibc/vlmcsdmulti-armv4el-glibc-thumb
 export CLIENT_NAME=binaries/Linux/arm/little-endian/glibc/vlmcs-armv4el-glibc-thumb
 export PROGRAM_NAME=binaries/Linux/arm/little-endian/glibc/vlmcsd-armv4el-glibc-thumb
-export CC=/opt/toolchains/armelv5t-glibc-2.20/bin/arm-linux-gcc
+export CC=/opt/toolchains/armelv5t-glibc-2.23-gcc-6.1.0-binutils-2.26/usr/bin/arm-Hotbird-linux-gnueabi-gcc
 export FEATURES=full
 export CFLAGS="$SMALLCC"
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=armv4t -mthumb"
-export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+export LDFLAGS="$SMALLLD -static-libgcc"
 export THREADS=0
 
-make $MAKEFLAGS
+make $MAKEFLAGS DNS_PARSER=internal allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -1773,21 +1433,13 @@ export CLIENT_NAME=binaries/Linux/arm/little-endian/glibc/vlmcs-armv5el-glibc-th
 export MULTI_NAME=binaries/Linux/arm/little-endian/glibc/vlmcsdmulti-armv5el-glibc-thumb
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=armv5t -mthumb"
 
-make $MAKEFLAGS
+make $MAKEFLAGS DNS_PARSER=internal allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -1797,21 +1449,13 @@ export CLIENT_NAME=binaries/Linux/arm/little-endian/glibc/vlmcs-armv5el-glibc
 export MULTI_NAME=binaries/Linux/arm/little-endian/glibc/vlmcsdmulti-armv5el-glibc
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -march=armv5 -marm"
 
-make $MAKEFLAGS
+make $MAKEFLAGS DNS_PARSER=internal allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -1827,21 +1471,13 @@ export CFLAGS="$SMALLCC"
 export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
 export THREADS=0
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -1857,21 +1493,13 @@ export CFLAGS="$SMALLCC"
 export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
 export THREADS=0
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -1890,7 +1518,7 @@ export CFLAGS="$SMALLCC"
 export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
 export THREADS=0
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -1899,12 +1527,6 @@ fi
 
 rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
 
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -1914,7 +1536,7 @@ SUFFIX=-armv5el-musl-thumb
 export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}-static
 export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}-static
 export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}-static
-export CC=/opt/toolchains/armelv5t-musl/usr/bin/arm-linux-gcc
+export CC=/opt/toolchains/armelv5t-musl-gcc6.1.0-binutils-2.26/usr/bin/arm-Hotbird-linux-musleabi-gcc
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program"
 export FEATURES=full
 export CFLAGS="$SMALLCC"
@@ -1923,12 +1545,14 @@ export THREADS=0
 export NOPROCFS=0
 export AUXV=1
 
-make $MAKEFLAGS
+make $MAKEFLAGS DNS_PARSER=internal allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
+
+rm -f dns_srv.o
 
 INSTALLDIR=binaries/Linux/arm/little-endian/musl/
 export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
@@ -1936,32 +1560,13 @@ export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
 export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
 export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
 
-make $REUSEOBJFLAGS
+make $REUSEOBJFLAGS DNS_PARSER=OS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-INSTALLDIR=binaries/Linux/arm/little-endian/static/
-export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}-static
-export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu -static"
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -1981,21 +1586,13 @@ export THREADS=0
 export NOPROCFS=0
 export AUXV=0
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -2013,7 +1610,7 @@ export CFLAGS="$SMALLCC"
 export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
 export THREADS=0
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -2025,31 +1622,13 @@ export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
 export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
 export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu -static"
 
-make $REUSEOBJFLAGS
+make $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
-export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -2067,21 +1646,13 @@ export CFLAGS="$SMALLCC"
 export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
 export THREADS=0
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -2131,21 +1702,13 @@ export CFLAGS="$SMALLCC"
 export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
 export THREADS=0
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -2164,37 +1727,20 @@ export LDFLAGS="-Wl,-z,norelro -fwhole-program"
 export THREADS=0
 export NOPROCFS=1
 
-make $MAKEFLAGS SAFE_MODE=1
+make $MAKEFLAGS SAFE_MODE=1 allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f vlmcsd.o vlmcs.o vlmcsdmulti.o
-
-make $REUSEOBJFLAGS SAFE_MODE=1 $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
 export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
 export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
 export LDFLAGS="-Wl,-z,norelro -fwhole-program -static"
 
-make $REUSEOBJFLAGS SAFE_MODE=1 $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-rm -f vlmcsd.o vlmcs.o vlmcsdmulti.o
-
-make $REUSEOBJFLAGS SAFE_MODE=1
+make $REUSEOBJFLAGS SAFE_MODE=1 allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -2220,21 +1766,13 @@ export LDFLAGS="$SMALLLD"
 export THREADS=0
 export NOPROCFS=0
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -2253,21 +1791,13 @@ export LDFLAGS="$SMALLLD"
 export THREADS=0
 export CRYPTO=internal
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -2287,37 +1817,20 @@ export THREADS=0
 export CRYPTO=internal
 export NOPROCFS=1
 
-make $MAKEFLAGS SAFE_MODE=1 
+make $MAKEFLAGS SAFE_MODE=1 allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm vlmcsd.o vlmcs.o vlmcsdmulti.o
-
-make $REUSEOBJFLAGS SAFE_MODE=1 $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
 export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
 export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
 export LDFLAGS="-Wl,-z,norelro -fwhole-program -static"
 
-make $REUSEOBJFLAGS SAFE_MODE=1 $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-rm vlmcsd.o vlmcs.o vlmcsdmulti.o
-
-make $REUSEOBJFLAGS SAFE_MODE=1
+make $REUSEOBJFLAGS SAFE_MODE=1 allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -2342,21 +1855,13 @@ export THREADS=0
 export CRYPTO=internal
 export NOPROCFS=0
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -2375,21 +1880,13 @@ export LDFLAGS="$SMALLLD"
 export THREADS=0
 export CRYPTO=internal
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -2409,7 +1906,7 @@ export LDFLAGS="$SMALLLD"
 export THREADS=0
 export CRYPTO=internal
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -2421,29 +1918,10 @@ export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
 export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
 export LDFLAGS="$SMALLLD -static"
 
-make $REUSEOBJFLAGS
+make $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
-  exit $?
-fi
-
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
-export LDFLAGS="$SMALLLD"
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
   exit $?
 fi
 
@@ -2464,7 +1942,7 @@ export LDFLAGS="$SMALLLD"
 export THREADS=0
 export CRYPTO=internal
 
-make NOLRESOLV=1 $MAKEFLAGS
+make NOLRESOLV=1 $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -2476,31 +1954,13 @@ export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
 export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
 export LDFLAGS="$SMALLLD -static"
 
-make NOLRESOLV=1 $REUSEOBJFLAGS
+make NOLRESOLV=1 $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLRESOLV=1 $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
-export LDFLAGS="$SMALLLD"
-
-make NOLRESOLV=1 $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -2519,7 +1979,7 @@ export LDFLAGS="$SMALLLD"
 export THREADS=0
 export CRYPTO=internal
 
-make NOLRESOLV=1 $MAKEFLAGS
+make NOLRESOLV=1 $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -2531,31 +1991,13 @@ export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
 export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
 export LDFLAGS="$SMALLLD -static"
 
-make NOLRESOLV=1 $REUSEOBJFLAGS
+make NOLRESOLV=1 $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLRESOLV=1 $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
-export LDFLAGS="$SMALLLD"
-
-make NOLRESOLV=1 $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -2670,21 +2112,13 @@ export THREADS=0
 export CRYPTO=openssl_with_aes_soft
 export OPENSSL_HMAC=0
 
-make NOLRESOLV=1 $MAKEFLAGS
+make NOLRESOLV=1 $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make NOLRESOLV=1 $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 unset OPENSSL_HMAC
 
@@ -2705,21 +2139,13 @@ export LDFLAGS="$SMALLLD"
 export THREADS=0
 export CRYPTO=internal
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -2738,21 +2164,13 @@ export LDFLAGS="$SMALLLD"
 export THREADS=0
 export CRYPTO=internal
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -2771,21 +2189,13 @@ export LDFLAGS="$SMALLLD"
 export THREADS=0
 export CRYPTO=internal
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -2805,7 +2215,7 @@ export LDFLAGS="$SMALLLD"
 export THREADS=0
 export CRYPTO=internal
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -2817,31 +2227,13 @@ export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
 export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
 export LDFLAGS="$LDFLAGS -static"
 
-make $REUSEOBJFLAGS
+make $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export MULTI_NAME=${INSTALLDIR}musl/vlmcsdmulti${SUFFIX}
-export LDFLAGS="$SMALLLD"
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -2860,7 +2252,7 @@ export LDFLAGS="$SMALLLD"
 export THREADS=0
 export CRYPTO=internal
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -2872,31 +2264,13 @@ export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
 export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
 export LDFLAGS="$SMALLLD -static"
 
-make $REUSEOBJFLAGS
+make $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
-export LDFLAGS="$SMALLLD"
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -2939,21 +2313,13 @@ export LDFLAGS="$SMALLLD"
 export THREADS=0
 export CRYPTO=internal
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -2972,21 +2338,13 @@ export LDFLAGS="$SMALLLD"
 export THREADS=0
 export CRYPTO=internal
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -3008,7 +2366,7 @@ export NOPROCFS=0
 export AUXV=1
 
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -3020,7 +2378,7 @@ export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
 export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
 export LDFLAGS="$SMALLLD -static"
 
-make $REUSEOBJFLAGS
+make $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -3029,22 +2387,6 @@ fi
 
 rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
 
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export MULTI_NAME=${INSTALLDIR}musl/vlmcsdmulti${SUFFIX}
-export LDFLAGS="$SMALLLD"
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -3065,7 +2407,7 @@ export CRYPTO=internal
 export NOPROCFS=0
 export AUXV=1
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -3077,31 +2419,13 @@ export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
 export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
 export LDFLAGS="$SMALLLD -static"
 
-make $REUSEOBJFLAGS
+make $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export MULTI_NAME=${INSTALLDIR}musl/vlmcsdmulti${SUFFIX}
-export LDFLAGS="$SMALLLD"
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -3122,21 +2446,13 @@ export CRYPTO=internal
 export NOPROCFS=0
 export AUXV=1
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -3156,21 +2472,13 @@ export CRYPTO=internal
 export NOPROCFS=0
 export AUXV=0
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -3189,21 +2497,13 @@ export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
 export THREADS=0
 export CRYPTO=internal
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -3222,21 +2522,13 @@ export LDFLAGS="$SMALLLD"
 export THREADS=0
 export CRYPTO=internal
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -3281,21 +2573,13 @@ export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
 export THREADS=0
 export CRYPTO=openssl_with_aes
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -3306,8 +2590,8 @@ SUFFIX=-x64-musl
 export PROGRAM_NAME=${INSTALLDIR}musl/vlmcsd${SUFFIX}
 export CLIENT_NAME=${INSTALLDIR}musl/vlmcs${SUFFIX}
 export MULTI_NAME=${INSTALLDIR}musl/vlmcsdmulti${SUFFIX}
-export CC=/opt/toolchains/x86_64_gcc-4.9-linaro_musl-1.1.6/bin/x86_64-openwrt-linux-musl-gcc-4.9.2
-#export CC=/opt/toolchains/x86_64-musl/usr/bin/x86_64-linux-gcc
+#export CC=/opt/toolchains/x86_64_gcc-4.9-linaro_musl-1.1.6/bin/x86_64-openwrt-linux-musl-gcc-4.9.2
+export CC=/opt/toolchains/x86_64-musl-gcc-5.3.0-binutils-2.25.1/bin/x86_64-Hotbird-linux-musl-gcc.br_real
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -m64 -mtune=generic"
 export FEATURES=full
 export CFLAGS="$SMALLCC"
@@ -3317,7 +2601,7 @@ export CRYPTO=internal
 export NOPROCFS=0
 export AUXV=1
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -3329,31 +2613,13 @@ export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
 export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
 export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu -static"
 
-make $REUSEOBJFLAGS
+make $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export MULTI_NAME=${INSTALLDIR}musl/vlmcsdmulti${SUFFIX}
-export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -3375,21 +2641,13 @@ export CRYPTO=internal
 export NOPROCFS=0
 export AUXV=0
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -3444,7 +2702,7 @@ export LDFLAGS="$SMALLLD"
 export THREADS=0
 export CRYPTO=internal
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -3456,31 +2714,13 @@ export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
 export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
 export LDFLAGS="$SMALLLD -static"
 
-make $REUSEOBJFLAGS
+make $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
-
-export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
-export LDFLAGS="$SMALLLD"
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -3501,21 +2741,13 @@ export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
 export THREADS=0
 export CRYPTO=internal
 
-make $MAKEFLAGS
+make $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
   exit $?
 fi
 
-rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
-
-make $REUSEOBJFLAGS $MULTI_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $MULTI_NAME
-  exit $?
-fi
 
 
 
@@ -3578,10 +2810,10 @@ mkdir -p /usr/local/man/man5 2>/dev/null
 mkdir -p /usr/local/man/man8 2>/dev/null
 mkdir -p /usr/local/man/man7 2>/dev/null
 cp -a vlmcs.1 vlmcsdmulti.1 /usr/local/man/man1/
-cp -a vlmcsd.7 /usr/local/man/man7/
+cp -a vlmcsd-floppy.7 vlmcsd.7 /usr/local/man/man7/
 cp -a vlmcsd.8 /usr/local/man/man8/
 cp -a vlmcsd.ini.5 /usr/local/man/man5/
-pbzip2 -f -9 /usr/local/man/man5/vlmcsd.ini.5 /usr/local/man/man1/vlmcs.1 /usr/local/man/man1/vlmcsdmulti.1 /usr/local/man/man7/vlmcsd.7 /usr/local/man/man8/vlmcsd.8
+pbzip2 -f -9 /usr/local/man/man7/vlmcsd-floppy.7 /usr/local/man/man5/vlmcsd.ini.5 /usr/local/man/man1/vlmcs.1 /usr/local/man/man1/vlmcsdmulti.1 /usr/local/man/man7/vlmcsd.7 /usr/local/man/man8/vlmcsd.8
 #pbzip2 -f /usr/local/man/man7/vlmcsd.7
 #pbzip2 -f /usr/local/man/man8/vlmcsd.8
 

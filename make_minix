@@ -16,9 +16,7 @@ export CLIENT_NAME=vlmcs$SUFFIX
 export MULTI_NAME=vlmcsdmulti$SUFFIX
 
 gmake clean
-gmake -B
-rm -f vlmcsd.o vlmcs.o vlmcsdmulti.o
-gmake $MULTI_NAME
+gmake -B allmulti
 
 strip -s --strip-unneeded --remove-section .eh_frame_hdr --remove-section .eh_frame --remove-section .ident --remove-section .note.minix.ident --remove-section .note.netbsd.pax --remove-section=.note.gnu.gold-version --remove-section=.comment --remove-section=.note --remove-section=.note.gnu.build-id --remove-section=.note.ABI-tag *$SUFFIX
 

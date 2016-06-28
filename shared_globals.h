@@ -42,7 +42,7 @@
 #include <limits.h>
 #include <ctype.h>
 #include <stdarg.h>
-#include <semaphore.h>
+//#include <semaphore.h>
 #include "types.h"
 
 #define MAX_KMSAPPS 3

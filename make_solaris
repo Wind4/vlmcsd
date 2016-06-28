@@ -10,7 +10,7 @@ fi
 
 SOLARIS_VERSION=`uname -v`
 
-rm -f vlmcsd-* vlmcs-* vlmcsdmulti-* *_all.* 2>/dev/null
+rm -f vlmcsd-Solaris* vlmcs-* vlmcsdmulti-* *_all.* 2>/dev/null
 rm -f vlmcsdmulti vlmcsd vlmcs 2>/dev/null
 
 MAKEFLAGS="-B -j`nproc`"
@@ -24,9 +24,7 @@ LF="-fwhole-program -Wl,-z,norelro -Wl,--hash-style=sysv -Wl,--build-id=none"
 if [ "$CAT" != "" ]; then
   gmake $MAKEFLAGS LD_ALTEXEC=/usr/bin/gld vlmcs-Solaris$SOLARIS_VERSION-x86 vlmcsd-Solaris$SOLARIS_VERSION-x86 vlmcsdmulti-Solaris$SOLARIS_VERSION-x86 CLIENT_NAME=vlmcs-Solaris$SOLARIS_VERSION-x86 PROGRAM_NAME=vlmcsd-Solaris$SOLARIS_VERSION-x86 MULTI_NAME=vlmcsdmulti-Solaris$SOLARIS_VERSION-x86 CC=gcc CFLAGS="$CF" LDFLAGS="$LF"
 else
-  gmake $MAKEFLAGS LD_ALTEXEC=/usr/bin/gld CLIENT_NAME=vlmcs-Solaris$SOLARIS_VERSION-x86 PROGRAM_NAME=vlmcsd-Solaris$SOLARIS_VERSION-x86 CC=gcc CFLAGS="$CF" LDFLAGS="$LF"
-  rm -f vlmcs.o vlmcsd.o vlmcsdmulti.o *_all.*
-  gmake $REUSEOBJFLAGS LD_ALTEXEC=/usr/bin/gld vlmcsdmulti-Solaris$SOLARIS_VERSION-x86 MULTI_NAME=vlmcsdmulti-Solaris$SOLARIS_VERSION-x86 CC=gcc CFLAGS="$CF" LDFLAGS="$LF"
+  gmake $MAKEFLAGS LD_ALTEXEC=/usr/bin/gld MULTI_NAME=vlmcsdmulti-Solaris$SOLARIS_VERSION-x86 CLIENT_NAME=vlmcs-Solaris$SOLARIS_VERSION-x86 PROGRAM_NAME=vlmcsd-Solaris$SOLARIS_VERSION-x86 CC=gcc CFLAGS="$CF" LDFLAGS="$LF" allmulti
 fi
 
 gmake $MAKEFLAGS LD_ALTEXEC=/usr/bin/gld vlmcsd-Solaris$SOLARIS_VERSION-x86-threads PROGRAM_NAME=vlmcsd-Solaris$SOLARIS_VERSION-x86-threads CC=gcc THREADS=1 CFLAGS="$CF" LDFLAGS="-lpthread $LF"
@@ -39,9 +37,7 @@ LF="$LF -Wl,-melf_x86_64_sol2"
 if [ "$CAT" != "" ]; then
   gmake $MAKEFLAGS LD_ALTEXEC=/usr/bin/gld vlmcsdmulti-Solaris$SOLARIS_VERSION-x64 vlmcs-Solaris$SOLARIS_VERSION-x64 vlmcsd-Solaris$SOLARIS_VERSION-x64 MULTI_NAME=vlmcsdmulti-Solaris$SOLARIS_VERSION-x64 CLIENT_NAME=vlmcs-Solaris$SOLARIS_VERSION-x64 PROGRAM_NAME=vlmcsd-Solaris$SOLARIS_VERSION-x64 CC=gcc CFLAGS="$CF" LDFLAGS="$LF" PLATFORMFLAGS="-m64"
 else
-  gmake $MAKEFLAGS LD_ALTEXEC=/usr/bin/gld CLIENT_NAME=vlmcs-Solaris$SOLARIS_VERSION-x64 PROGRAM_NAME=vlmcsd-Solaris$SOLARIS_VERSION-x64 CC=gcc CFLAGS="$CF" LDFLAGS="$LF" PLATFORMFLAGS="-m64"
-  rm -f vlmcs.o vlmcsd.o vlmcsdmulti.o *_all.*
-  gmake $REUSEOBJFLAGS LD_ALTEXEC=/usr/bin/gld vlmcsdmulti-Solaris$SOLARIS_VERSION-x64 MULTI_NAME=vlmcsdmulti-Solaris$SOLARIS_VERSION-x64 CC=gcc CFLAGS="$CF" LDFLAGS="$LF" PLATFORMFLAGS="-m64"
+  gmake $MAKEFLAGS LD_ALTEXEC=/usr/bin/gld MULTI_NAME=vlmcsdmulti-Solaris$SOLARIS_VERSION-x64 CLIENT_NAME=vlmcs-Solaris$SOLARIS_VERSION-x64 PROGRAM_NAME=vlmcsd-Solaris$SOLARIS_VERSION-x64 CC=gcc CFLAGS="$CF" LDFLAGS="$LF" PLATFORMFLAGS="-m64" allmulti
 fi
 
 gmake $MAKEFLAGS LD_ALTEXEC=/usr/bin/gld vlmcsd-Solaris$SOLARIS_VERSION-x64-threads PROGRAM_NAME=vlmcsd-Solaris$SOLARIS_VERSION-x64-threads CC=gcc THREADS=1 CFLAGS="$CF" LDFLAGS="$LF -lpthread" PLATFORMFLAGS="-m64"
@@ -54,4 +50,4 @@ gstrip -s --strip-unneeded --remove-section=.note.gnu.gold-version --remove-sect
 #sstrip -z vlmcs-* vlmcsd-*
 
 # Copy stuff to distribution server
-scp -p vlmcsd-* vlmcs-* vlmcsdmulti-* root@ubuntu64:x/binaries/Solaris/intel
+scp -p vlmcsd-Sola* vlmcs-* vlmcsdmulti-* root@ubuntu64:x/binaries/Solaris/intel

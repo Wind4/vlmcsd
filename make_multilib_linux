@@ -4,7 +4,7 @@ SMALLCC="-pipe -fno-common -fno-exceptions -fno-stack-protector -fno-unwind-tabl
 SMALLLD="-pipe -Wl,--hash-style=sysv -Wl,-z,norelro -Wl,--build-id=none"
 SMALL="$SMALLCC $SMALLLD"
 
-rm -f vlmcsd vlmcs vlmcsdmulti vlmcsd-* vlmcs-* vlmcsdmulti-*
+rm -f vlmcsd vlmcs vlmcsdmulti vlmcsd-s390* vlmcsd-sparc64* vlmcsd-mips64* vlmcs-* vlmcsdmulti-*
 
 ## IBM S/390
 
@@ -20,10 +20,7 @@ export MULTI_NAME=vlmcsdmulti-s390-glibc
 export CLIENT_NAME=vlmcs-s390-glibc
 export PROGRAM_NAME=vlmcsd-s390-glibc
 
-make -B -j`nproc` $CLIENT_NAME $PROGRAM_NAME
-
-rm -f vlmcsd.o vlmcs.o vlmcsdmulti.o
-make -j`nproc` $MULTI_NAME
+make -B -j`nproc` allmulti
 
 sstrip -z $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME
 
@@ -32,13 +29,9 @@ export MULTI_NAME=vlmcsdmulti-s390x-glibc
 export CLIENT_NAME=vlmcs-s390x-glibc
 export PROGRAM_NAME=vlmcsd-s390x-glibc
 
-make -B -j`nproc` $CLIENT_NAME $PROGRAM_NAME
-
-rm -f vlmcsd.o vlmcs.o vlmcsdmulti.o
-export PLATFORMFLAGS="-flto=jobserver -fwhole-program -m64 -mzarch -mpacked-stack -msmall-exec"
-make -j`nproc` $MULTI_NAME
-
+make -B -j`nproc` allmulti
 sstrip -z $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME
+
 
 
 ## SPARC64
@@ -51,11 +44,10 @@ export MULTI_NAME=vlmcsdmulti-sparc64v9-glibc
 export CLIENT_NAME=vlmcs-sparc64v9-glibc
 export PROGRAM_NAME=vlmcsd-sparc64v9-glibc
 
-make -B -j`nproc` $CLIENT_NAME $PROGRAM_NAME
+make -B -j`nproc` allmulti
 
-rm -f vlmcsd.o vlmcs.o vlmcsdmulti.o
-make -j`nproc` $MULTI_NAME
 sstrip -z $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME
+
 
 
 ## MIPS64 BIG-ENDIAN
@@ -68,10 +60,8 @@ export MULTI_NAME=vlmcsdmulti-mips64-glibc
 export CLIENT_NAME=vlmcs-mips64-glibc
 export PROGRAM_NAME=vlmcsd-mips64-glibc
 
-make -B -j`nproc` $CLIENT_NAME $PROGRAM_NAME
+make -B -j`nproc` allmulti
 
-rm -f vlmcsd.o vlmcs.o vlmcsdmulti.o
-make -j`nproc` $MULTI_NAME
 sstrip -z $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME
 
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mips64 -mmicromips"
@@ -79,10 +69,8 @@ export MULTI_NAME=vlmcsdmulti-mips64mm-glibc
 export CLIENT_NAME=vlmcs-mips64mm-glibc
 export PROGRAM_NAME=vlmcsd-mips64mm-glibc
 
-make -B -j`nproc` $CLIENT_NAME $PROGRAM_NAME
+make -B -j`nproc` allmulti
 
-rm -f vlmcsd.o vlmcs.o vlmcsdmulti.o
-make -j`nproc` $MULTI_NAME
 sstrip -z $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME
 
 
@@ -96,10 +84,8 @@ export MULTI_NAME=vlmcsdmulti-mips64el-glibc
 export CLIENT_NAME=vlmcs-mips64el-glibc
 export PROGRAM_NAME=vlmcsd-mips64el-glibc
 
-make -B -j`nproc` $CLIENT_NAME $PROGRAM_NAME
+make -B -j`nproc` allmulti
 
-rm -f vlmcsd.o vlmcs.o vlmcsdmulti.o
-make -j`nproc` $MULTI_NAME
 sstrip -z $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME
 
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mips64 -mmicromips"
@@ -107,10 +93,8 @@ export MULTI_NAME=vlmcsdmulti-mips64elmm-glibc
 export CLIENT_NAME=vlmcs-mips64elmm-glibc
 export PROGRAM_NAME=vlmcsd-mips64elmm-glibc
 
-make -B -j`nproc` $CLIENT_NAME $PROGRAM_NAME
+make -B -j`nproc` allmulti
 
-rm -f vlmcsd.o vlmcs.o vlmcsdmulti.o
-make -j`nproc` $MULTI_NAME
 sstrip -z $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME
 
 

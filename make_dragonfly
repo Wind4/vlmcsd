@@ -3,7 +3,7 @@
 export VERBOSE=3
 export DNS_PARSER=OS
 
-rm -f vlmcsd-* vlmcs-* vlmcsdmulti-* *_all.* 2>/dev/null
+rm -f vlmcsd-Dragon* vlmcs-* vlmcsdmulti-* *_all.* 2>/dev/null
 rm -f vlmcsdmulti vlmcsd vlmcs 2>/dev/null
 
 MAKEFLAGS="-B -j12"
@@ -16,9 +16,7 @@ LF="-Wl,-z,norelro -Wl,--hash-style=sysv -Wl,--build-id=none"
 LFCLANG="-Wl,-z,norelro -Wl,--hash-style=sysv"
 export CC=gcc5
 
-gmake $MAKEFLAGS PROGRAM_NAME=vlmcsd-DragonFly-x64 CLIENT_NAME=vlmcs-DragonFly-x64 CFLAGS="$CF" LDFLAGS="$LF"
-rm vlmcsd.o vlmcs.o
-gmake vlmcsdmulti-DragonFly-x64 $REUSEOBJFLAGS CFLAGS="$CF" LDFLAGS="$LF" MULTI_NAME=vlmcsdmulti-DragonFly-x64
+gmake $MAKEFLAGS MULTI_NAME=vlmcsdmulti-DragonFly-x64 PROGRAM_NAME=vlmcsd-DragonFly-x64 CLIENT_NAME=vlmcs-DragonFly-x64 CFLAGS="$CF" LDFLAGS="$LF" allmulti
 
 rm *.o
 
@@ -29,4 +27,4 @@ cp -af vlmcsd-DragonFly-x64 /usr/local/sbin/vlmcsd
 cp -af vlmcs-DragonFly-x64 /usr/local/bin/vlmcs
 
 # Copy everything to distribution server
-scp -p vlmcsdmulti-* vlmcsd-* vlmcs-* root@ubuntu64:x/binaries/DragonFly/intel/
+scp -p vlmcsdmulti-* vlmcsd-Dragon* vlmcs-* root@ubuntu64:x/binaries/DragonFly/intel/

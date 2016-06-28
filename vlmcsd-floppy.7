@@ -1,0 +1,292 @@
+.mso www.tmac
+.TH "VLMCSD-FLOPPY" 7 "June 2016" "Hotbird64" "KMS Activation Manual"
+.LO 8
+
+.SH NAME
+floppy144.vfd \- a bootable floppy disk with Linux and \fBvlmcsd\fR(8)
+
+.SH DESCRIPTION
+\fBfloppy144.vfd\fR is an image of a bootable floppy that contains a minimal version of Linux and \fBvlmcsd\fR(8). It requires only 16 MB of RAM. Its primary purpose is to run \fBvlmcsd\fR(8) in a small virtual machine which makes it easy to use \fBvlmcsd\fR(8) to activate the virtual machine's host computer which is not possible in Windows 8.1 and up. The floppy image is a standard 3,5" floppy with 1.44 MB storage. It is formatted with a FAT12 filesystem. The floppy can be mounted to apply several customizations.
+
+.SH SUPPORTED HYPERVISORS
+The floppy image has been tested with the following hypervisors:
+.IP
+VMWare, VirtualBox, Hyper-V and QEMU
+
+.RE
+Others are likely to work.
+
+.SH SETUP
+Create a new virtual machine. Assign 16 MB of RAM. Add a floppy drive and attach \fBfloppy144.vfd\fR to this drive. Do not create a virtual hard disk. Setup the virtual machine to boot from a floppy drive (VirtualBox has floppy boot disabled by default). If possible, setup a virtual machine with plain old BIOS (not UEFI). If you created an UEFI virtual machine, enable the compatibility support mode (CSM) to allow a BIOS compatible boot. Set number of CPUs to 1. The Linux kernel is not capable of SMP. Remove IDE, SATA, SCSI and USB support if possible. The Linux kernel can't handle this and ignores any devices connected to these buses.
+
+Setup an ethernet card. The following models are supported:
+.IP
+Intel PRO/1000
+.br
+AMD PCNET III
+.br
+AMD PCNET32
+.br
+VMWare vmxnet3 (paravirtualized driver used by VMWare)
+.br
+virtio (paravirtualized driver used by VirtualBox, QEMU, KVM and lguest)
+
+.RE
+Most hypervisors emulate an Intel PRO/1000 or AMD PCNET32 by default. Selecting a paravirtualized driver slightly improves performance. In VirtualBox you can simply select virtio in the network configuration dialog. VMWare requires that you add or change the VMX file. Use 'ethernet0.virtualDev\ =\ "vmxnet3"' in your VMWare config file.
+
+If you are using QEMU, you must also setup a TAP adapter. Port redirection does not work to activate your own computer.
+
+.SH CONFIGURATION
+\fBfloppy144.vfd\fR can be customized to fit your needs. This is done by editing the file syslinux.cfg on the floppy image. The floppy image must be mounted. Under Linux you can simply attach \fBfloppy144.vfd\fR to a loop device which is mountable like any other block device. For Windows you must use some software that allows mounting a floppy image, e.g.
+.URL http://www.osforensics.com/tools/mount-disk-images.html OSFMount ""
+
+OSFMount works under all Windows versions beginning with Windows XP up to Windows 10 (32- and 64-bit).
+
+The default syslinux.cfg file looks like this:
+.IP
+.br
+.SM
+prompt 0
+.br
+.SM
+TIMEOUT 50
+.br
+.SM
+default dhcp
+.br
+
+.SM
+LABEL dhcp
+.br
+.SM
+\0\0KERNEL bzImage
+.br
+.SM
+\0\0APPEND vga=773 quiet initrd=initrd KBD=us LISTEN=[::]:1688,0.0.0.0:1688 TZ=UTC0 IPV4_CONFIG=DHCP NTP_SERVER=pool.ntp.org HOST_NAME=vlmcsd ROOT_PASSWORD=vlmcsd USER_NAME=user USER_PASSWORD=vlmcsd GUEST_PASSWORD=vlmcsd INETD=Y WINDOWS=06401-00206-271-395032-03-1033-9600.0000-1652016 OFFICE2010=06401-00096-199-204970-03-1033-9600.0000-1652016 OFFICE2013=06401-00206-234-921934-03-1033-9600.0000-1652016 HWID=36:4F:46:3A:88:63:D3:5F
+
+.SM
+LABEL static
+.br
+.SM
+\0\0KERNEL bzImage
+.br
+.SM
+\0\0APPEND vga=773 quiet initrd=initrd KBD=fr LISTEN=[::]:1688,0.0.0.0:1688 TZ=CET-1CEST,M3.5.0,M10.5.0/3 IPV4_CONFIG=STATIC IPV4_ADDRESS=192.168.20.123/24 IPV4_GATEWAY=192.168.20.2 IPV4_DNS1=192.168.20.2 IPV4_DNS2=NONE NTP_SERVER=pool.ntp.org HOST_NAME=vlmcsd ROOT_PASSWORD=vlmcsd USER_NAME=user USER_PASSWORD=vlmcsd GUEST_PASSWORD=vlmcsd INETD=Y
+
+.PP
+There are two configurations in this files: \fIdhcp\fR (for configuring the IPv4 network via DHCP) and \fIstatic\fR (for a static IPv4 configuration). The kernel always boots the \fIdhcp\fR configuration without asking (lines 'prompt 0' and 'default dhcp'). You can simply change the default configuration to \fIstatic\fR and then customize the APPEND line in the \fIstatic\fR configuration. For more details how to customize the syslinux.cfg file see \fBsyslinux\fR(1).
+
+Each APPPEND line contains one or more items seperated by spaces. \fBAll items are case-sensitive\fR. The following parameters can be customized:
+
+.IP \fBvga=\fIvesa-video-mode\fR
+Sets the VESA display mode for the virtual machine. The parameter is not optional. If you ommit it, you will not see anything on the screen. 773 means 1024x768 with 256 colors. See
+.URL https://en.wikipedia.org/wiki/VESA_BIOS_Extensions#Linux_video_mode_numbers Wikipedia ""
+for more video modes. Note that all 16 color (4-bit) modes will not work. Use 8-bit (256 colors), 16-bit (65536 colors), 24-bit and 32-bit (> 16 Million colors) only. All modes above 1280x1024 are non-VESA-standard and vary for all (virtual) graphic cards.
+
+.IP \fBquiet\fR
+This causes the kernel not display the its log during boot. You may omit \fBquiet\fR but it doesn't make much sense. The boot log is actually very verbose and scrolls away from screen quickly. If any errors occur during boot, they will be displayed even if \fBquiet\fR is present in the APPEND line. You may evaluate the complete boot log later by using the dmesg command or the menu on /dev/tty8.
+
+.IP "\fBinitrd=\fIinitial-ram-disk-file\fR"
+This defines the initial ram disk that the kernel will read. There is only one initial ram disk on the floppy thus leave \fIinitrd=initrd\fR as it is.
+
+.IP "\fBKBD=\fIkeyboard-layout-name\fR"
+This allows you to select the keyboard layout. \fIkeyboard-layout-name\fR is usually the ISO 3166-1 (top level domain) code for a country. A list of valid \fIkeyboard-layout-name\fRs can be accessed via the menu system on /dev/tty8 (press ALT-F8). Note, that this is a keyboard driver only. There is no Unicode font support in \fBfloppy144.vfd\fR (due to the fact that the kernel uses a generic VESA framebuffer device only). Characters beyond ASCII work for Western European languages only but not Eastern European, Greek, Cyrillic, Arabic, Hebrew, CJK and other languages. There is no need in \fBfloppy144.vfd\fR to enter any characters outside ASCII. The purpose of the keyboard maps are that you will find characters like dash, backslash, brackets, braces, etc. at the usual place on your keyboard.
+
+.IP "\fBLISTEN=\fRPRIVATE[:\fItcp-port\fR] | \fIip-address\fR[:\fItcp-port\fR][,\fIip-address\fR[:\fItcp-port\fR]][,...]"
+One or more combinations of IP addresses and optional TCP port seperated by commas that \fBvlmcsd\fR(8) should listen on or PRIVATE to listen on all private IP addresses only. The default port is 1688. If you use an explicit port number, append it to the IP address seperated by a colon. If you use a port number and the IP address contains colons, you must enclose the IP address in brackets. For example \fI192.168.0.2,[fd00::dead:beef]:5678\fR causes \fBvlmcsd\fR(8) to listen on 192.168.0.2 port 1688 and fd00::dead:beef port 5678.
+
+.IP "\fBWINDOWS=\fIepid\fR"
+Defines the ePID that is used for Windows activations. If you ommit this parameter, vlmcsd generates a random ePID when it is started.
+
+.IP "\fBOFFICE2010=\fIepid\fR"
+Defines the ePID that is used for Office 2010 activations. If you ommit this parameter, \fBvlmcsd\fR(8) generates a random ePID when it is started.
+
+.IP "\fBOFFICE2013=\fIepid\fR"
+Defines the ePID that is used for Office (versions 2013 and greater) activations. If you ommit this parameter, \fBvlmcsd\fR(8) generates a random ePID when it is started.
+
+.IP "\fBHWID=\fIhwid\fR"
+Defines the HwId that is sent to clients. \fIhwid\fR must be specified as 16 hex digits that are interpreted as a series of 8 bytes (big endian). Any character that is not a hex digit will be ignored. This is for better readability.
+
+.IP "\fBTZ=\fIposix-time-zone-string\fR"
+Set the time zone to \fIposix-time-zone-string\fR. It must conform to the
+.URL http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap08.html POSIX
+specification. Simplified time zone strings like "Europe/London" or "America/Detroit" are not allowed. This has the very simple reason that there is no space on the floppy to store the time zone database.
+
+The string \fICET-1CEST,M3.5.0,M10.5.0/3\fR (most countries in Europe) reads as follows:
+.RS 7
+.IP \fICET\fR 10
+The standard (winter) time zone has the name CET.
+.IP \fI-1\fR 10
+The standard time zone is one hour east of UTC. Negative numbers are east of UTC. Positive numbers are west of UTC.
+.IP \fICEST\fR 10
+The daylight saving (summer) time zone has the name CEST.
+.IP \fIM3.5.0\fR 10
+Daylight saving time starts in the 3rd month (March) on the 5th (=last) occurence of weekday 0 (Sunday) at 2 o'clock (2 o'clock is a default value).
+.IP \fIM10.5.0/3\fR 10
+Daylight saving time ends in the 10th month (October) on the 5th (=last) occurence of weekday 0 (Sunday) at 3 o'clock.
+.RE
+.IP
+If you don't have daylight saving time, things are easier. For Chinese Standard Time for example, just use \fICST-8\fR as the time zone string.
+
+On a Linux desktop system, you can use a command like \fBstrings\ /usr/share/zoneinfo/America/New_York\ |\ tail\ -n1\fR. This should return \fIEST5EDT,M3.2.0,M11.1.0\fR. You can use the returned string for the \fBTZ=\fIposix-time-zone-string\fR parameter.
+
+.IP "\fBIPV4_CONFIG=\fRDHCP | STATIC\fR"
+This determines how you want to configure IPv4 networking. If you use \fBIPV4_CONFIG=\fRSTATIC, you must supply additional paramaters to the APPEND command line.
+
+.IP "\fBIPV4_ADDRESS=\fIipv4-address\fR/\fICIDR-mask\fR"
+Use \fIipv4-address\fR with netmask \fICIDR-mask\fR for static IPv4 configuration. The netmask must not be ommitted. For IPv4 address 192.168.12.17 with a netmask of 255.255.255.0 use \fI192.168.12.17/24\fR. For IPv4 address 10.4.0.8 with a netmask of 255.255.0.0 use 10.4.0.8/16. This paramater is ignored, if you used \fBIPV4_CONFIG=\fRDHCP.
+
+.IP "\fBIPV4_GATEWAY=\fIipv4-address\fR | NONE"
+Use \fIipv4-address\fR as the default gateway. This is usually the IPv4 address of your router. You may specify NONE explicitly for no gateway. In this case your virtual machine is only visible on its local LAN. This paramater is ignored, if you used \fBIPV4_CONFIG=\fRDHCP.
+
+.IP "\fBIPV4_DNS1=\fIipv4-address\fR | NONE"
+Use \fIipv4-address\fR as the primary name server. In home networks this is often the IPv4 address of your router. You may specify NONE explicitly. If you specified NONE for both \fBIPV4_DNS1=\fR and \fBIPV4_DNS2=\fR, your virtual machine cannot resolve host names to IP addresses. While \fBvlmcsd\fR(8) works perfectly without DNS servers, you must use IP addresses when referring to a host, e.g. for specifying an NTP server. This paramater is ignored, if you used \fBIPV4_CONFIG=\fRDHCP.
+
+.IP "\fBIPV4_DNS2=\fIipv4-address\fR | NONE"
+Use \fIipv4-address\fR as the secondary name server. It serves as a backup if the primary name server is not available. Home networks often don't have a secondary name server. In this case set this to NONE. This paramater is ignored, if you used \fBIPV4_CONFIG=\fRDHCP.
+
+.IP "\fBNTP_SERVER=\fIhost-name\fR | \fIipv4-address\fR | NONE"
+This sets the name of a time server using the NTP protocol. If your virtualization environment reliably provides time, you can set this to NONE. Don't use a public time service like pool.ntp.org or time.nist.gov if you have a (at least somewhat reliable) NTP server in your LAN.
+
+.IP "\fBHOST_NAME=\fIhost-name\fR"
+Sets the local host name for your virtual machine. It can be a single name or a fully-qualified domain name FQDN. If you used \fBIPV4_CONFIG=\fRDHCP and your DHCP server returns a domain name, the domain part of an FQDN will be replaced by that name. This host name or host part of an FQDN will not replaced by a host name returned via DHCP. The host name is not important for the operation of \fBfloppy144.vfd\fR.
+
+.IP "\fBROOT_PASSWORD=\fIpassword\fR"
+Sets the password of the root user.
+
+.IP "\fBUSER_NAME=\fIusername\fR"
+Sets the name of for a general user with no special privileges. This user can login but can't do much.
+
+.IP "\fBUSER_PASSWORD=\fIpassword\fR"
+Sets the password for the user defined by \fBUSER_NAME=\fIusername\fR.
+
+.IP "\fBGUEST_PASSWORD=\fIpassword\fR"
+Sets the password for the pre-defined guest user. This user has the same priviliges (none) as the user defined by \fBUSER_NAME=\fIusername\fR.
+
+.IP "\fBINETD=\fRY | N"
+\fBINETD=\fRY specifies that \fBinetd\fR(8) should automatically be started. That means you can telnet and ftp to your virtual machine.
+
+.SH OPERATION
+
+.SS Diskless System
+The \fBfloppy144.vfd\fR virtual machine is a diskless system that works entirely from RAM. The file system is actually a RAM disk that is created from the \fBinitrd\fR(4) file on the floppy image.
+
+Anything you'll do from inside the virtual machine, for instance editing a config file, will be lost when you reboot the machine. So, if you ever asked yourself if \fBrm -fr /\fR (root privileges required) really deletes all files from all mounted partitions, the \fBfloppy144.vfd\fR VM is the right place to test it (Yes, it does).
+
+The VM uses a RAM disk, because the Linux kernel had to be stripped down to essential features to fit on a 1.44 MB floppy. It has no floppy driver, no disk file system drivers and no block layer (cannot use disks of any type).
+
+.SS System startup
+The kernel boots up very quickly and the init script (/sbin/init) waits 5 seconds. In these 5 seconds you can:
+.IP
+Press 'm' to manually enter the time zone and the IPv4 parameters. These will be queried interactively.
+.br
+Press 't' to manually enter the time zone only.
+.br
+Press 's' to escape to a shell.
+.RE
+
+If you don't want to 5 seconds for continuing the init process, you can press any other key to speed things up. At the end of the init script you should see that\fBvlmcsd\fR(8) has started. You should also see the IP addresses and all user names and passwords.
+
+.SS Logging into the system
+There are 5 local logins provided on /dev/tty2 to /dev/tty6. To switch to these logins, simply press ALT\-F2 to ALT\-F6. To return to the console on /dev/tty1, press ALT\-F1. If \fBinetd\fR(8) is running you can also use \fBtelnet\fR(1). This allows you use a terminal program (e.g. putty) that can utilize your keyboard layout, can be resized and has full UTF-8 support. The local terminals support US keyboard layout only. Please be aware that \fBtelnet\fR(1) is unencrypted and everything including passwords is transmitted in clear text. There is not enough space for an ssh server like \fBsshd\fR(8) or \fBdropbear\fR(8).
+
+The floppy image only provides basic Unix commands. Type \fIbusybox\fR or \fIll /bin\fR to get a list. The only editor available is \fBvi\fR(1). If you don't like vi, you may transfer config files via \fBftp\fR(1) edit them with the editor of your choice and transfer them back to the \fBfloppy144.vfd\fR VM.
+
+.SS The menu system
+You'll find a menu system on /dev/tty8 (press ALT\-F8 to see it). It allows you performing some administrative tasks and to view various system information. It is mainly for users that do not have much experience with Unix commands.
+
+.IP "\fB1) (Re)start vlmcsd\fR"
+Starts or restarts \fBvlmcsd\fR(8). This is useful if you changed \fB/etc/vlmcsd.ini\fR(5).
+
+.IP "\fB2) Stop vlmcsd\fR"
+Stops \fBvlmcsd\fR(8).
+
+.IP "\fB3) (Re)start inetd\fR"
+Starts or restarts \fBinetd\fR(8). If \fBinetd\fR(8) is restarted, current clients connected via \fBtelnet\fR(1) or \fBftp\fR(1) will \fBnot\fR be dropped. They can continue their sessions. This is useful if you changed \fB/etc/inetd.conf\fR(5).
+
+.IP "\fB4) Stop inet\fR"
+Stops \fBinetd\fR(8). All clients connected via \fBtelnet\fR(1) or \fBftp\fR(1) will be dropped immediately.
+
+.IP "\fB5) Change the time zone\fR"
+Just in case you missed pressing 't' during system startup. This also restarts \fBvlmcsd\fR(8) if it was running to notify it that the time zone has changed. Restarting \fBvlmcsd\fR(8) allows currently connected clients to finish their activation.
+
+.IP "\fBk) Change keyboard layout\fR"
+This allows you to select a different keyboard layout.
+
+.IP "\fB6) Show all kernel boot parameters\fR"
+Shows all parameters passed to the kernel via syslinux.cfg. If you experience any unexpected behavior, you can use this to check if your APPEND line in syslinux.cfg is correct. The output is piped through \fBless(1)\fR. So press 'q' to return to the menu.
+
+.IP "\fB7) Show boot log (dmesg)\fR"
+Shows the boot log of the kernel. The output is piped through \fBless(1)\fR. So press 'q' to return to the menu.
+
+.IP "\fB8) Show TCP/IP configuration\fR"
+Shows the TCP/IP configuration, listening sockets and current TCP and UDP connections. Useful, if you problems with net connectivity. The output is piped through \fBless(1)\fR. So press 'q' to return to the menu.
+
+.IP "\fB9) Show running processes\fR"
+Shows all processes including memory and CPU usage. Display will updated every second. Press 'q' or CTRL-C to return to the menu.
+
+.IP "\fBs) Shutdown\fR"
+Shuts down the \fBfloppy144.vfd\fR virtual machine. Proper shutdown is not required. It is ok to use a hard power off in your virtualization program.
+
+.IP "\fBr) Reboot\fR"
+Reboots the \fBfloppy144.vfd\fR virtual machine. Proper reboot is not required. It is ok to use a hard reset in your virtualization program.
+
+.SH PERMANENT CHANGES OF INITRD
+If you want to change any file or script of the file system (e.g. the init script /sbin/init or /etc/vlmcsd.ini), you'll need to mount the floppy image, unpack the \fBinitrd\fR(4) file, make any modfications you like, create a new \fBinitrd\fR(4) file and copy it to the mounted floppy.
+
+To unpack the \fBinitrd\fR(4) file you'll need \fBxz\fR(1) (or \fBlzma\fR(1) on older unix-like OSses) and \fBcpio\fR(1). These can be installed using your package manager on all major distros. It is ok to use the BSD version of \fBcpio\fR(1). No need to get the GNU version for BSD users.
+Provided the floppy is mounted in /mnt/floppy do the following:
+.IP "Create an empty directory"
+mkdir ~/vlmcsd-floppy-initrd
+.IP "cd into that directory"
+cd ~/vlmcsd-floppy-initrd
+.IP "Unpack initrd"
+cat /mnt/floppy/initrd | unlzma | cpio -i
+
+.RE
+After applying your changes build a new \fBinitrd\fR(4) file:
+
+.IP "cd into your directory"
+cd ~/vlmcsd-floppy-initrd
+.IP "Create the packed file"
+find . | cpio -o -H newc | lzma > /mnt/floppy/initrd
+
+.RE
+Do not try to use 'lzma -9' to achive better compression. The kernel can't read the resulting file. While customizing the \fBinitrd\fR(4) file works on almost any unix-like OS, it does not work on Windows even not with Cygwin. The reason is that the NTFS file system can't handle uids and gids. These cannot be preserved when unpacking the \fBcpio\fR(1) archive to NTFS. If you use the WSL subsystem of Windows 10 Redstone (Anniversary Update) and later, you must make sure to unpack the \fBinitrd\fR(4) file to a directory on VolFs (normally everything that is \fBnot\fR mounted under /mnt). The \fBinitrd\fR(4) file can be on a VolFs or DriveFs.
+
+.SH FAQ
+.SS On what distro is the floppy image based?
+None. Besides the boot loader \fBldlinux.sys\fR, there are only three binaries: The Linux kernel \fBbzImage\fR, \fBbusybox\fR(1) and \fBvlmcsdmulti-x86-musl-static\fR. \fBbzImage\fR and \fBbusybox\fR(1) have been compiled with carefully selected configuration parameters not found in any distro. This was neccesary to fit everything on a 1.44 MB floppy.
+
+.SS Why is a rather old Linux kernel (3.12) used?
+Linux 3.12 is the last kernel that can be booted with 16 MB of RAM. Beginning with Linux 3.13 it requires much more memory (about 80 MB) to boot. The floppy image is regularly tested with newer kernels. Everything works except that you need to assign much more main memory to the virtual machine.
+
+.SS Can the floppy be booted on bare metal?
+Basically yes. However, only Intel Pro/1000 and AMD PCNET32 ethernet cards are supported by the kernel. In addition there is no USB support compiled into the kernel. That means you can only use an IBM AT or IBM PS/2 keyboard which are not available on newer hardware. 
+
+.SH FILES
+\fBsyslinux.cfg\fR, \fBvlmcsd.ini\fR(5)
+
+.SH BUGS
+IPv6 cannot be configured with static or manual parameters.
+.br
+DHCPv6 is not supported.
+.br
+\'ip route add ...' does not work. Use 'route add ...' instead.
+
+.SH AUTHOR
+\fBfloppy144.vfd\fR has been created by Hotbird64
+
+.SH CREDITS
+Linus Torvalds et al. for the Linux kernel
+.br
+Erik Andersen et al. for the original uClibc
+.br
+Waldemar Brodkorb et al. for uClibc-ng
+.br
+Denys Vlasenko et al. for BusyBox
+.br
+H. Peter Anvin et al. for SYSLINUX
+
+.SH SEE ALSO
+\fBvlmcsd\fR(8), \fBvlmcsd.ini\fR(5), \fBinitrd\fR(4), \fBbusybox\fR(1), \fBsyslinux(1)\fR

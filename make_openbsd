@@ -3,7 +3,7 @@
 export VERBOSE=3
 export DNS_PARSER=OS
 
-rm -f vlmcsd-* vlmcs-* vlmcsdmulti-* *_all.* 2>/dev/null
+rm -f vlmcsd-Open* vlmcs-* vlmcsdmulti-* *_all.* 2>/dev/null
 rm -f vlmcsdmulti vlmcsd vlmcs 2>/dev/null
 
 MAKEFLAGS="-B -j12"
@@ -15,7 +15,7 @@ CFCLANG="-pipe -fno-common -fno-exceptions -fno-stack-protector -fno-unwind-tabl
 LF="-Wl,-z,norelro"
 LFCLANG="-Wl,-z,norelro"
 
-gmake allmulti CAT=2 $MAKEFLAGS CC=egcc MULTI_NAME=vlmcsdmulti-OpenBSD-x64 PROGRAM_NAME=vlmcsd-OpenBSD-x64 CLIENT_NAME=vlmcs-OpenBSD-x64 CFLAGS="$CF" LDFLAGS="$LF"
+gmake -Bj12 allmulti $MAKEFLAGS CC=egcc MULTI_NAME=vlmcsdmulti-OpenBSD-x64 PROGRAM_NAME=vlmcsd-OpenBSD-x64 CLIENT_NAME=vlmcs-OpenBSD-x64 CFLAGS="$CF" LDFLAGS="$LF"
 
 #gmake allmulti $MAKEFLAGS CAT=2 MULTI_NAME=vlmcsdmulti-OpenBSD-x86 PROGRAM_NAME=vlmcsd-OpenBSD-x86 CLIENT_NAME=vlmcs-OpenBSD-x86 CFLAGS="$CF45 -m32" LDFLAGS="$LF"
 
@@ -30,4 +30,4 @@ cp -f vlmcsd-OpenBSD-x64 /usr/local/sbin/vlmcsd
 cp -f vlmcs-OpenBSD-x64 /usr/local/bin/vlmcs
 
 # Copy everything to distribution server
-scp -p vlmcsdmulti-* vlmcsd-* vlmcs-* root@ubuntu64:x/binaries/OpenBSD/intel/
+scp -p vlmcsdmulti-* vlmcsd-Open* vlmcs-* root@ubuntu64:x/binaries/OpenBSD/intel/

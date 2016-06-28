@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm -f cygkms*.dll libkms*.dll vlmcsd-* vlmcs-* vlmcsdmulti-* *_all.* vlmcsd.exe vlmcs.exe vlmcsdmulti.exe 2> /dev/null
+rm -f cygkms*.dll libkms*.dll vlmcs-* vlmcsd-win* vlmcsd-cyg* vlmcsdmulti-* *_all.* vlmcsd.exe vlmcs.exe vlmcsdmulti.exe 2> /dev/null
 
 export CAT=2
 export VERBOSE=3
@@ -73,12 +73,12 @@ mkdir -p /usr/share/man/man1
 mkdir -p /usr/share/man/man7
 mkdir -p /usr/share/man/man5
 
-cp -p vlmcsd.7 /usr/share/man/man7
+cp -p vlmcsd.7 vlmcsd-floppy.7 /usr/share/man/man7
 cp -p vlmcsd.8 /usr/share/man/man8
 cp -p vlmcsd.ini.5 /usr/share/man/man5
 cp -p vlmcs.1 vlmcsdmulti.1 /usr/share/man/man1
 
-bzip2 -f /usr/share/man/man5/vlmcsd.ini.5 /usr/share/man/man7/vlmcsd.7 /usr/share/man/man8/vlmcsd.8 /usr/share/man/man1/vlmcs.1 /usr/share/man/man1/vlmcsdmulti.1 &
+bzip2 -f /usr/share/man/man7/vlmcsd-floppy.7 /usr/share/man/man5/vlmcsd.ini.5 /usr/share/man/man7/vlmcsd.7 /usr/share/man/man8/vlmcsd.8 /usr/share/man/man1/vlmcs.1 /usr/share/man/man1/vlmcsdmulti.1 &
 
 # Copy stuff to distribution server
-scp -p vlmcsd-* vlmcs-* vlmcsdmulti-* *.dll root@ubuntu64:x/binaries/Windows/intel
+scp -p vlmcsd-cyg* vlmcsd-Win* vlmcs-* vlmcsdmulti-* *.dll root@ubuntu64:x/binaries/Windows/intel

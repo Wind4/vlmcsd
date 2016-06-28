@@ -3,7 +3,7 @@
 export VERBOSE=3
 export DNS_PARSER=OS
 
-rm -f vlmcsd-* vlmcs-* vlmcsdmulti-* *_all.* 2>/dev/null
+rm -f vlmcsd-Free* vlmcs-* vlmcsdmulti-* *_all.* 2>/dev/null
 rm -f vlmcsdmulti vlmcsd vlmcs 2>/dev/null
 
 MAKEFLAGS="-B -j`nproc`"
@@ -16,15 +16,13 @@ export PROGRAM_NAME=vlmcsd-FreeBSD-10.1-x64-glibc
 export CLIENT_NAME=vlmcs-FreeBSD-10.1-x64-glibc
 export MULTI_NAME=vlmcsdmulti-FreeBSD-10.1-x64-glibc
 
-make $MAKEFLAGS CFLAGS="$CF -m64" LDFLAGS="$LF" CAT=2
-make $MAKEFLAGS $MULTI_NAME CFLAGS="$CF -m64" LDFLAGS="$LF" CAT=2 AUXV=1
+make $MAKEFLAGS CFLAGS="$CF -m64" LDFLAGS="$LF" CAT=2 allmulti
 
 export PROGRAM_NAME=vlmcsd-FreeBSD-10.1-x86-glibc
 export CLIENT_NAME=vlmcs-FreeBSD-10.1-x86-glibc
 export MULTI_NAME=vlmcsdmulti-FreeBSD-10.1-x86-glibc
 
-make $MAKEFLAGS CFLAGS="$CF -m32" LDFLAGS="$LF" CAT=2
-make $MAKEFLAGS $MULTI_NAME CFLAGS="$CF -m32" LDFLAGS="$LF" CAT=2 AUXV=1
+make $MAKEFLAGS CFLAGS="$CF -m32" LDFLAGS="$LF" CAT=2 allmulti
 
 sstrip -z vlmcs-* vlmcsd-* vlmcsdmulti-*
 
@@ -43,5 +41,5 @@ cp -af vlmcsd.ini.5 /usr/local/man/man5/
 bzip2 -f -9 /usr/local/man/man5/vlmcsd.ini.5 /usr/local/man/man1/vlmcs.1 /usr/local/man/man1/vlmcsdmulti.1 /usr/local/man/man7/vlmcsd.7 /usr/local/man/man8/vlmcsd.8
 
 # Copy everything to distribution server
-scp -p vlmcsdmulti-* vlmcsd-* vlmcs-* root@ubuntu64.internal:x/binaries/FreeBSD/intel/
+scp -p vlmcsdmulti-* vlmcsd-Free* vlmcs-* root@ubuntu64.internal:x/binaries/FreeBSD/intel/
 

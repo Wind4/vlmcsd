@@ -43,7 +43,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#ifndef NO_LIMIT
 #include <semaphore.h>
+#endif // NO_LIMIT
 #endif // !_WIN32
 
 #if __APPLE__
@@ -533,7 +535,7 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 			return TRUE;
 
 #	endif // !defined(NO_SOCKETS) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
-#	if !defined(NO_LIMIT) && !__minix__
+#	if !defined(NO_LIMIT) && !defined(NO_SOCKETS) && !__minix__
 
 		case INI_PARAM_MAX_WORKERS:
 #			ifdef USE_MSRPC
@@ -543,7 +545,7 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 #			endif // !USE_MSRPC
 			break;
 
-#	endif // !defined(NO_LIMIT) && !__minix__
+#	endif // !defined(NO_LIMIT) && !defined(NO_SOCKETS) && !__minix__
 
 #	ifndef NO_PID_FILE
 
