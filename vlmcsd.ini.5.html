@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Fri Jun 17 14:16:33 2016 -->
+<!-- CreationDate: Wed Jul 13 12:34:02 2016 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -208,6 +208,25 @@ feature. FreeBSD supports this only for IPv4 and requires
 the PRIV_NETINET_BINDANY privilege which is normally
 assigned to proccesses of the root user.</p>
 
+
+<p style="margin-left:11%;"><b>PublicIPProtectionLevel</b></p>
+
+<p style="margin-left:22%;">Set the level of protection
+against KMS activations from public IP addresses.</p>
+
+<p style="margin-left:22%; margin-top: 1em">0 = No
+protection (default) <br>
+1&nbsp;=&nbsp;Listen on private IP addresses only (plus
+those specified by one or more <b>Listen</b> statements)
+<br>
+2&nbsp;=&nbsp;Disconnect clients with public IP addresses
+without activating <br>
+3&nbsp;=&nbsp;Combines 1 and 2</p>
+
+<p style="margin-left:22%; margin-top: 1em">For details on
+public IP protection levels see <b>vlmcsd</b>(8) command
+line option <b>-o</b>.</p>
+
 <p style="margin-left:11%;"><b>UseNDR64</b></p>
 
 <p style="margin-left:22%;">Can be TRUE or FALSE. Specifies
@@ -296,6 +315,19 @@ unixoid OS and with Cygwin you can use the special filename
 &rsquo;syslog&rsquo; to log to the syslog facility. This is
 the same as specifying <b>-l</b> on the command line.</p>
 
+<p style="margin-left:11%;"><b>LogDateAndTime</b></p>
+
+<p style="margin-left:22%;">Can be TRUE or FALSE. The
+default is TRUE. If set to FALSE, logging output does not
+include date and time. This is useful if you log to
+<b>stdout</b>(3) which is redirected to another logging
+mechanism that already includes date and time in its output,
+for instance <b>systemd-journald</b>(8). If you log to
+<b>syslog</b>(3), <b>LogDateAndTime</b> is ignored and date
+and time will never be included in the output sent to
+<b>syslog</b>(3). Using the command line you control this
+setting with options <b>-T0</b> and <b>-T1</b>.</p>
+
 <p style="margin-left:11%;"><b>LogVerbose</b></p>
 
 <p style="margin-left:22%;">Set this to either TRUE or
@@ -316,8 +348,8 @@ details. The default is 2 hours. Example: ActivationInterval
 
 <p style="margin-left:22%;">This is the same as specifying
 <b>-R</b> on the command line. See <b>vlmcsd</b>(8) for
-details. The default is 7 days. Example: ActivationInterval
-= 3h. Please note that the KMS client decides itself when to
+details. The default is 7 days. Example: RenewalInterval =
+3d. Please note that the KMS client decides itself when to
 renew activation. Even though vlmcsd sends the renewal
 interval you specify, it is no more than some kind of
 recommendation to the client. Older KMS clients did follow

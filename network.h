@@ -28,6 +28,10 @@ int listenOnAllAddresses();
 BOOL addListeningSocket(const char *const addr);
 __pure int_fast8_t checkProtocolStack(const int addressfamily);
 
+#if HAVE_GETIFADDR
+void getPrivateIPAddresses(int* numAddresses, char*** ipAddresses);
+#endif // HAVE_GETIFADDR
+
 #endif // NO_SOCKETS
 
 int runServer();

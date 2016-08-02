@@ -51,11 +51,14 @@ static void vlogger(const char *message, va_list args)
 	char mbstr[24];
 	#endif
 
-	strftime(mbstr, sizeof(mbstr), "%Y-%m-%d %X", localtime(&now));
+	if (LogDateAndTime)
+		strftime(mbstr, sizeof(mbstr), "%Y-%m-%d %X: ", localtime(&now));
+	else
+		*mbstr = 0;
 
 	#ifndef USE_THREADS
 
-	fprintf(log, "%s: ", mbstr);
+	fprintf(log, "%s", mbstr);
 	vfprintf(log, message, args);
 	fflush(log);
 
@@ -63,12 +66,11 @@ static void vlogger(const char *message, va_list args)
 
 	// We write everything to a string before we really log inside the critical section
 	// so formatting the output can be concurrent
-	strcat(mbstr, ": ");
 	int len = strlen(mbstr);
 	vsnprintf(mbstr + len, sizeof(mbstr) - len, message, args);
 
 	lock_mutex(&logmutex);
-	fputs(mbstr, log);
+	fprintf(log, "%s", mbstr);
 	fflush(log);
 	unlock_mutex(&logmutex);
 
@@ -616,6 +618,17 @@ void printServerFlags()
 		" NO_FREEBIND"
 #		endif //!HAVE_FREEBIND
 
+#		if !HAVE_GETIFADDR
+		" !HAVE_GETIFADDR"
+#		endif // !HAVE_GETIFADDR
+
+#		if HAVE_GETIFADDR && defined(GETIFADDRS_MUSL)
+		" GETIFADDRS=musl"
+#		endif // HAVE_GETIFADDR && defined(GETIFADDRS_MUSL)
+
+#		if defined(NO_PRIVATE_IP_DETECT)
+		" NO_PRIVATE_IP_DETECT"
+#		endif // defined(NO_PRIVATE_IP_DETECT)
 	);
 }
 #endif // NO_VERSION_INFORMATION

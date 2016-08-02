@@ -108,6 +108,21 @@ KEYWORDS
               proccesses of the root user.
 
 
+       PublicIPProtectionLevel
+              Set  the level of protection against KMS activations from public
+              IP addresses.
+
+              0 = No protection (default)
+              1 = Listen on private IP addresses only (plus those specified by
+              one or more Listen statements)
+              2 = Disconnect clients with public IP addresses without activat‐
+              ing
+              3 = Combines 1 and 2
+
+              For details on public IP protection levels see vlmcsd(8) command
+              line option -o.
+
+
        UseNDR64
               Can  be  TRUE  or  FALSE.  Specifies whether you want to use the
               NDR64 transfer syntax. See options -n0 and -n1 in vlmcsd(8). The
@@ -173,56 +188,67 @@ KEYWORDS
               same as specifying -l on the command line.
 
 
+       LogDateAndTime
+              Can be TRUE or FALSE. The default is TRUE. If set to FALSE, log‐
+              ging output does not include date and time. This  is  useful  if
+              you  log  to  stdout(3)  which  is redirected to another logging
+              mechanism that already includes date and time in its output, for
+              instance  systemd-journald(8). If you log to syslog(3), LogDate‐
+              AndTime is ignored and date and time will never be  included  in
+              the output sent to syslog(3). Using the command line you control
+              this setting with options -T0 and -T1.
+
+
        LogVerbose
-              Set  this  to either TRUE or FALSE. The default is FALSE. If set
+              Set this to either TRUE or FALSE. The default is FALSE.  If  set
               to TRUE, more details of each activation will be logged. You use
-              -v  and  -q in the command line to control this setting. LogVer‐
-              bose has an effect only if you specify a log  file  or  redirect
+              -v and -q in the command line to control this  setting.  LogVer‐
+              bose  has  an  effect only if you specify a log file or redirect
               logging to stdout(3).
 
 
        ActivationInterval
-              This  is the same as specifying -A on the command line. See vlm‐
+              This is the same as specifying -A on the command line. See  vlm‐
               csd(8) for details. The default is 2 hours. Example: Activation‐
               Interval = 1h
 
 
        RenewalInterval
-              This  is the same as specifying -R on the command line. See vlm‐
-              csd(8) for details. The default is 7 days. Example:  Activation‐
-              Interval  =  3h.  Please note that the KMS client decides itself
-              when to renew activation. Even though vlmcsd sends  the  renewal
-              interval  you specify, it is no more than some kind of recommen‐
-              dation to the client. Older KMS clients did follow the recommen‐
-              dation from a KMS server or emulator. Newer clients do not.
+              This is the same as specifying -R on the command line. See  vlm‐
+              csd(8)  for  details. The default is 7 days. Example: RenewalIn‐
+              terval = 3d. Please note that the KMS client decides itself when
+              to renew activation. Even though vlmcsd sends the renewal inter‐
+              val you specify, it is no more than some kind of  recommendation
+              to  the  client. Older KMS clients did follow the recommendation
+              from a KMS server or emulator. Newer clients do not.
 
 
-       User   Run  vlmcsd  as  another, preferrably less privileged, user. The
-              argument can be a user name or a numeric user id. You must  have
-              the  required  privileges  (capabilities on Linux) to change the
-              security context of a process without providing any  credentials
-              (a  password in most cases). On most unixoid OSses 'root' is the
+       User   Run vlmcsd as another, preferrably less  privileged,  user.  The
+              argument  can be a user name or a numeric user id. You must have
+              the required privileges (capabilities on Linux)  to  change  the
+              security  context of a process without providing any credentials
+              (a password in most cases). On most unixoid OSses 'root' is  the
               only user who has these privileges in the default configuration.
-              This  setting  is not available in the native Windows version of
-              vlmcsd. See -u in vlmcsd(8). This setting cannot be  changed  on
+              This setting is not available in the native Windows  version  of
+              vlmcsd.  See  -u in vlmcsd(8). This setting cannot be changed on
               the fly by sending SIGHUP to vlmcsd.
 
 
-       Group  Run  vlmcsd  as another, preferrably less privileged, group. The
-              argument can be a group name or a numeric  group  id.  You  must
-              have  the  required privileges (capabilities on Linux) to change
-              the security context of a process without providing any  creden‐
-              tials  (a  password in most cases). On most unixoid OSses 'root'
+       Group  Run vlmcsd as another, preferrably less privileged,  group.  The
+              argument  can  be  a  group name or a numeric group id. You must
+              have the required privileges (capabilities on Linux)  to  change
+              the  security context of a process without providing any creden‐
+              tials (a password in most cases). On most unixoid  OSses  'root'
               is the only user who has these privileges in the default config‐
-              uration.  This  setting  is  not available in the native Windows
-              version of vlmcsd. See -g in vlmcsd(8). This setting  cannot  be
+              uration. This setting is not available  in  the  native  Windows
+              version  of  vlmcsd. See -g in vlmcsd(8). This setting cannot be
               changed on the fly by sending SIGHUP to vlmcsd.
 
 
 SPECIAL KEYWORDS
-       Any  valid  GUID is being treated as a special keyword in the ini file.
-       It is used to select a specfic ePID and HwId for an  application  GUID.
-       The  argument  has the form ePID [ / HwId ]. KMS currently knows only 3
+       Any valid GUID is being treated as a special keyword in the  ini  file.
+       It  is  used to select a specfic ePID and HwId for an application GUID.
+       The argument has the form ePID [ / HwId ]. KMS currently knows  only  3
        application GUIDs:
 
        55c92734-d682-4d71-983e-d6ec3f16059f (Windows)
@@ -236,25 +262,25 @@ SPECIAL KEYWORDS
        59a52881-a989-479d-af46-f275c6370663 = 55041-00096-216-598637-03-17418-6002.0000-3312013
        0ff1ce15-a989-479d-af46-f275c6370663 = 55041-00206-234-742099-03-9217-6002.0000-2942013
 
-       The ePID is currently a comment only. You can specify any string up  to
-       63  bytes.  In  Windows  7 Microsoft has blacklisted few ( < 10 ) ePIDs
-       that were used in KMSv5 versions of the  "ratiborus  virtual  machine".
-       Microsoft  has  given up on blacklisting when KMS emulators appeared in
+       The  ePID is currently a comment only. You can specify any string up to
+       63 bytes. In Windows 7 Microsoft has blacklisted few (  <  10  )  ePIDs
+       that  were  used  in KMSv5 versions of the "ratiborus virtual machine".
+       Microsoft has given up on blacklisting when KMS emulators  appeared  in
        the wild.
 
        Even if you can use "Activated by cool hacker guys" as an ePID, you may
        wish to use ePIDs that cannot be detected as non-MS ePIDs. If you don't
-       know how these "valid" ePIDs look like exactly, do  not  use  GUIDS  in
-       vlmcsd.ini.  vlmcsd  provides  internal  mechanisms  to  generate valid
+       know  how  these  "valid"  ePIDs look like exactly, do not use GUIDS in
+       vlmcsd.ini. vlmcsd  provides  internal  mechanisms  to  generate  valid
        ePIDs.
 
        If you use non-ASCII characters in your ePID (you shouldn't do anyway),
-       these  must  be  in UTF-8 format. This is especially important when you
+       these must be in UTF-8 format. This is especially  important  when  you
        run vlmcsd on Windows or cygwin because UTF-8 is not the default encod‐
        ing for most editors.
 
        If you are specifying an optional HWID it follows the same syntax as in
-       the -H option in vlmcsd(8) ecxept that you must not enclose a  HWID  in
+       the  -H  option in vlmcsd(8) ecxept that you must not enclose a HWID in
        quotes even if it contains spaces.
 
 
@@ -268,7 +294,7 @@ AUTHOR
 
 
 CREDITS
-       Thanks to CODYQX4, deagles, eIcn,  mikmik38,  nosferati87,  qad,  Rati‐
+       Thanks  to  CODYQX4,  deagles,  eIcn, mikmik38, nosferati87, qad, Rati‐
        borus, ...
 
 
@@ -277,4 +303,4 @@ SEE ALSO
 
 
 
-Hotbird64                          June 2016                     VLMCSD.INI(5)
+Hotbird64                          July 2016                     VLMCSD.INI(5)

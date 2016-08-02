@@ -18,6 +18,9 @@ export MULTI_NAME=vlmcsdmulti-FreeBSD-10.1-x64-glibc
 
 make $MAKEFLAGS CFLAGS="$CF -m64" LDFLAGS="$LF" CAT=2 allmulti
 
+cp -af $PROGRAM_NAME /usr/local/sbin/vlmcsd
+cp -af $CLIENT_NAME /usr/local/bin/vlmcs
+
 export PROGRAM_NAME=vlmcsd-FreeBSD-10.1-x86-glibc
 export CLIENT_NAME=vlmcs-FreeBSD-10.1-x86-glibc
 export MULTI_NAME=vlmcsdmulti-FreeBSD-10.1-x86-glibc
@@ -25,9 +28,6 @@ export MULTI_NAME=vlmcsdmulti-FreeBSD-10.1-x86-glibc
 make $MAKEFLAGS CFLAGS="$CF -m32" LDFLAGS="$LF" CAT=2 allmulti
 
 sstrip -z vlmcs-* vlmcsd-* vlmcsdmulti-*
-
-cp -af $PROGRAM_NAME /usr/local/sbin/vlmcsd
-cp -af $CLIENT_NAME /usr/local/bin/vlmcs
 
 # Copy man pages
 mkdir -p /usr/local/man/man1 2>/dev/null

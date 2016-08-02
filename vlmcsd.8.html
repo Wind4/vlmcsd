@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Fri Jun 17 14:16:33 2016 -->
+<!-- CreationDate: Wed Jul 13 12:34:01 2016 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -163,6 +163,80 @@ same link local address is used on more than one network
 interface. Windows does not accept a name and the scope id
 must be a number.</p>
 
+<p style="margin-left:11%;"><b>-o</b> <i>level</i></p>
+
+<p style="margin-left:22%;">Sets the <i>level</i> of
+protection against activations from public IP addresses. The
+default is <b>-o0</b> for no protection.</p>
+
+<p style="margin-left:22%; margin-top: 1em"><b>-o1</b>
+causes vlmcsd not to listen on all IP addresses but on
+private IP addresses only. IPv4 addresses in the
+100.64.0.0/10 range (see RFC6598) are not treated as private
+since they can be reached from other users of your ISP.
+Private IPv4 addresses are 10.0.0.0/8, 172.16.0.0/12,
+192.168.0.0/16, 169.254.0.0/16 and 127.0.0.0/8. vlmcsd
+treats all IPv6 addresses not within 2000::/3 as private
+addresses.</p>
+
+<p style="margin-left:22%; margin-top: 1em">If <b>-o1</b>
+is combined with <b>-L</b>, it will listen on all private IP
+addresses plus the ones specified by one or more <b>-L</b>
+statements. If <b>-o1</b> is combined with <b>-P</b>, only
+the last <b>-P</b> statement will be used.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Using
+<b>-o1</b> does not protect you if you enable NAT port
+forwarding on your router to your vlmcsd machine. It is
+identical to using multiple -L statements with all of your
+private IP addresses. What <b>-o1</b> does for you, is
+automatically enumerating your private IP addresses.</p>
+
+<p style="margin-left:22%; margin-top: 1em"><b>-o2</b> does
+not affect the interfaces, vlmcsd is listening on. When a
+clients connects, vlmcsd immediately drops the connection if
+the client has a public IP address. Unlike <b>-o1</b>
+clients will be able to establish a TCP connection but it
+will be closed without a single byte sent over the
+connection. This protects against clients with public IP
+addresses even if NAT port forwarding is used. While
+<b>-o2</b> offers a higher level of protection than
+<b>-o1</b>, the client sees that the KMS TCP port (1688 by
+default) is actually accepting connections.</p>
+
+<p style="margin-left:22%; margin-top: 1em"><b>-o3</b>
+combines <b>-o1</b> and <b>-o2</b>. vlmcsd listens on
+private interfaces only and if a public client manages to
+connect anyway due to NAT port forwarding, it will be
+immediately dropped.</p>
+
+<p style="margin-left:22%; margin-top: 1em">If you use any
+form of TCP level port forwarding (e.g. <b>nc</b>(1),
+<b>netcat</b>(1), <b>ssh</b>(1) port forwarding or similar)
+to redirect KMS requests to vlmcsd, there will be no
+protection even if you use <b>-o2</b> or <b>-o3</b>. This is
+due to the simple fact that vlmcsd sees the IP address of
+the redirector and not the IP address of the client.</p>
+
+<p style="margin-left:22%; margin-top: 1em"><b>-o1</b> (and
+thus <b>-o3</b>) is not (yet) available in some
+scenarios:</p>
+
+<p style="margin-left:29%; margin-top: 1em">FreeBSD: There
+is a longtime unfixed
+<a href="https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=178881">bug</a>
+in the 32-bit ABI of the 64-bit kernel. If you have a 64-bit
+FreeBSD kernel, you must run the 64-bit version of vlmcsd if
+you use <b>-o1</b> or <b>-o3</b>. The 32-bit version causes
+undefined behavior up to crashing vlmcsd. Other BSDs
+(NetBSD, OpenBSD, Dragonfly and Mac OS X) work
+correctly.</p>
+
+<p style="margin-left:29%; margin-top: 1em">If vlmcsd was
+started by an internet superserver or was compiled to use
+Microsoft RPC (Windows only) or simple sockets, <b>-o1</b>
+and <b>-o3</b> are not available by design.</p>
+
 <p style="margin-left:11%;"><b>-P</b> <i>port</i></p>
 
 <p style="margin-left:22%;">Use TCP <i>port</i> for all
@@ -285,6 +359,18 @@ service (/dev/log) installed, logging output will go to
 /dev/console. Syslog logging is not available in the native
 Windows version. The Cygwin version does support syslog
 logging.</p>
+
+<p style="margin-left:11%;"><b>-T0</b> and <b>-T1</b></p>
+
+<p style="margin-left:22%;">Disable (<b>-T0</b>) or enable
+(<b>-T1</b>) the inclusion of date and time in each line of
+the log. The default is <b>-T1</b>. <b>-T0</b> is useful if
+you log to <b>stdout</b>(3) which is redirected to another
+logging mechanism that already includes date and time in its
+output, for instance <b>systemd-journald</b>(8). If you log
+to <b>syslog</b>(3), <b>-T1</b> is ignored and date and time
+will never be included in the output sent to
+<b>syslog</b>(3).</p>
 
 <table width="100%" border="0" rules="none" frame="void"
        cellspacing="0" cellpadding="0">
@@ -777,7 +863,7 @@ and Visio must be volume license versions.</p>
 
 
 <p style="margin-left:11%; margin-top: 1em"><b>vlmcsd
--f</b></p>
+-De</b></p>
 
 <p style="margin-left:22%;">Starts <b>vlmcsd</b> in
 foreground. Useful if you use it for the first time and want

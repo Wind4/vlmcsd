@@ -11,17 +11,17 @@ CFMSRPC="-Wno-missing-braces -Wno-unused-variable $CF" # -fno-common -fno-stack-
 PF32=""
 PF64="-mpreferred-stack-boundary=4 -march=nocona -mtune=generic"
 LFCYG32="-fwhole-program -Wl,--nxcompat,--dynamicbase,--tsaware,--large-address-aware,--disable-long-section-names"
-LFWIN32="-fwhole-program -lws2_32 -Wl,--nxcompat,--dynamicbase,--tsaware,--large-address-aware,--disable-long-section-names"
+LFWIN32="-fwhole-program -Wl,--nxcompat,--dynamicbase,--tsaware,--large-address-aware,--disable-long-section-names"
 LFCYG64="-fwhole-program -Wl,--nxcompat,--dynamicbase,--tsaware,--disable-long-section-names,--high-entropy-va"
-LFWIN64="-fwhole-program -lws2_32 -Wl,--nxcompat,--dynamicbase,--tsaware,--disable-long-section-names,--high-entropy-va"
+LFWIN64="-fwhole-program -Wl,--nxcompat,--dynamicbase,--tsaware,--disable-long-section-names,--high-entropy-va"
 
 MAKEFLAGS="-j$NUMCPU -B"
 REUSEFLAGS="-j$NUMCPU"
 
 make $MAKEFLAGS cygkms32.dll FEATURES=minimum THREADS=1 DLL_NAME=cygkms32.dll DNS_PARSER=internal CC=i686-pc-cygwin-gcc.exe CFLAGS="$CF -flto=jobserver -fvisibility=hidden" PLATFORMFLAGS="$PF32" LDFLAGS="$LFCYG32 -Wl,--no-seh"
 make $MAKEFLAGS cygkms64.dll FEATURES=minimum THREADS=1 DLL_NAME=cygkms64.dll DNS_PARSER=internal CC=x86_64-pc-cygwin-gcc.exe CFLAGS="$CF -flto=jobserver -fvisibility=hidden" PLATFORMFLAGS="$PF64" LDFLAGS="$LFCYG64 -Wl,--no-seh"
-make $MAKEFLAGS all vlmcsdmulti-cygwin-x86 THREADS=1 DNS_PARSER=internal CLIENT_NAME=vlmcs-cygwin-x86 PROGRAM_NAME=vlmcsd-cygwin-x86 MULTI_NAME=vlmcsdmulti-cygwin-x86 CC=i686-pc-cygwin-gcc.exe CFLAGS="$CF" PLATFORMFLAGS="$PF32" LDFLAGS="$LFCYG32 -Wl,--no-seh"
-make $MAKEFLAGS all vlmcsdmulti-cygwin-x64 THREADS=1 DNS_PARSER=internal CLIENT_NAME=vlmcs-cygwin-x64 PROGRAM_NAME=vlmcsd-cygwin-x64 MULTI_NAME=vlmcsdmulti-cygwin-x64 CC=x86_64-pc-cygwin-gcc.exe CFLAGS="$CF" PLATFORMFLAGS="$PF64" LDFLAGS="$LFCYG64 -Wl,--no-seh"
+make $MAKEFLAGS allmulti THREADS=1 DNS_PARSER=internal CLIENT_NAME=vlmcs-cygwin-x86 PROGRAM_NAME=vlmcsd-cygwin-x86 MULTI_NAME=vlmcsdmulti-cygwin-x86 CC=i686-pc-cygwin-gcc.exe CFLAGS="$CF" PLATFORMFLAGS="$PF32" LDFLAGS="$LFCYG32 -Wl,--no-seh"
+make $MAKEFLAGS allmulti THREADS=1 DNS_PARSER=internal CLIENT_NAME=vlmcs-cygwin-x64 PROGRAM_NAME=vlmcsd-cygwin-x64 MULTI_NAME=vlmcsdmulti-cygwin-x64 CC=x86_64-pc-cygwin-gcc.exe CFLAGS="$CF" PLATFORMFLAGS="$PF64" LDFLAGS="$LFCYG64 -Wl,--no-seh"
 make $MAKEFLAGS MSRPC=1 THREADS=1 DNS_PARSER=internal CLIENT_NAME=vlmcs-cygwin-msrpc-x86 PROGRAM_NAME=vlmcsd-cygwin-msrpc-x86 MULTI_NAME=vlmcsdmulti-cygwin-msrpc-x86 CC=i686-pc-cygwin-gcc.exe CFLAGS="$CF -fasynchronous-unwind-tables" PLATFORMFLAGS="$PF32" LDFLAGS="$LFCYG32"
 make $MAKEFLAGS MSRPC=1 THREADS=1 DNS_PARSER=internal CLIENT_NAME=vlmcs-cygwin-msrpc-x64 PROGRAM_NAME=vlmcsd-cygwin-msrpc-x64 MULTI_NAME=vlmcsdmulti-cygwin-msrpc-x64 CC=x86_64-pc-cygwin-gcc.exe CFLAGS="$CFMSRPC" PLATFORMFLAGS="$PF64" LDFLAGS="$LFCYG64"
 unset CAT
@@ -50,7 +50,7 @@ rm -f *_all.* *.o 2> /dev/null &
 echo ""
 echo "Copying MingW binaries from distribution server"
 
-scp -p root@ubuntu64:x/binaries/Windows/intel/* .
+scp -p root@ubuntu64:x/binaries/Windows/intel/*Windows* root@ubuntu64:x/binaries/Windows/intel/libkms* .
 
 echo ""
 echo "Installing binaries"

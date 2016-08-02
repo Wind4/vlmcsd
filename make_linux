@@ -78,7 +78,7 @@ export THREADS=1
 export CFLAGS="$SMALLCC"
 export CC=i686-w64-mingw32-gcc
 export PLATFORMFLAGS="-march=i686 -mtune=generic -fwhole-program -pipe"
-export LDFLAGS="-lws2_32 -Wl,--gc-sections,--force-exe-suffix,--large-address-aware,--nxcompat,--dynamicbase,--tsaware,--no-seh,--disable-long-section-names"
+export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--large-address-aware,--nxcompat,--dynamicbase,--tsaware,--no-seh,--disable-long-section-names"
 export FEATURES=full
 
 make $MAKEFLAGS CRYPTO=windows CAT=2 all $MULTI_NAME
@@ -139,7 +139,7 @@ export THREADS=1
 export CFLAGS="$SMALLCC"
 export CC=x86_64-w64-mingw32-gcc
 export PLATFORMFLAGS="-march=nocona -mtune=generic -fwhole-program -pipe"
-export LDFLAGS="-lws2_32 -Wl,--gc-sections,--force-exe-suffix,--nxcompat,--dynamicbase,--tsaware,--no-seh,--high-entropy-va,--disable-long-section-names"
+export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--nxcompat,--dynamicbase,--tsaware,--no-seh,--high-entropy-va,--disable-long-section-names"
 
 make $MAKEFLAGS CAT=2 CRYPTO=windows all $MULTI_NAME
 
@@ -202,7 +202,7 @@ export LDFLAGS="-fwhole-program -Wl,-z,norelro"
 export THREADS=0
 #export TERMINAL_WIDTH=80
 
-make $MAKEFLAGS NO_DNS=1 SAFE_MODE=1 allmulti
+make $MAKEFLAGS GETIFADDRS=musl NO_DNS=1 SAFE_MODE=1 allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -214,7 +214,7 @@ export PROGRAM_NAME=binaries/Linux/mips/little-endian/static/vlmcsd-mips1el-toma
 export MULTI_NAME=binaries/Linux/mips/little-endian/static/vlmcsdmulti-mips1el-tomato-uclibc-static
 export LDFLAGS="$LDFLAGS -static"
 
-make NO_DNS=1 SAFE_MODE=1 $REUSEOBJFLAGS allmulti
+make NO_DNS=1 SAFE_MODE=1 GETIFADDRS=musl $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $MULTI_NAME
@@ -1727,7 +1727,7 @@ export LDFLAGS="-Wl,-z,norelro -fwhole-program"
 export THREADS=0
 export NOPROCFS=1
 
-make $MAKEFLAGS SAFE_MODE=1 allmulti
+make $MAKEFLAGS GETIFADDRS=musl SAFE_MODE=1 allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -1740,7 +1740,7 @@ export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
 export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
 export LDFLAGS="-Wl,-z,norelro -fwhole-program -static"
 
-make $REUSEOBJFLAGS SAFE_MODE=1 allmulti
+make $REUSEOBJFLAGS GETIFADDRS=musl SAFE_MODE=1 allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -1817,7 +1817,7 @@ export THREADS=0
 export CRYPTO=internal
 export NOPROCFS=1
 
-make $MAKEFLAGS SAFE_MODE=1 allmulti
+make $MAKEFLAGS GETIFADDRS=musl SAFE_MODE=1 allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -1830,7 +1830,7 @@ export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
 export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
 export LDFLAGS="-Wl,-z,norelro -fwhole-program -static"
 
-make $REUSEOBJFLAGS SAFE_MODE=1 allmulti
+make $REUSEOBJFLAGS GETIFADDRS=musl SAFE_MODE=1 allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -1906,7 +1906,7 @@ export LDFLAGS="$SMALLLD"
 export THREADS=0
 export CRYPTO=internal
 
-make $MAKEFLAGS allmulti
+make $MAKEFLAGS GETIFADDRS=musl allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -1918,7 +1918,7 @@ export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
 export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
 export LDFLAGS="$SMALLLD -static"
 
-make $REUSEOBJFLAGS allmulti
+make $REUSEOBJFLAGS GETIFADDRS=musl allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -1942,7 +1942,7 @@ export LDFLAGS="$SMALLLD"
 export THREADS=0
 export CRYPTO=internal
 
-make NOLRESOLV=1 $MAKEFLAGS allmulti
+make NOLRESOLV=1 GETIFADDRS=musl $MAKEFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -1954,7 +1954,7 @@ export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
 export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
 export LDFLAGS="$SMALLLD -static"
 
-make NOLRESOLV=1 $REUSEOBJFLAGS allmulti
+make NOLRESOLV=1 GETIFADDRS=musl $REUSEOBJFLAGS allmulti
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
@@ -2665,7 +2665,7 @@ export LDFLAGS="-fwhole-program"
 export THREADS=0
 export CRYPTO=internal
 
-make $MAKEFLAGS CAT=2 SAFE_MODE=1 $PROGRAM_NAME $MULTI_NAME $CLIENT_NAME
+make $MAKEFLAGS GETIFADDRS=musl CAT=2 SAFE_MODE=1 $PROGRAM_NAME $MULTI_NAME $CLIENT_NAME
 
 if [ $? != 0 ]; then
   echo Error creating $PROGRAM_NAME, $MULTI_NAME and/or $CLIENT_NAME
@@ -2677,7 +2677,7 @@ export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
 export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
 export LDFLAGS="-fwhole-program -static"
 
-make $REUSEOBJFLAGS CAT=2 SAFE_MODE=1 $PROGRAM_NAME $MULTI_NAME $CLIENT_NAME
+make $REUSEOBJFLAGS GETIFADDRS=musl CAT=2 SAFE_MODE=1 $PROGRAM_NAME $MULTI_NAME $CLIENT_NAME
 
 if [ $? != 0 ]; then
   echo Error creating $PROGRAM_NAME, $MULTI_NAME and/or $CLIENT_NAME
@@ -2765,7 +2765,7 @@ export CFLAGS="$SMALLCC"
 export LDFLAGS="-Wl,-z,norelo"
 export THREADS=0
 
-make $MAKEFLAGS SAFE_MODE=1 CAT=2 $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME
+make $MAKEFLAGS GETIFADDRS=musl SAFE_MODE=1 CAT=2 $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME, $MULTI_NAME and/or $PROGRAM_NAME
@@ -2777,7 +2777,7 @@ export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
 export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
 export LDFLAGS="-Wl,-z,norelo -static"
 
-make $REUSEOBJFLAGS SAFE_MODE=1 CAT=2 $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME
+make $REUSEOBJFLAGS GETIFADDRS=musl SAFE_MODE=1 CAT=2 $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME
 
 if [ $? != 0 ]; then
   echo Error creating $CLIENT_NAME, $MULTI_NAME and/or $PROGRAM_NAME

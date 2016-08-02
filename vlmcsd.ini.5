@@ -1,4 +1,4 @@
-.TH VLMCSD.INI 5 "June 2016" "Hotbird64" "KMS Activation Manual"
+.TH VLMCSD.INI 5 "July 2016" "Hotbird64" "KMS Activation Manual"
 .LO 8
 
 .SH NAME
@@ -53,6 +53,19 @@ Can only be used if vlmcsd has been compiled to use simple sockets or on Windows
 .IP "\fBFreeBind\fR"
 Can be TRUE or FALSE. If TRUE, you can use the \fBListen\fR keyword with IP addresses that are currently not defined on your system. \fBvlmcsd\fR(8) will start listening on these IP addresses as soon as they become available. This keyword is only available under Linux and FreeBSD because no other OS currently supports that feature. FreeBSD supports this only for IPv4 and requires the PRIV_NETINET_BINDANY privilege which is normally assigned to proccesses of the root user.
 
+.IP "\fBPublicIPProtectionLevel\fR"
+Set the level of protection against KMS activations from public IP addresses.
+
+0 = No protection (default)
+.br
+1\ =\ Listen on private IP addresses only (plus those specified by one or more \fBListen\fR statements)
+.br
+2\ =\ Disconnect clients with public IP addresses without activating
+.br
+3\ =\ Combines 1 and 2
+
+For details on public IP protection levels see \fBvlmcsd\fR(8) command line option \fB-o\fR.
+
 .IP "\fBUseNDR64\fR"
 Can be TRUE or FALSE. Specifies whether you want to use the NDR64 transfer syntax. See options \fB-n0\fR and \fB-n1\fR in \fBvlmcsd\fR(8). The default is TRUE.
 
@@ -80,6 +93,9 @@ Write a pid file. The \fIargument\fR is the full pathname of a pid file. The pid
 .IP "\fBLogFile\fR"
 Write a log file. The \fIargument\fR is the full pathname of a log file. On a unixoid OS and with Cygwin you can use the special filename 'syslog' to log to the syslog facility. This is the same as specifying \fB-l\fR on the command line.
 
+.IP "\fBLogDateAndTime\fR"
+Can be TRUE or FALSE. The default is TRUE. If set to FALSE, logging output does not include date and time. This is useful if you log to \fBstdout\fR(3) which is redirected to another logging mechanism that already includes date and time in its output, for instance \fBsystemd-journald\fR(8). If you log to \fBsyslog\fR(3), \fBLogDateAndTime\fR is ignored and date and time will never be included in the output sent to \fBsyslog\fR(3). Using the command line you control this setting with options \fB-T0\fR and \fB-T1\fR.
+
 .IP "\fBLogVerbose\fR"
 Set this to either TRUE or FALSE. The default is FALSE. If set to TRUE, more details of each activation will be logged. You use \fB-v\fR and \fB-q\fR in the command line to control this setting. \fBLogVerbose\fR has an effect only if you specify a log file or redirect logging to \fBstdout\fR(3).
 
@@ -87,7 +103,7 @@ Set this to either TRUE or FALSE. The default is FALSE. If set to TRUE, more det
 This is the same as specifying \fB-A\fR on the command line. See \fBvlmcsd\fR(8) for details. The default is 2 hours. Example: ActivationInterval = 1h
 
 .IP "\fBRenewalInterval\fR"
-This is the same as specifying \fB-R\fR on the command line. See \fBvlmcsd\fR(8) for details. The default is 7 days. Example: ActivationInterval = 3h. Please note that the KMS client decides itself when to renew activation. Even though vlmcsd sends the renewal interval you specify, it is no more than some kind of recommendation to the client. Older KMS clients did follow the recommendation from a KMS server or emulator. Newer clients do not.
+This is the same as specifying \fB-R\fR on the command line. See \fBvlmcsd\fR(8) for details. The default is 7 days. Example: RenewalInterval = 3d. Please note that the KMS client decides itself when to renew activation. Even though vlmcsd sends the renewal interval you specify, it is no more than some kind of recommendation to the client. Older KMS clients did follow the recommendation from a KMS server or emulator. Newer clients do not.
 
 .IP "\fBUser\fR"
 Run vlmcsd as another, preferrably less privileged, user. The \fIargument\fR can be a user name or a numeric user id. You must have the required privileges (capabilities on Linux) to change the security context of a process without providing any credentials (a password in most cases). On most unixoid OSses 'root' is the only user who has these privileges in the default configuration. This setting is not available in the native Windows version of vlmcsd. See \fB-u\fR in \fBvlmcsd\fR(8). This setting cannot be changed on the fly by sending SIGHUP to vlmcsd.

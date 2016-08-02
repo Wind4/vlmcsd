@@ -83,26 +83,6 @@
 
 
 /*
- * -------------------------------
- * Backward compatibility
- * -------------------------------
- */
-
-
-#if !defined(ENABLE_DEPRECATED_OPTIONS)
-/*
- * comment out the following line if you want vlmcsd no to support command line options
- * that have been present in previous versions of vlmcsd and are now obsolete
- */
-
-//#define ENABLE_DEPRECATED_OPTIONS
-
-#endif // ENABLE_DEPRECATED_OPTIONS
-
-
-
-
-/*
  * ----------------------------------------------------------------------------------------
  * Troubleshooting options. Please note that disabling features may also help troubleshooting.
  * If you have an old OS that does not support features like pthreads, shared memory or
@@ -556,6 +536,19 @@
 
 
 
+#ifndef NO_PRIVATE_IP_DETECT
+/*
+ * Disables the ability to protect vlmcsd against KMS requests from public IP addresses.
+ * Removes -o from the command line.
+ */
+
+//#define NO_PRIVATE_IP_DETECT
+
+#endif // NO_PRIVATE_IP_DETECT
+
+
+
+
 #ifndef NO_SOCKETS
 /*
  * Disables standalone startup of vlmcsd. If you use this config directive, you must start vlmcsd from an internet
@@ -631,7 +624,6 @@
 //#define SIMPLE_SOCKETS
 
 #endif // SIMPLE_SOCKETS
-
 
 
 

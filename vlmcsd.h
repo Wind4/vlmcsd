@@ -48,6 +48,8 @@ int server_main(int argc, CARGV argv);
 #define INI_PARAM_RPC_NDR64 15
 #define INI_PARAM_RPC_BTFN 16
 #define INI_PARAM_FREEBIND 17
+#define INI_PARAM_PUBLIC_IP_PROTECTION_LEVEL 18
+#define INI_PARAM_LOG_DATE_AND_TIME 19
 
 #define INI_FILE_PASS_1 1
 #define INI_FILE_PASS_2 2

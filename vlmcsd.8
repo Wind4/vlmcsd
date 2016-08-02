@@ -1,5 +1,5 @@
 .mso www.tmac
-.TH VLMCSD 8 "June 2016" "Hotbird64" "KMS Activation Manual"
+.TH VLMCSD 8 "July 2016" "Hotbird64" "KMS Activation Manual"
 .LO 8
 
 .SH NAME
@@ -39,6 +39,31 @@ If no port is specified, vlmcsd uses the default port according to a preceding \
 .IP
 If you specify a link local IPv6 address (fe80::/10, usually starting with fe80::), it must be followed by a percent sign (%) and a scope id (=network interface name or number) on most unixoid OSses including Linux, Android, MacOS X and iOS, e.g. fe80::1234:56ff:fe78:9abc\fB%eth0\fR or [fe80::1234:56ff:fe78:9abc\fB%2\fR]:1688. Windows (including cygwin) does not require a scope id unless the same link local address is used on more than one network interface. Windows does not accept a name and the scope id must be a number.
 
+.IP "\fB-o \fIlevel\fR"
+Sets the \fIlevel\fR of protection against activations from public IP addresses. The default is \fB-o0\fR for no protection.
+
+\fB-o1\fR causes vlmcsd not to listen on all IP addresses but on private IP addresses only. IPv4 addresses in the 100.64.0.0/10 range (see RFC6598) are not treated as private since they can be reached from other users of your ISP. Private IPv4 addresses are 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16 and 127.0.0.0/8. vlmcsd treats all IPv6 addresses not within 2000::/3 as private addresses.
+
+If \fB-o1\fR is combined with \fB-L\fR, it will listen on all private IP addresses plus the ones specified by one or more \fB-L\fR statements. If \fB-o1\fR is combined with \fB-P\fR, only the last \fB-P\fR statement will be used.
+
+Using \fB-o1\fR does not protect you if you enable NAT port forwarding on your router to your vlmcsd machine. It is identical to using multiple -L statements with all of your private IP addresses. What \fB-o1\fR does for you, is automatically enumerating your private IP addresses.
+
+\fB-o2\fR does not affect the interfaces, vlmcsd is listening on. When a clients connects, vlmcsd immediately drops the connection if the client has a public IP address. Unlike \fB-o1\fR clients will be able to establish a TCP connection but it will be closed without a single byte sent over the connection. This protects against clients with public IP addresses even if NAT port forwarding is used. While \fB-o2\fR offers a higher level of protection than \fB-o1\fR, the client sees that the KMS TCP port (1688 by default) is actually accepting connections.
+
+\fB-o3\fR combines \fB-o1\fR and \fB-o2\fR. vlmcsd listens on private interfaces only and if a public client manages to connect anyway due to NAT port forwarding, it will be immediately dropped.
+
+If you use any form of TCP level port forwarding (e.g. \fBnc\fR(1), \fBnetcat\fR(1), \fBssh\fR(1) port forwarding or similar) to redirect KMS requests to vlmcsd, there will be no protection even if you use \fB-o2\fR or \fB-o3\fR. This is due to the simple fact that vlmcsd sees the IP address of the redirector and not the IP address of the client.
+
+\fB-o1\fR (and thus \fB-o3\fR) is not (yet) available in some scenarios:
+
+.RS 12
+FreeBSD: There is a longtime unfixed
+.URL https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=178881 bug ""
+in the 32-bit ABI of the 64-bit kernel. If you have a 64-bit FreeBSD kernel, you must run the 64-bit version of vlmcsd if you use \fB-o1\fR or \fB-o3\fR. The 32-bit version causes undefined behavior up to crashing vlmcsd. Other BSDs (NetBSD, OpenBSD, Dragonfly and Mac OS X) work correctly.
+
+If vlmcsd was started by an internet superserver or was compiled to use Microsoft RPC (Windows only) or simple sockets, \fB-o1\fR and \fB-o3\fR are not available by design.
+.RE
+
 .IP "\fB-P\fR \fIport"
 Use TCP \fIport\fR for all subsequent \fB-L\fR statements that do not include an optional port. If you use \fB-P\fR and \fB-L\fR, \fB-P\fR must be specified before \fB-L\fR.
 
@@ -69,6 +94,9 @@ type tail -f \fIfile\fR.
 .PP
 .IP
 If you use the special \fIfilename\fR "syslog", vlmcsd uses \fBsyslog\fR(3) for logging. If your system has no syslog service (/dev/log) installed, logging output will go to /dev/console. Syslog logging is not available in the native Windows version. The Cygwin version does support syslog logging.
+
+.IP "\fB-T0\fR and \fB-T1\fR"
+Disable (\fB-T0\fR) or enable (\fB-T1\fR) the inclusion of date and time in each line of the log. The default is \fB-T1\fR. \fB-T0\fR is useful if you log to \fBstdout\fR(3) which is redirected to another logging mechanism that already includes date and time in its output, for instance \fBsystemd-journald\fR(8). If you log to \fBsyslog\fR(3), \fB-T1\fR is ignored and date and time will never be included in the output sent to \fBsyslog\fR(3).
 
 .IP "\fB-D\fR"
 Normally vlmcsd daemonizes and runs in background (except the native Windows version). If \fB-D\fR is specified, vlmcsd does not daemonize and runs in foreground. This is useful for testing and allows you to simply press <Ctrl-C> to exit vlmcsd.
@@ -225,7 +253,7 @@ Office, Project and Visio must be volume license versions.
 .IP "\fBvlmcsd.ini\fR(5)"
 
 .SH EXAMPLES
-.IP "\fBvlmcsd -f\fR"
+.IP "\fBvlmcsd -De\fR"
 Starts \fBvlmcsd\fR in foreground. Useful if you use it for the first time and want to see what's happening when a client requests activation.
 
 .IP "\fBvlmcsd -l /var/log/vlmcsd.log\fR"

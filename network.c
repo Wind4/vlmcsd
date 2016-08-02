@@ -9,14 +9,34 @@
 #define _GNU_SOURCE
 #endif
 
+#include "types.h"
+
+#if HAVE_GETIFADDR && _WIN32
+#include <iphlpapi.h>
+#endif
+
 #include <string.h>
+
 #ifndef _WIN32
 #include <signal.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <netinet/in.h>
-#endif // WIN32
+#include <sys/types.h>
+
+#if HAVE_GETIFADDR
+
+#if __ANDROID__
+#include "ifaddrs-android.h"
+#elif defined(GETIFADDRS_MUSL)
+#include "ifaddrs-musl.h"
+#else // getifaddrs from OS
+#include <ifaddrs.h>
+#endif // getifaddrs from OS
+
+#endif // HAVE_GETIFADDR
+#endif // !WIN32
 
 #include "network.h"
 #include "endian.h"
@@ -145,6 +165,69 @@ int_fast8_t isDisconnected(const SOCKET s)
 
 	return FALSE;
 }
+
+
+#if !defined(NO_PRIVATE_IP_DETECT)
+// Check, if a sockaddr is a private IPv4 or IPv6 address
+static int_fast8_t isPrivateIPAddress(struct sockaddr* addr, socklen_t* length)
+{
+	union v6addr
+	{
+		uint8_t bytes[16];
+		uint16_t words[8];
+		uint32_t dwords[4];
+		uint64_t qwords[2];
+	};
+
+	if (addr == NULL) return FALSE;
+
+	switch (addr->sa_family)
+	{
+		case AF_INET6:
+		{
+			union v6addr* ipv6addr = (union v6addr*)&((struct sockaddr_in6*)addr)->sin6_addr;
+
+			if
+			(
+					(ipv6addr->qwords[0] != 0 || BE64(ipv6addr->qwords[1]) != 1) && // ::1 IPv6 localhost
+					(BE16(ipv6addr->words[0]) & 0xe000) == 0x2000 // !2000::/3
+			)
+			{
+				return FALSE;
+			}
+
+
+			if (length) *length = sizeof(struct sockaddr_in6);
+			break;
+		}
+
+		case AF_INET:
+		{
+			uint32_t ipv4addr = BE32(((struct sockaddr_in*)addr)->sin_addr.s_addr);
+
+			if
+			(
+				(ipv4addr & 0xff000000) != 0x7f000000 && // 127.x.x.x localhost
+				(ipv4addr & 0xffff0000) != 0xc0a80000 && // 192.168.x.x private routeable
+				(ipv4addr & 0xffff0000) != 0xa9fe0000 && // 169.254.x.x link local
+				(ipv4addr & 0xff000000) != 0x0a000000 && // 10.x.x.x private routeable
+				(ipv4addr & 0xfff00000) != 0xac100000    // 172.16-31.x.x private routeable
+			)
+			{
+				return FALSE;
+			}
+
+			if (length) *length = sizeof(struct sockaddr_in);
+			break;
+		}
+
+		default:
+			return FALSE;
+	}
+
+	return TRUE;
+}
+#endif // !defined(NO_PRIVATE_IP_DETECT)
 
 
 // Connect to TCP address addr (e.g. "kms.example.com:1688") and return an
@@ -288,6 +371,147 @@ int listenOnAllAddresses()
 }
 
 #else // !SIMPLE_SOCKETS
+
+
+#if HAVE_GETIFADDR && !defined(NO_PRIVATE_IP_DETECT)
+// Get list of private IP addresses.
+// Returns 0 on success or an errno error code on failure
+void getPrivateIPAddresses(int* numAddresses, char*** ipAddresses)
+{
+#	if _WIN32
+
+	PIP_ADAPTER_ADDRESSES firstAdapter, currentAdapter;
+
+    DWORD dwRetVal = NO_ERROR;
+    ULONG outBufLen = 16384;
+    ULONG flags = GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_DNS_SERVER | GAA_FLAG_SKIP_FRIENDLY_NAME;
+
+    firstAdapter = (PIP_ADAPTER_ADDRESSES)vlmcsd_malloc(outBufLen);
+
+    if ((dwRetVal = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, firstAdapter, &outBufLen)) == ERROR_BUFFER_OVERFLOW)
+    {
+    	free(firstAdapter);
+    	firstAdapter = (PIP_ADAPTER_ADDRESSES)vlmcsd_malloc(outBufLen);
+    	dwRetVal = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, firstAdapter, &outBufLen);
+    }
+
+	if (dwRetVal != NO_ERROR)
+	{
+		printerrorf("FATAL: Could not get network address list: %s\n", vlmcsd_strerror(dwRetVal));
+		exit(dwRetVal);
+	}
+
+	for (currentAdapter = firstAdapter, *numAddresses = 0; currentAdapter != NULL; currentAdapter = currentAdapter->Next)
+	{
+		PIP_ADAPTER_UNICAST_ADDRESS_XP currentAddress;
+		int length;
+
+		if (currentAdapter->OperStatus != IfOperStatusUp) continue;
+
+		for (currentAddress = currentAdapter->FirstUnicastAddress; currentAddress != NULL; currentAddress = currentAddress->Next)
+		{
+			if (isPrivateIPAddress(currentAddress->Address.lpSockaddr, &length)) (*numAddresses)++;
+		}
+	}
+
+	*ipAddresses = (char**)vlmcsd_malloc(*numAddresses * sizeof(char*));
+
+	for (currentAdapter = firstAdapter, *numAddresses = 0; currentAdapter != NULL; currentAdapter = currentAdapter->Next)
+	{
+		PIP_ADAPTER_UNICAST_ADDRESS_XP currentAddress;
+		int length;
+
+		if (currentAdapter->OperStatus != IfOperStatusUp) continue;
+
+		for (currentAddress = currentAdapter->FirstUnicastAddress; currentAddress != NULL; currentAddress = currentAddress->Next)
+		{
+			if (!isPrivateIPAddress(currentAddress->Address.lpSockaddr, &length)) continue;
+
+			char *ipAddress = (char*)vlmcsd_malloc(64);
+			int error = getnameinfo(currentAddress->Address.lpSockaddr, currentAddress->Address.iSockaddrLength, ipAddress, 64, NULL, 0, NI_NUMERICHOST);
+
+			if (error)
+			{
+				printerrorf("WARNING: Could not get IP address from interface list: %s\n", gai_strerror(error));
+				*ipAddress = 0;
+			}
+
+			(*ipAddresses)[(*numAddresses)++] = ipAddress;
+		}
+	}
+
+	free(firstAdapter);
+
+#	else // !_WIN32
+
+	struct ifaddrs *addrs, *addr;
+
+	if (getifaddrs(&addrs))
+	{
+		printerrorf("FATAL: Could not get network address list: %s\n", vlmcsd_strerror(errno));
+		exit(errno);
+	}
+
+	socklen_t length;
+
+	for (addr = addrs, *numAddresses = 0; addr != NULL; addr = addr->ifa_next)
+	{
+		if (!isPrivateIPAddress(addr->ifa_addr, &length)) continue;
+		(*numAddresses)++;
+	}
+
+	*ipAddresses = (char**)vlmcsd_malloc(*numAddresses * sizeof(char*));
+
+	for (addr = addrs, *numAddresses = 0; addr != NULL; addr = addr->ifa_next)
+	{
+		if (!isPrivateIPAddress(addr->ifa_addr, &length)) continue;
+
+		char *ipAddress = (char*)vlmcsd_malloc(64);
+		int error = getnameinfo(addr->ifa_addr, length, ipAddress, 64, NULL, 0, NI_NUMERICHOST);
+
+		if (error)
+		{
+			printerrorf("WARNING: Could not get IP address from interface list: %s\n", gai_strerror(error));
+			*ipAddress = 0;
+		}
+
+#		if __UCLIBC__ || __gnu_hurd__
+
+		size_t adrlen = strlen(ipAddress);
+
+		if
+		(
+			addr->ifa_addr->sa_family == AF_INET6 &&
+			adrlen > 5 &&
+			!strchr(ipAddress, '%') &&
+			(BE16(*(uint16_t*)&((struct sockaddr_in6*)addr->ifa_addr)->sin6_addr) & 0xffc0) == 0xfe80
+		)
+		{
+			size_t ifnamelen = strlen(addr->ifa_name);
+			char* workaroundIpAddress = (char*)vlmcsd_malloc(adrlen + ifnamelen + 2);
+			strcpy(workaroundIpAddress, ipAddress);
+			strcat(workaroundIpAddress, "%");
+			strcat(workaroundIpAddress, addr->ifa_name);
+			(*ipAddresses)[(*numAddresses)++] = workaroundIpAddress;
+			free(ipAddress);
+		}
+		else
+		{
+			(*ipAddresses)[(*numAddresses)++] = ipAddress;
+		}
+#		else // !__UCLIBC__
+
+		(*ipAddresses)[(*numAddresses)++] = ipAddress;
+
+#		endif // !__UCLIBC__
+	}
+
+	freeifaddrs(addrs);
+
+#	endif // !_WIN32
+}
+#endif // HAVE_GETIFADDR && !defined(NO_PRIVATE_IP_DETECT)
+
 
 
 // Create a Listening socket for addrinfo sa and return socket s
@@ -576,7 +800,24 @@ static void serveClient(const SOCKET s_client, const DWORD RpcAssocGroup)
 	logger(fIP, connection_type, cAccepted, ipstr);
 	#endif // NO_LOG
 
+#	if !defined(NO_PRIVATE_IP_DETECT)
+
+	if (!(PublicIPProtectionLevel & 2) || isPrivateIPAddress((struct sockaddr*)&addr, NULL))
+	{
+		rpcServer(s_client, RpcAssocGroup, ipstr);
+	}
+#	ifndef NO_LOG
+	else
+	{
+		logger("Client with public IP address rejected\n");
+	}
+#	endif // NO_LOG
+
+#   else // defined(NO_PRIVATE_IP_DETECT)
+
 	rpcServer(s_client, RpcAssocGroup, ipstr);
+
+#	endif // defined(NO_PRIVATE_IP_DETECT)
 
 #	ifndef NO_LOG
 	logger(fIP, connection_type, cClosed, ipstr);

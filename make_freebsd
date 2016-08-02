@@ -30,8 +30,8 @@ rm *.o
 strip -s --strip-unneeded --remove-section=.eh_frame_hdr --remove-section=.eh_frame --remove-section=.note.gnu.gold-version --remove-section=.comment --remove-section=.note --remove-section=.note.gnu.build-id --remove-section=.note.ABI-tag vlmcs-* vlmcsd-* vlmcsdmulti-*
 sstrip -z vlmcs-* vlmcsd-* vlmcsdmulti-*
 
-sudo cp -af vlmcsd-FreeBSD-10.3-x86-gcc /usr/local/sbin/vlmcsd
-sudo cp -af vlmcs-FreeBSD-10.3-x86-gcc /usr/local/bin/vlmcs
+sudo cp -af vlmcsd-FreeBSD-10.3-x64-gcc /usr/local/sbin/vlmcsd
+sudo cp -af vlmcs-FreeBSD-10.3-x64-gcc /usr/local/bin/vlmcs
 
 # Copy everything to distribution server
 scp -p vlmcsdmulti-* vlmcsd-Free* vlmcs-* root@ubuntu64:x/binaries/FreeBSD/intel/

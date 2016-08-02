@@ -9,6 +9,10 @@
 #error MSRPC is only available with native Windows or Cygwin
 #endif
 
+#if _WIN32 && !defined(NO_PRIVATE_IP_DETECT)
+#include <winsock2.h>
+#endif
+
 #include "msrpc-server.h"
 #include "output.h"
 #include "kms.h"
@@ -157,6 +161,56 @@ RPC_STATUS getClientIp(const RPC_BINDING_HANDLE clientBinding, RPC_CSTR *ipAddre
 #endif // NO_LOG
 
 
+#ifndef NO_PRIVATE_IP_DETECT
+static int_fast8_t IsPrivateIPAddress(char* ipAddress)
+{
+	int family = strchr(ipAddress,'.') ? AF_INET : AF_INET6;
+
+	switch(family)
+	{
+		case AF_INET:
+		{
+			int i;
+			char* current;
+			char* next;
+			uint32_t ip;
+
+			for (ip = 0, i = 0, current = ipAddress; i < 4; i++, current = next + 1)
+			{
+				ip = (ip << 8) | strtoul(current, &next, 10);
+				if (*next != '.') break;
+			}
+
+			if
+			(
+				(ip & 0xff000000) == 0x7f000000 || // 127.x.x.x localhost
+				(ip & 0xffff0000) == 0xc0a80000 || // 192.168.x.x private routeable
+				(ip & 0xffff0000) == 0xa9fe0000 || // 169.254.x.x link local
+				(ip & 0xff000000) == 0x0a000000 || // 10.x.x.x private routeable
+				(ip & 0xfff00000) == 0xac100000    // 172.16-31.x.x private routeable
+			)
+			{
+				return TRUE;
+			}
+
+			break;
+		}
+
+		case AF_INET6:
+		{
+			if (!strcmp(ipAddress, "::1")) return TRUE;
+			if (strchr(ipAddress, ':') - ipAddress != 4) break;
+
+			int16_t firstWord;
+			hex2bin((BYTE*)&firstWord, ipAddress, 2);
+			if ((BE16(firstWord) & 0xe000) != 0x2000) return TRUE;
+		}
+
+	}
+
+	return FALSE;
+}
+#endif // NO_PRIVATE_IP_DETECT
 
 /*
  * This is the callback function for the RPC request as defined in KMSServer.idl
@@ -176,6 +230,27 @@ int ProcessActivationRequest(handle_t IDL_handle, int requestSize, unsigned char
 	logger("RPC connection accepted: %s\n", !result ? (const char*)clientIpAddress : "Unknown IP");
 
 #	endif // NO_LOG
+
+#	ifndef NO_PRIVATE_IP_DETECT
+	if (result && (PublicIPProtectionLevel & 2))
+	{
+#		ifndef NO_LOG
+		logger ("Cannot verify that client has a private IP address\n");
+#		endif
+
+		return RPC_S_ACCESS_DENIED;
+	}
+
+	if (!result && (PublicIPProtectionLevel & 2) && !IsPrivateIPAddress((char*)clientIpAddress))
+	{
+#		ifndef NO_LOG
+		logger("Client with public IP address rejected\n");
+#		endif
+
+		RpcStringFreeA(&clientIpAddress);
+		return RPC_S_ACCESS_DENIED;
+	}
+#	endif // NO_PRIVATE_IP_DETECT
 
 	// Discard any packet smaller than a v4 request
 	if (requestSize < (int)sizeof(REQUEST_V4))
