@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#export VLMCSD_VERSION="svn`svnversion | sed -e 's/:.*//; s/[^0-9]*$//; s/^$/0/'`"
+export VLMCSD_VERSION="svn`svnversion`"
 
 export VERBOSE=3
 export DNS_PARSER=internal
@@ -88,15 +88,15 @@ if [ $? != 0 ]; then
   exit $?
 fi
 
-export CFLAGS="$CFLAGS -flto=jobserver -fvisibility=hidden"
+export CFLAGS="$CFLAGS -flto=jobserver -fvisibility=hidden -DIS_LIBRARY"
 export LDFLAGS="$LDFLAGS -static-libgcc"
 
-make $MAKEFLAGS CRYPTO=windows FEATURES=minimum $DLL_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $DLL_NAME
-  exit $?
-fi
+#make $MAKEFLAGS CRYPTO=windows FEATURES=minimum $DLL_NAME CAT=2
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $DLL_NAME
+#  exit $?
+#fi
 
 
 
@@ -148,15 +148,15 @@ if [ $? != 0 ]; then
   exit $?
 fi
 
-export CFLAGS="$CFLAGS -flto=jobserver -fvisibility=hidden"
+export CFLAGS="$CFLAGS -flto=jobserver -fvisibility=hidden -DIS_LIBRARY"
 export LDFLAGS="$LDFLAGS -static-libgcc"
 
-make $MAKEFLAGS CRYPTO=windows FEATURES=minimum $DLL_NAME
-
-if [ $? != 0 ]; then
-  echo Error creating $DLL_NAME
-  exit $?
-fi
+#make $MAKEFLAGS CRYPTO=windows FEATURES=minimum $DLL_NAME CAT=2
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $DLL_NAME
+#  exit $?
+#fi
 
 
 

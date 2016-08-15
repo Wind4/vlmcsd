@@ -39,7 +39,9 @@
 #define VLMCS_OPTION_GRAB_INI 1
 #define VLMCS_OPTION_NO_GRAB_INI 2
 
-#define kmsVersionMinor 0 // Currently constant. May change in future KMS versions
+//#define kmsVersionMinor 0 // Currently constant. May change in future KMS versions
+
+#ifndef IS_LIBRARY
 
 // Function Prototypes
 static void CreateRequestBase(REQUEST *Request);
@@ -53,7 +55,7 @@ static int_fast8_t verbose = FALSE;
 static int_fast8_t VMInfo = FALSE;
 static int_fast8_t dnsnames = TRUE;
 static int FixedRequests = 0;
-static BYTE LicenseStatus = 0x02;
+static DWORD LicenseStatus = 0x02;
 static const char *CMID = NULL;
 static const char *CMID_prev = NULL;
 static const char *WorkstationName = NULL;
@@ -63,6 +65,7 @@ static int_fast8_t ReconnectForEachRequest = FALSE;
 static int AddressFamily = AF_UNSPEC;
 static int_fast8_t incompatibleOptions = 0;
 static const char* fn_ini_client = NULL;
+static int_fast16_t kmsVersionMinor = 0;
 
 #ifndef NO_DNS
 static int_fast8_t NoSrvRecordPriority = FALSE;
@@ -185,6 +188,7 @@ __noreturn static void clientUsage(const char* const programName)
 		"  -k <KmsGUID> Use custom KMS GUID\n"
 		"  -c <ClientGUID> Use custom Client GUID. Default: Use random\n"
 		"  -o <PreviousClientGUID> Use custom Prevoius Client GUID. Default: ZeroGUID\n"
+		"  -K <ProtocolVersion> Use a specific (possibly invalid) protocol version\n"
 		"  -w <Workstation> Use custom workstation name. Default: Use random\n"
 		"  -r <RequiredClientCount> Fake required clients\n"
 		"  -n <Requests> Fixed # of requests (Default: Enough to charge)\n"
@@ -358,6 +362,35 @@ __noreturn static void examples(const char* const programName)
 	exit(0);
 }
 
+static void parseProtocolVersion(void)
+{
+	char *endptr_major, *endptr_minor, *period = strchr(optarg, (int)'.');
+
+	if (!period)
+	{
+		errorout("Fatal: Protocol version must be in the format #.#\n");
+		exit(!0);
+	}
+
+	long major = strtol(optarg, &endptr_major, 10);
+	long minor = strtol(period + 1, &endptr_minor, 10);
+
+	if ((*endptr_major && *endptr_major != '.') || *endptr_minor || *optarg == '.' || !period[1])
+	{
+		errorout("Fatal: Protocol version must be in the format #.#\n");
+		exit(!0);
+	}
+
+	if (major < 0 || major > 0xffff || minor < 0 || minor > 0xffff)
+	{
+		errorout("Fatal: Major and minor protocol version number must be between 0 and 65535\n");
+		exit(!0);
+	}
+
+	ActiveLicensePack.kmsVersionMajor = (int)major;
+	kmsVersionMinor = (int_fast16_t)minor;
+}
+
 
 #else // NO_HELP
 
@@ -426,7 +459,7 @@ static BOOL findLicensePackByName(const char* const name, LicensePack* const lp)
 	#endif // Both Lists are available
 }
 
-static const char* const client_optstring = "+N:B:i:l:a:s:k:c:w:r:n:t:g:G:o:pPTv456mexdV";
+static const char* const client_optstring = "+N:B:i:l:a:s:k:c:w:r:n:t:g:G:o:K:pPTv456mexdV";
 
 
 //First pass. We handle only "-l". Since -a -k -s -4 -5 and -6 are exceptions to -l, we process -l first
@@ -536,7 +569,7 @@ static void parseCommandLinePass2(const char *const programName, const int argc,
 			case 'r': // Fake minimum required client count
 
 				incompatibleOptions |= VLMCS_OPTION_NO_GRAB_INI;
-				ActiveLicensePack.N_Policy = getOptionArgumentInt(o, 1, INT_MAX);
+				ActiveLicensePack.N_Policy = getOptionArgumentInt(o, 0, INT_MAX);
 				break;
 
 			case 'c': // use a specific client GUID
@@ -583,6 +616,12 @@ static void parseCommandLinePass2(const char *const programName, const int argc,
 
 				incompatibleOptions |= VLMCS_OPTION_NO_GRAB_INI;
 				ActiveLicensePack.kmsVersionMajor = o - 0x30;
+				kmsVersionMinor = 0;
+				break;
+
+			case 'K': // Use specific protocol (may be invalid)
+
+				parseProtocolVersion();
 				break;
 
 			case 'd': // Don't use DNS names
@@ -610,14 +649,15 @@ static void parseCommandLinePass2(const char *const programName, const int argc,
 
 				if (strlen(WorkstationName) > 63)
 				{
-					errorout("\007WARNING! Truncating Workstation name to 63 characters (%s).\n", WorkstationName);
+					errorout("\007WARNING! Truncating workstation name to 63 characters (%s).\n", WorkstationName);
 				}
 
 				break;
 
 			case 't':
 
-				LicenseStatus = getOptionArgumentInt(o, 0, 6) & 0xff;
+				LicenseStatus = getOptionArgumentInt(o, 0, 0x7fffffff);
+				if ((unsigned int)LicenseStatus > 6) errorout("Warning: Correct license status is 0 <= license status <= 6.\n");
 				break;
 
 #			ifndef USE_MSRPC
@@ -697,7 +737,7 @@ static void displayResponse(const RESPONSE_RESULT result, const REQUEST* request
 	if (!result.TimeStampOK)		errorout("\n\007ERROR: Time stamps of request and response do not match.\n");
 	if (!result.VersionOK)			errorout("\n\007ERROR: Protocol versions of request and response do not match.\n");
 	if (!result.HmacSha256OK)		errorout("\n\007ERROR: Keyed-Hash Message Authentication Code (HMAC) is incorrect.\n");
-	if (!result.IVnotSuspicious)	errorout("\nWARNING: Response uses an IV following KMSv5 rules in KMSv6 protocol.\n");
+	if (!result.IVnotSuspicious)	errorout("\nWARNING: The KMS server is an emulator because the response uses an IV following KMSv5 rules in KMSv6 protocol.\n");
 
 	if (result.effectiveResponseSize != result.correctResponseSize)
 	{
@@ -852,8 +892,9 @@ static void connectRpc(RpcCtx *s)
 #	endif // DNS
 }
 
+#endif // IS_LIBRARY
 
-static int SendActivationRequest(const RpcCtx sock, RESPONSE *baseResponse, REQUEST *baseRequest, RESPONSE_RESULT *result, BYTE *const hwid)
+int SendActivationRequest(const RpcCtx sock, RESPONSE *baseResponse, REQUEST *baseRequest, RESPONSE_RESULT *result, BYTE *const hwid)
 {
 	size_t requestSize, responseSize;
 	BYTE *request, *response;
@@ -861,7 +902,7 @@ static int SendActivationRequest(const RpcCtx sock, RESPONSE *baseResponse, REQU
 
 	result->mask = 0;
 
-	if (LE16(baseRequest->MajorVer) == 4)
+	if (LE16(baseRequest->MajorVer) < 5)
 		request = CreateRequestV4(&requestSize, baseRequest);
 	else
 		request = CreateRequestV6(&requestSize, baseRequest);
@@ -889,6 +930,7 @@ static int SendActivationRequest(const RpcCtx sock, RESPONSE *baseResponse, REQU
 	return status;
 }
 
+#ifndef IS_LIBRARY
 
 static int sendRequest(RpcCtx *const s, REQUEST *const request, RESPONSE *const response, hwid_t hwid, RESPONSE_RESULT *const result)
 {
@@ -1212,7 +1254,7 @@ int client_main(const int argc, CARGV argv)
 		int requests;
 		RpcCtx s = INVALID_RPCCTX;
 
-		for (requests = 0, RequestsToGo = ActiveLicensePack.N_Policy - 1; RequestsToGo; requests++)
+		for (requests = 0, RequestsToGo = ActiveLicensePack.N_Policy == 1 ? 1 : ActiveLicensePack.N_Policy - 1; RequestsToGo; requests++)
 		{
 			RESPONSE response;
 			REQUEST request;
@@ -1346,4 +1388,4 @@ static void CreateRequestBase(REQUEST *Request)
 #	endif // NO_VERBOSE_LOG
 }
 
-
+#endif // IS_LIBRARY

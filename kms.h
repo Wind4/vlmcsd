@@ -252,6 +252,7 @@ typedef struct
 #define KMS_ID_OFFICE2016 18
 #define KMS_ID_WIN10_VL 19
 #define KMS_ID_WIN10_RETAIL 20
+#define KMS_ID_WIN2016 21
 
 #define PWINGUID &AppList[APP_ID_WINDOWS].guid
 #define POFFICE2010GUID &AppList[APP_ID_OFFICE2010].guid

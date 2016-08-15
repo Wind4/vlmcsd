@@ -313,8 +313,8 @@ VLMCS_OBJS = $(VLMCS_SRCS:.c=.o)
 MULTI_SRCS = vlmcsd.c vlmcs.c vlmcsdmulti.c $(SRCS)
 MULTI_OBJS = $(SRCS:.c=.o) vlmcsd-m.o vlmcs-m.o vlmcsdmulti-m.o
 
-DLL_SRCS = libkms.c $(SRCS)
-DLL_OBJS = $(DLL_SRCS:.c=.o)
+DLL_SRCS = libkms.c vlmcs.c $(SRCS)
+DLL_OBJS = $(DLL_SRCS:.c=-l.o)
 
 PDFDOCS = vlmcs.1.pdf vlmcsd.7.pdf vlmcsd.8.pdf vlmcsdmulti.1.pdf vlmcsd.ini.5.pdf vlmcsd-floppy.7.pdf
 HTMLDOCS = $(PDFDOCS:.pdf=.html)
@@ -453,6 +453,21 @@ endif
   ifeq ($(DEPENDENCIES),1)
 	@echo "$(COMPILER)	DEP	$*.d <- $<"
 	@$(CC) -x$(COMPILER_LANGUAGE) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(PLATFORMFLAGS) -MM -MF $*.d $<
+  endif
+  endif
+
+%-l.o: %.c
+  ifeq ($(VERBOSE),1)
+	$(CC) -x$(COMPILER_LANGUAGE) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(PLATFORMFLAGS) -fvisibility=hidden -c -DIS_LIBRARY=1 $(LIBRARY_CFLAGS) -UNO_SOCKETS -UUSE_MSRPC -o $@ -c $<
+  ifeq ($(DEPENDENCIES),1)
+	$(CC) -x$(COMPILER_LANGUAGE) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(PLATFORMFLAGS) $(SERVERLDFLAGS) -fvisibility=hidden -c -DIS_LIBRARY=1 $(LIBRARY_CFLAGS) -UNO_SOCKETS -UUSE_MSRPC -MM -MF $*.d $<
+  endif
+  else
+	@echo "$(COMPILER)	CC	$@ <- $<"
+	@$(CC) -x$(COMPILER_LANGUAGE) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(PLATFORMFLAGS) $(SERVERLDFLAGS) -fvisibility=hidden -c -DIS_LIBRARY=1 $(LIBRARY_CFLAGS) -UNO_SOCKETS -UUSE_MSRPC -o $@ -c $<
+  ifeq ($(DEPENDENCIES),1)
+	@echo "$(COMPILER)	DEP	$*.d <- $<"
+	@$(CC) -x$(COMPILER_LANGUAGE) $(PLATFORMFLAGS) $(BASECFLAGS) $(CFLAGS) $(PLATFORMFLAGS) $(SERVERLDFLAGS) -fvisibility=hidden -c -DIS_LIBRARY=1 $(LIBRARY_CFLAGS) -UNO_SOCKETS -UUSE_MSRPC -MM -MF $*.d $<
   endif
   endif
 

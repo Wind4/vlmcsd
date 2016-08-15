@@ -301,6 +301,4 @@ typedef struct {
 } CLDATA, *const PCLDATA;
 
 
-
-
 #endif // __types_h

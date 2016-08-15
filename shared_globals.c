@@ -14,6 +14,10 @@ int_fast8_t DisconnectImmediately = FALSE;
 const char *const cIPv4 = "IPv4";
 const char *const cIPv6 = "IPv6";
 
+#ifdef IS_LIBRARY
+char ErrorMessage[MESSAGE_BUFFER_SIZE];
+#endif // IS_LIBRARY
+
 #ifndef USE_MSRPC
 int_fast8_t UseMultiplexedRpc = TRUE;
 int_fast8_t UseRpcNDR64 = TRUE;

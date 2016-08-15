@@ -117,6 +117,14 @@ OPTIONS
               the client sees that the KMS TCP port (1688 by default) is actu‐
               ally accepting connections.
 
+              If vlmcsd is compiled to use MS RPC, -o2  can  only  offer  very
+              poor  protection.  Control is passed from MS RPC to vlmcsd after
+              the KMS protocol has already been negotiated. Thus a client  can
+              always  verify that the KMS protocol is available even though it
+              receives an RPC_S_ACCESS_DENIED error message. vlmcsd will issue
+              a  warning  if -o2 is used with MS RPC. For adaequate protection
+              do not use a MS RPC build of vlmcsd with -o2.
+
               -o3 combines -o1 and -o2. vlmcsd listens on  private  interfaces
               only and if a public client manages to connect anyway due to NAT
               port forwarding, it will be immediately dropped.
@@ -533,10 +541,13 @@ SUPPORTED OPERATING SYSTEMS
 
 SUPPORTED PRODUCTS
        vlmcsd can answer activation requests for the following products:  Win‐
-       dows  Vista,  Windows  7,  Windows  8, Windows 8.1, Windows 10, Windows
-       Server 2008, Windows Server  2008  R2,  Windows  Server  2012,  Windows
-       Server  2012  R2,  Office  2010, Project 2010, Visio 2010, Office 2013,
-       Project 2013, Visio 2013, Office 2016, Project 2016, Visio 2016.
+       dows Vista, Windows 7, Windows 8, Windows 8.1, Windows 10 (up to 1607),
+       Windows Server 2008, Windows Server 2008 R2, Windows Server 2012,  Win‐
+       dows  Server  2012  R2, Windows Server 2016, Office 2010, Project 2010,
+       Visio 2010, Office 2013, Project 2013, Visio 2013, Office 2016, Project
+       2016,  Visio  2016.  Newer version may work as long as the KMS protocol
+       does not change. A complete list of fully  supported  products  can  be
+       obtained using the -x option of vlmcs(1).
 
        Office, Project and Visio must be volume license versions.
 
@@ -547,24 +558,24 @@ FILES
 
 EXAMPLES
        vlmcsd -De
-              Starts vlmcsd in foreground. Useful if you use it for the  first
-              time  and  want  to  see what's happening when a client requests
+              Starts  vlmcsd in foreground. Useful if you use it for the first
+              time and want to see what's happening  when  a  client  requests
               activation.
 
 
        vlmcsd -l /var/log/vlmcsd.log
-              Starts vlmcsd as a daemon and logs everything  to  /var/log/vlm‐
+              Starts  vlmcsd  as a daemon and logs everything to /var/log/vlm‐
               csd.log.
 
 
        vlmcsd -L 192.168.1.17
               Starts vlmcsd as a daemon and listens on IP address 192.168.1.17
-              only. This is useful for routers that have a public and  a  pri‐
+              only.  This  is useful for routers that have a public and a pri‐
               vate IP address to prevent your KMS server from becoming public.
 
 
        vlmcsd -s -U /n -l C:\logs\vlmcsd.log
-              Installs  vlmcsd  as  a  Windows service with low privileges and
+              Installs vlmcsd as a Windows service  with  low  privileges  and
               logs  everything  to  C:\logs\vlmcsd.log  when  the  service  is
               started with "net start vlmcsd".
 
@@ -572,9 +583,11 @@ EXAMPLES
 BUGS
        An ePID specified in an ini file must not contain spaces.
 
-       The  maximum  number of -L options in the command line or listen state‐
-       ments in the inifile is the platform default for FD_SETSIZE. This is 64
-       on Windows and 1024 on most Unixes.
+
+INTENTIONAL BUGS
+       vlmcsd activates non-VL (retail) and beta/preview versions of Windows.
+       vlmcsd always reports enough active clients to satisfy the N count pol‐
+       icy of the request.
 
 
 AUTHOR

@@ -221,7 +221,7 @@ int ProcessActivationRequest(handle_t IDL_handle, int requestSize, unsigned char
 {
 	RPC_CSTR clientIpAddress;
 	RPC_STATUS result;
-	int status = RPC_S_OK;
+	int status = 0;
 
 	result = getClientIp(IDL_handle, &clientIpAddress);
 
@@ -238,7 +238,7 @@ int ProcessActivationRequest(handle_t IDL_handle, int requestSize, unsigned char
 		logger ("Cannot verify that client has a private IP address\n");
 #		endif
 
-		return RPC_S_ACCESS_DENIED;
+		return 0x80070000 | RPC_S_ACCESS_DENIED;
 	}
 
 	if (!result && (PublicIPProtectionLevel & 2) && !IsPrivateIPAddress((char*)clientIpAddress))
@@ -248,7 +248,7 @@ int ProcessActivationRequest(handle_t IDL_handle, int requestSize, unsigned char
 #		endif
 
 		RpcStringFreeA(&clientIpAddress);
-		return RPC_S_ACCESS_DENIED;
+		return 0x80070000 | RPC_S_ACCESS_DENIED;
 	}
 #	endif // NO_PRIVATE_IP_DETECT
 
@@ -256,23 +256,36 @@ int ProcessActivationRequest(handle_t IDL_handle, int requestSize, unsigned char
 	if (requestSize < (int)sizeof(REQUEST_V4))
 	{
 		if (!result) RpcStringFreeA(&clientIpAddress);
-		return RPC_S_CANNOT_SUPPORT;
+		return 0x8007000D;
 	}
 
 	*response = (uint8_t *)midl_user_allocate(MAX_RESPONSE_SIZE);
+	int kmsStatus = 0x8007000D;
+	int version = LE32(((REQUEST*)(request))->Version);
 
-	switch(LE16(((REQUEST*)(request))->MajorVer))
+	switch(version)
 	{
-		case 4:
-			*responseSize = CreateResponseV4((REQUEST_V4 *)request, *response, (char*)clientIpAddress);
+		case 0x40000:
+			kmsStatus = CreateResponseV4((REQUEST_V4 *)request, *response, (char*)clientIpAddress);
 			break;
-		case 5:
-		case 6:
-			*responseSize = CreateResponseV6((REQUEST_V6 *) request, *response, (char*)clientIpAddress);
+		case 0x50000:
+		case 0x60000:
+			kmsStatus = CreateResponseV6((REQUEST_V6 *) request, *response, (char*)clientIpAddress);
 			break;
 		default:
-			status = RPC_S_INVALID_ARG;
+#			ifndef NO_LOG
+			logger("Fatal: KMSv%u.%u unsupported\n", version >> 16, version & 0xffff);
+#			endif // NO_LOG
 			break;
+	}
+
+	if (kmsStatus < 0)
+	{
+		status = kmsStatus;
+	}
+	else
+	{
+		*responseSize = kmsStatus;
 	}
 
 	if (!result) RpcStringFreeA(&clientIpAddress);

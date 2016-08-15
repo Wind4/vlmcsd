@@ -50,6 +50,8 @@ Using \fB-o1\fR does not protect you if you enable NAT port forwarding on your r
 
 \fB-o2\fR does not affect the interfaces, vlmcsd is listening on. When a clients connects, vlmcsd immediately drops the connection if the client has a public IP address. Unlike \fB-o1\fR clients will be able to establish a TCP connection but it will be closed without a single byte sent over the connection. This protects against clients with public IP addresses even if NAT port forwarding is used. While \fB-o2\fR offers a higher level of protection than \fB-o1\fR, the client sees that the KMS TCP port (1688 by default) is actually accepting connections.
 
+If vlmcsd is compiled to use MS RPC, \fB-o2\fR can only offer very poor protection. Control is passed from MS RPC to vlmcsd after the KMS protocol has already been negotiated. Thus a client can always verify that the KMS protocol is available even though it receives an RPC_S_ACCESS_DENIED error message. vlmcsd will issue a warning if \fB-o2\fR is used with MS RPC. \fBFor adaequate protection do not use a MS RPC build of vlmcsd with -o2\fR.
+
 \fB-o3\fR combines \fB-o1\fR and \fB-o2\fR. vlmcsd listens on private interfaces only and if a public client manages to connect anyway due to NAT port forwarding, it will be immediately dropped.
 
 If you use any form of TCP level port forwarding (e.g. \fBnc\fR(1), \fBnetcat\fR(1), \fBssh\fR(1) port forwarding or similar) to redirect KMS requests to vlmcsd, there will be no protection even if you use \fB-o2\fR or \fB-o3\fR. This is due to the simple fact that vlmcsd sees the IP address of the redirector and not the IP address of the client.
@@ -245,7 +247,7 @@ Signaling is not available in the native Windows version and in the Cygwin versi
 \fBvlmcsd\fR compiles and runs on Linux, Windows (no Cygwin required but explicitly supported), Mac OS X, FreeBSD, NetBSD, OpenBSD, Dragonfly BSD, Minix, Solaris, OpenIndiana, Android and iOS. Other POSIX or unixoid OSses may work with unmodified sources or may require minor porting efforts.
 
 .SH SUPPORTED PRODUCTS
-\fBvlmcsd\fR can answer activation requests for the following products: Windows Vista, Windows 7, Windows 8, Windows 8.1, Windows 10, Windows Server 2008, Windows Server 2008 R2, Windows Server 2012, Windows Server 2012 R2, Office 2010, Project 2010, Visio 2010, Office 2013, Project 2013, Visio 2013, Office 2016, Project 2016, Visio 2016.
+\fBvlmcsd\fR can answer activation requests for the following products: Windows Vista, Windows 7, Windows 8, Windows 8.1, Windows 10 (up to 1607), Windows Server 2008, Windows Server 2008 R2, Windows Server 2012, Windows Server 2012 R2, Windows Server 2016, Office 2010, Project 2010, Visio 2010, Office 2013, Project 2013, Visio 2013, Office 2016, Project 2016, Visio 2016. Newer version may work as long as the KMS protocol does not change. A complete list of fully supported products can be obtained using the \fB-x\fR option of \fBvlmcs\fR(1).
 .PP
 Office, Project and Visio must be volume license versions.
 
@@ -268,7 +270,10 @@ Installs \fBvlmcsd\fR as a Windows service with low privileges and logs everythi
 .SH BUGS
 An ePID specified in an ini file must not contain spaces.
 
-The maximum number of \fB-L\fR options in the command line or listen statements in the inifile is the platform default for \fIFD_SETSIZE\fR. This is 64 on Windows and 1024 on most Unixes.
+.SH INTENTIONAL BUGS
+vlmcsd activates non-VL (retail) and beta/preview versions of Windows.
+.br
+vlmcsd always reports enough active clients to satisfy the N count policy of the request.
 
 .SH AUTHOR
 Written by crony12, Hotbird64 and vityan666.

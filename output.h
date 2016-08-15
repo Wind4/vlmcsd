@@ -11,7 +11,7 @@
 
 typedef int (*PRINTFUNC)(const char *const fmt, ...);
 
-void printerrorf(const char *const fmt, ...);
+int printerrorf(const char *const fmt, ...);
 int errorout(const char* fmt, ...);
 void logRequestVerbose(const REQUEST *const Request, const PRINTFUNC p);
 void logResponseVerbose(const char *const ePID, const BYTE *const hwid, const RESPONSE *const response, const PRINTFUNC p);

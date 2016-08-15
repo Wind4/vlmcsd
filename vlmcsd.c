@@ -279,7 +279,11 @@ static __noreturn void usage()
 			#if HAVE_GETIFADDR
 			"  -o 0|1|2|3\t\tset protection level against clients with public IP addresses (default 0)\n"
 			#else // !HAVE_GETIFADDR
+			#ifndef USE_MSRPC
 			"  -o 0|2\t\tset protection level against clients with public IP addresses (default 0)\n"
+			#else // USE_MSRPC
+			"  -o 0|2\t\tset protection level against clients with public IP addresses (default 0). Limited use with MS RPC\n"
+			#endif // USE_MSRPC
 			#endif // !HAVE_GETIFADDR
 			#endif // !defined(NO_PRIVATE_IP_DETECT)
 			#ifndef NO_SOCKETS
@@ -1678,7 +1682,14 @@ int newmain()
 	}
 	#endif // NO_INI_FILE
 
-	#if !defined(NO_LIMIT) && !defined(NO_SOCKETS) && !__minix__ && !defined(USE_MSRPC)
+	#if defined(USE_MSRPC) && !defined(NO_PRIVATE_IP_DETECT)
+	if (PublicIPProtectionLevel)
+	{
+		printerrorf("Warning: Public IP address protection using MS RPC is poor. See vlmcsd.8\n");
+	}
+	#endif // defined(USE_MSRPC) && !defined(NO_PRIVATE_IP_DETECT)
+
+#if !defined(NO_LIMIT) && !defined(NO_SOCKETS) && !__minix__ && !defined(USE_MSRPC)
 	allocateSemaphore();
 	#endif // !defined(NO_LIMIT) && !defined(NO_SOCKETS) && __minix__
 

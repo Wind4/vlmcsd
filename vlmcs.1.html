@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Wed Jul 13 12:34:01 2016 -->
+<!-- CreationDate: Thu Aug 11 16:07:08 2016 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -183,14 +183,30 @@ applications is not complete. You may supply GUIDs with
 that are not listed with <b>-x</b>. The <b>-l</b> option is
 used as a shortcut for the most common applications.</p>
 
+<p style="margin-left:11%;"><b>-K</b>
+<i>protocol-version</i></p>
+
+<p style="margin-left:22%;">Force a specific version of the
+KMS protocol. Valid versions are 4.0, 5.0 and 6.0. The
+default is to select a suitable version according to the
+<i>application</i> selected. You may use <b>-K</b> to send
+an incorrect protocol version to the KMS server and see how
+it behaves. Genuine KMS servers return HRESULT 0x8007000D if
+the KMS protocol is not 4.0, 5.0 or 6.0. Emulators should do
+the same. When sending a request with an incorrect protocol
+number, vlmcs ignores the minor protocol number (e.g. sends
+a v4 request for version 4.1). If the major version number
+is less then 4, it sends a v4 request. If the major version
+is greater then 6, is sends a v6 request. In any case the
+<i>protocol-version</i> as specified by <b>-K</b> is put in
+the version fields of the request.</p>
+
 <p style="margin-left:11%;"><b>-4</b>, <b>-5</b> and
 <b>-6</b></p>
 
 <p style="margin-left:22%;">Force version 4, 5 or 6 of the
-KMS protocol. The default is to select a suitable version
-according to the <i>application</i> selected. Plese note
-that some products (e.g. Office 2013) may use different
-protocols with different versions of Windows.</p>
+KMS protocol. These options are actually shortcuts of <b>-K
+4.0</b>, <b>-K 5.0</b> and <b>-K 6.0</b>.</p>
 
 <table width="100%" border="0" rules="none" frame="void"
        cellspacing="0" cellpadding="0">

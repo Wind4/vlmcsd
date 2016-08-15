@@ -11,7 +11,7 @@
 #endif
 
 #include "types.h"
-
+#include "output.h"
 
 
 int_fast8_t sendrecv(SOCKET sock, BYTE *data, int len, int_fast8_t do_send);

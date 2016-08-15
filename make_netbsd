@@ -1,5 +1,6 @@
 #!/usr/pkg/bin/bash
 
+export VLMCSD_VERSION="svn`svnversion`"
 export VERBOSE=3
 export DNS_PARSER=OS
 

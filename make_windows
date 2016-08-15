@@ -1,5 +1,6 @@
 #!/bin/bash
 
+export VLMCSD_VERSION="svn`svnversion`"
 rm -f cygkms*.dll libkms*.dll vlmcs-* vlmcsd-win* vlmcsd-cyg* vlmcsdmulti-* *_all.* vlmcsd.exe vlmcs.exe vlmcsdmulti.exe 2> /dev/null
 
 export CAT=2
@@ -33,9 +34,9 @@ make $MAKEFLAGS THREADS=1 MSRPC=1 DNS_PARSER=internal CLIENT_NAME=vlmcs-cygwin-m
 make $MAKEFLAGS THREADS=1 MSRPC=1 DNS_PARSER=internal CLIENT_NAME=vlmcs-cygwin-msrpc-x64-openssl-EXPERIMENTAL CRYPTO=openssl_with_aes PROGRAM_NAME=vlmcsd-cygwin-x64-openssl-EXPERIMENTAL CC=x86_64-pc-cygwin-gcc.exe CFLAGS="$CFMSRPC" PLATFORMFLAGS="$PF64" LDFLAGS="$LFCYG64"
 
 export CAT=2
-
-#make $MAKEFLAGS libkms32.dll CRYPTO=windows FEATURES=minimum THREADS=1 DLL_NAME=libkms32.dll CC=i686-w64-MingW32-gcc.exe CFLAGS="$CF -flto=jobserver -fvisibility=hidden" PLATFORMFLAGS="$PF32" LDFLAGS="-static-libgcc $LFWIN32"
-#make $MAKEFLAGS libkms64.dll CRYPTO=windows FEATURES=minimum THREADS=1 DLL_NAME=libkms64.dll CC=x86_64-w64-MingW32-gcc.exe CFLAGS="$CF -flto=jobserver -fvisibility=hidden" PLATFORMFLAGS="$PF64" LDFLAGS="-static-libgcc $LFWIN64"
+#unset CAT
+make $MAKEFLAGS libkms32.dll CRYPTO=windows FEATURES=minimum THREADS=1 DLL_NAME=libkms32.dll CC=i686-w64-MingW32-gcc.exe CFLAGS="$CF -flto=jobserver -fvisibility=hidden" PLATFORMFLAGS="$PF32" LDFLAGS="-static-libgcc $LFWIN32"
+make $MAKEFLAGS libkms64.dll CRYPTO=windows FEATURES=minimum THREADS=1 DLL_NAME=libkms64.dll CC=x86_64-w64-MingW32-gcc.exe CFLAGS="$CF -flto=jobserver -fvisibility=hidden" PLATFORMFLAGS="$PF64" LDFLAGS="-static-libgcc $LFWIN64"
 #make $MAKEFLAGS all vlmcsdmulti-Windows-x86 THREADS=1 CRYPTO=windows CLIENT_NAME=vlmcs-Windows-x86 PROGRAM_NAME=vlmcsd-Windows-x86 MULTI_NAME=vlmcsdmulti-Windows-x86 CC=i686-w64-MingW32-gcc.exe CFLAGS="$CF" PLATFORMFLAGS="$PF32" LDFLAGS="$LFWIN32"
 #make $MAKEFLAGS all vlmcsdmulti-Windows-x64 THREADS=1 CRYPTO=windows CLIENT_NAME=vlmcs-Windows-x64 PROGRAM_NAME=vlmcsd-Windows-x64 MULTI_NAME=vlmcsdmulti-Windows-x64 CC=x86_64-w64-MingW32-gcc.exe CFLAGS="$CF" PLATFORMFLAGS="$PF64" LDFLAGS="$LFWIN64"
 #make -Bj MSRPC=1 CRYPTO=windows CLIENT_NAME=vlmcs-Windows-msrpc-x86 PROGRAM_NAME=vlmcsd-Windows-msrpc-x86 MULTI_NAME=vlmcsdmulti-Windows-msrpc-x86 CC=i686-w64-MingW32-gcc.exe CFLAGS="$CFMSRPC"  PLATFORMFLAGS="$PF32" LDFLAGS="-Wl,--nxcompat,--dynamicbase,--tsaware,--large-address-aware"

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+export VLMCSD_VERSION="svn`svnversion`"
 SMALLCC="-pipe -fno-common -fno-exceptions -fno-stack-protector -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants"
 SMALLLD="-pipe -Wl,--hash-style=sysv -Wl,-z,norelro -Wl,--build-id=none"
 SMALL="$SMALLCC $SMALLLD"

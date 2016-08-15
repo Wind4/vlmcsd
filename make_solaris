@@ -1,5 +1,6 @@
 #!/bin/sh
 
+export VLMCSD_VERSION="svn`svnversion`"
 export VERBOSE=3
 export CAT=2
 

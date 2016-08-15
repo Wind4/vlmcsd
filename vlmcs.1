@@ -75,11 +75,11 @@ to specify applications that are not listed with \fB-x\fR. The
 .B -l
 option is used as a shortcut for the most common applications.
 
+.IP "\fB-K\fR \fIprotocol-version\fR"
+Force a specific version of the KMS protocol. Valid versions are 4.0, 5.0 and 6.0. The default is to select a suitable version according to the \fIapplication\fR selected. You may use \fB-K\fR to send an incorrect protocol version to the KMS server and see how it behaves. Genuine KMS servers return HRESULT 0x8007000D if the KMS protocol is not 4.0, 5.0 or 6.0. Emulators should do the same. When sending a request with an incorrect protocol number, vlmcs ignores the minor protocol number (e.g. sends a v4 request for version 4.1). If the major version number is less then 4, it sends a v4 request. If the major version is greater then 6, is sends a v6 request. In any case the \fIprotocol-version\fR as specified by \fB-K\fR is put in the version fields of the request.
+
 .IP "\fB-4\fR, \fB-5\fR and \fB-6"
-Force version 4, 5 or 6 of the KMS protocol. The default is to select a suitable
-version according to the
-.IR "application"
-selected. Plese note that some products (e.g. Office 2013) may use different protocols with different versions of Windows.
+Force version 4, 5 or 6 of the KMS protocol. These options are actually shortcuts of \fB-K 4.0\fR, \fB-K 5.0\fR and \fB-K 6.0\fR.
 
 .IP "\fB-m"
 Let the client pretend to be a virtual machine. Early versions of Microsoft's

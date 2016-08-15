@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Wed Jul 13 12:34:01 2016 -->
+<!-- CreationDate: Thu Aug 11 16:07:08 2016 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -30,6 +30,7 @@
 <a href="#FILES">FILES</a><br>
 <a href="#EXAMPLES">EXAMPLES</a><br>
 <a href="#BUGS">BUGS</a><br>
+<a href="#INTENTIONAL BUGS">INTENTIONAL BUGS</a><br>
 <a href="#AUTHOR">AUTHOR</a><br>
 <a href="#CREDITS">CREDITS</a><br>
 <a href="#SEE ALSO">SEE ALSO</a><br>
@@ -203,6 +204,16 @@ addresses even if NAT port forwarding is used. While
 <b>-o2</b> offers a higher level of protection than
 <b>-o1</b>, the client sees that the KMS TCP port (1688 by
 default) is actually accepting connections.</p>
+
+<p style="margin-left:22%; margin-top: 1em">If vlmcsd is
+compiled to use MS RPC, <b>-o2</b> can only offer very poor
+protection. Control is passed from MS RPC to vlmcsd after
+the KMS protocol has already been negotiated. Thus a client
+can always verify that the KMS protocol is available even
+though it receives an RPC_S_ACCESS_DENIED error message.
+vlmcsd will issue a warning if <b>-o2</b> is used with MS
+RPC. <b>For adaequate protection do not use a MS RPC build
+of vlmcsd with -o2</b>.</p>
 
 <p style="margin-left:22%; margin-top: 1em"><b>-o3</b>
 combines <b>-o1</b> and <b>-o2</b>. vlmcsd listens on
@@ -840,11 +851,15 @@ sources or may require minor porting efforts.</p>
 
 <p style="margin-left:11%; margin-top: 1em"><b>vlmcsd</b>
 can answer activation requests for the following products:
-Windows Vista, Windows 7, Windows 8, Windows 8.1, Windows
-10, Windows Server 2008, Windows Server 2008 R2, Windows
-Server 2012, Windows Server 2012 R2, Office 2010, Project
-2010, Visio 2010, Office 2013, Project 2013, Visio 2013,
-Office 2016, Project 2016, Visio 2016.</p>
+Windows Vista, Windows 7, Windows 8, Windows 8.1, Windows 10
+(up to 1607), Windows Server 2008, Windows Server 2008 R2,
+Windows Server 2012, Windows Server 2012 R2, Windows Server
+2016, Office 2010, Project 2010, Visio 2010, Office 2013,
+Project 2013, Visio 2013, Office 2016, Project 2016, Visio
+2016. Newer version may work as long as the KMS protocol
+does not change. A complete list of fully supported products
+can be obtained using the <b>-x</b> option of
+<b>vlmcs</b>(1).</p>
 
 <p style="margin-left:11%; margin-top: 1em">Office, Project
 and Visio must be volume license versions.</p>
@@ -900,11 +915,16 @@ C:\logs\vlmcsd.log when the service is started with
 <p style="margin-left:11%; margin-top: 1em">An ePID
 specified in an ini file must not contain spaces.</p>
 
-<p style="margin-left:11%; margin-top: 1em">The maximum
-number of <b>-L</b> options in the command line or listen
-statements in the inifile is the platform default for
-<i>FD_SETSIZE</i>. This is 64 on Windows and 1024 on most
-Unixes.</p>
+<h2>INTENTIONAL BUGS
+<a name="INTENTIONAL BUGS"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">vlmcsd
+activates non-VL (retail) and beta/preview versions of
+Windows. <br>
+vlmcsd always reports enough active clients to satisfy the N
+count policy of the request.</p>
 
 <h2>AUTHOR
 <a name="AUTHOR"></a>

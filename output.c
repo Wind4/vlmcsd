@@ -94,7 +94,7 @@ int logger(const char *const fmt, ...)
 
 
 // Output to stderr if it is available or to log otherwise (e.g. if running as daemon/service)
-void printerrorf(const char *const fmt, ...)
+int printerrorf(const char *const fmt, ...)
 {
 	int error = errno;
 	va_list arglist;
@@ -103,7 +103,8 @@ void printerrorf(const char *const fmt, ...)
 
 #	ifdef IS_LIBRARY
 
-	snprintf(ErrorMessage, MESSAGE_BUFFER_SIZE, fmt, arglist);
+	size_t len = strlen(ErrorMessage);
+	vsnprintf(ErrorMessage + len, MESSAGE_BUFFER_SIZE - len - 1, fmt, arglist);
 
 #	else // !IS_LIBRARY
 
@@ -125,6 +126,7 @@ void printerrorf(const char *const fmt, ...)
 
 	va_end(arglist);
 	errno = error;
+	return 0;
 }
 
 
@@ -191,7 +193,7 @@ void logRequestVerbose(const REQUEST *const Request, const PRINTFUNC p)
 	productName = "Unknown";
 	#endif
 
-	p("Activation ID (Product)         : %s (%s)\n", guidBuffer, productName);
+	p("SKU ID (aka Activation ID)      : %s (%s)\n", guidBuffer, productName);
 
 	uuid2StringLE(&Request->KMSID, guidBuffer);
 
@@ -201,7 +203,7 @@ void logRequestVerbose(const REQUEST *const Request, const PRINTFUNC p)
 	productName = "Unknown";
 	#endif
 
-	p("Key Management Service ID       : %s (%s)\n", guidBuffer, productName);
+	p("KMS ID (aka KMS counted ID)     : %s (%s)\n", guidBuffer, productName);
 
 	uuid2StringLE(&Request->CMID, guidBuffer);
 	p("Client machine ID               : %s\n", guidBuffer);

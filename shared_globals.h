@@ -74,9 +74,9 @@ extern const char *const Version;
 #define UINT_MAX 4294967295
 #endif
 
+#define MESSAGE_BUFFER_SIZE 4096
 #ifdef IS_LIBRARY
-#define MESSAGE_BUFFER_SIZE 256
-EXTERNC __declspec(EXTERNAL) extern char ErrorMessage[MESSAGE_BUFFER_SIZE];
+extern char ErrorMessage[MESSAGE_BUFFER_SIZE];
 #endif // IS_LIBRARY
 
 extern int global_argc, multi_argc;

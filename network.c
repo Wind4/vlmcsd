@@ -280,7 +280,7 @@ SOCKET connectToAddress(const char *const addr, const int AddressFamily, int_fas
 			break;
 		}
 
-		errorout("%s\n", socket_errno == VLMCSD_EINPROGRESS ? "Timed out" : vlmcsd_strerror(socket_errno));
+		printerrorf("%s: %s\n", szAddr, socket_errno == VLMCSD_EINPROGRESS ? "Timed out" : vlmcsd_strerror(socket_errno));
 
 		socketclose(s);
 		s = INVALID_SOCKET;

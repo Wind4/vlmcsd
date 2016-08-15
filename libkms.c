@@ -13,7 +13,7 @@
 
 #define EXTERNAL dllexport
 
-#define DLLVERSION 0x30001
+#define DLLVERSION 0x30002
 
 #include "libkms.h"
 #include "shared_globals.h"
@@ -28,23 +28,74 @@
 #include <netinet/in.h>
 #endif // WIN32
 
-#ifdef IS_LIBRARY
-char ErrorMessage[MESSAGE_BUFFER_SIZE];
-#endif // IS_LIBRARY
-
 static int_fast8_t IsServerStarted = FALSE;
 
+#ifdef _WIN32
+#ifndef USE_MSRPC
 
-EXTERNC __declspec(EXTERNAL) DWORD __cdecl SendActivationRequest
-(
-	const char* const hostname,
-	const int port,
-	RESPONSE* baseResponse,
-	const REQUEST* const baseRequest,
-	RESPONSE_RESULT* result, BYTE *hwid
-)
+static int_fast8_t SocketsInitialized = FALSE;
+WSADATA wsadata;
+
+static int initializeWinSockets()
 {
-	return !0; // not yet implemented
+	if (SocketsInitialized) return 0;
+	SocketsInitialized = TRUE;
+	return WSAStartup(0x0202, &wsadata);
+}
+
+#endif // USE_MSRPC
+#endif // _WIN32
+
+EXTERNC __declspec(EXTERNAL) char* __cdecl GetErrorMessage()
+{
+	return ErrorMessage;
+}
+
+EXTERNC __declspec(EXTERNAL) SOCKET __cdecl ConnectToServer(const char* host, const char* port, const int addressFamily)
+{
+	SOCKET sock;
+	*ErrorMessage = 0;
+
+#	if defined(_WIN32) && !defined(USE_MSRPC)
+	initializeWinSockets();
+#	endif // defined(_WIN32) && !defined(USE_MSRPC)
+
+	size_t adrlen = strlen(host) + 16;
+	char* RemoteAddr = (char*)alloca(adrlen);
+	snprintf(RemoteAddr, adrlen, "[%s]:%s", host, port);
+	sock = connectToAddress(RemoteAddr, addressFamily, FALSE);
+
+	if (sock == INVALID_RPCCTX)
+	{
+		printerrorf("Fatal: Could not connect to %s\n", RemoteAddr);
+		return sock;
+	}
+
+	return sock;
+}
+
+EXTERNC __declspec(EXTERNAL) RpcStatus __cdecl BindRpc(const SOCKET sock, const int_fast8_t useMultiplexedRpc)
+{
+	*ErrorMessage = 0;
+	UseMultiplexedRpc = useMultiplexedRpc;
+	return rpcBindClient(sock, FALSE);
+}
+
+EXTERNC __declspec(EXTERNAL) void __cdecl CloseConnection(const SOCKET sock)
+{
+	socketclose(sock);
+}
+
+
+EXTERNC __declspec(EXTERNAL) DWORD __cdecl SendKMSRequest(const SOCKET sock, RESPONSE* baseResponse, REQUEST* baseRequest, RESPONSE_RESULT* result, BYTE *hwid)
+{
+	*ErrorMessage = 0;
+	return SendActivationRequest(sock, baseResponse, baseRequest, result, hwid);
+}
+
+EXTERNC __declspec(EXTERNAL) int_fast8_t __cdecl IsDisconnected(const SOCKET sock)
+{
+	return isDisconnected(sock);
 }
 
 
@@ -56,16 +107,8 @@ EXTERNC __declspec(EXTERNAL) DWORD __cdecl StartKmsServer(const int port, Reques
 	if (IsServerStarted) return !0;
 
 #	ifdef _WIN32
-#	ifndef USE_MSRPC
-	// Windows Sockets must be initialized
-	WSADATA wsadata;
-	int error;
-
-	if ((error = WSAStartup(0x0202, &wsadata)))
-	{
-		return error;
-	}
-#	endif // USE_MSRPC
+	int error = initializeWinSockets();
+	if (error) return error;
 #	endif // _WIN32
 
 	CreateResponseBase = requestCallback;
@@ -113,15 +156,8 @@ EXTERNC __declspec(EXTERNAL) DWORD __cdecl StartKmsServer(const int port, Reques
 	int error;
 
 #	ifdef _WIN32
-#	ifndef USE_MSRPC
-	// Windows Sockets must be initialized
-	WSADATA wsadata;
-
-	if ((error = WSAStartup(0x0202, &wsadata)))
-	{
-		return error;
-	}
-#	endif // USE_MSRPC
+	error = initializeWinSockets();
+	if (error) return error;
 #	endif // _WIN32
 
 	defaultport = vlmcsd_malloc(16);

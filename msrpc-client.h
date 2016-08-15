@@ -7,6 +7,7 @@
 
 #include "types.h"
 #include <setjmp.h>
+#include "output.h"
 
 typedef int_fast8_t RpcCtx;
 typedef RPC_STATUS RpcStatus;

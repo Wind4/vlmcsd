@@ -72,13 +72,13 @@ RpcCtx connectToAddress(char *const addr, const int AddressFamily_unused, int_fa
 
 	if ((status = createStringBinding(addr, &stringBinding)) != RPC_S_OK)
 	{
-		errorout("%s\n", win_strerror(status));
+		printerrorf("%s\n", win_strerror(status));
 		return !0;
 	}
 
 	if (PreviousRpcCallFailed)
 	{
-		errorout("%s\n", win_strerror(PreviousRpcCallFailed));
+		printerrorf("%s\n", win_strerror(PreviousRpcCallFailed));
 		return !0;
 	}
 
