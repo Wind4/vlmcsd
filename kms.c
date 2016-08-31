@@ -21,34 +21,36 @@
 
 #define FRIENDLY_NAME_WINDOWS "Windows"
 #define FRIENDLY_NAME_OFFICE2010 "Office 2010"
-#define FRIENDLY_NAME_OFFICE2013 "Office"
+#define FRIENDLY_NAME_OFFICE2013 "Office 2013+"
 
 #ifndef NO_BASIC_PRODUCT_LIST
 // Do not change the order of this list. Append items as necessary
 const KmsIdList ProductList[] = {
-	/* 000 */ { { 0x212a64dc, 0x43b1, 0x4d3d, { 0xa3, 0x0c, 0x2f, 0xc6, 0x9d, 0x20, 0x95, 0xc6 } } /*"212a64dc-43b1-4d3d-a30c-2fc69d2095c6"*/, "Vista",                    EPID_WINDOWS,    4, 25 },
-	/* 001 */ { { 0x7fde5219, 0xfbfa, 0x484a, { 0x82, 0xc9, 0x34, 0xd1, 0xad, 0x53, 0xe8, 0x56 } } /*"7fde5219-fbfa-484a-82c9-34d1ad53e856"*/, "Windows 7",                EPID_WINDOWS,    4, 25 },
-	/* 002 */ { { 0x3c40b358, 0x5948, 0x45af, { 0x92, 0x3b, 0x53, 0xd2, 0x1f, 0xcc, 0x7e, 0x79 } } /*"3c40b358-5948-45af-923b-53d21fcc7e79"*/, "Windows 8 VL",             EPID_WINDOWS,    5, 25 },
-	/* 003 */ { { 0x5f94a0bb, 0xd5a0, 0x4081, { 0xa6, 0x85, 0x58, 0x19, 0x41, 0x8b, 0x2f, 0xe0 } } /*"5f94a0bb-d5a0-4081-a685-5819418b2fe0"*/, "Windows Preview",          EPID_WINDOWS,    6, 25 },
-	/* 004 */ { { 0xbbb97b3b, 0x8ca4, 0x4a28, { 0x97, 0x17, 0x89, 0xfa, 0xbd, 0x42, 0xc4, 0xac } } /*"bbb97b3b-8ca4-4a28-9717-89fabd42c4ac"*/, "Windows 8 Retail",         EPID_WINDOWS,    5, 25 },
-	/* 005 */ { { 0xcb8fc780, 0x2c05, 0x495a, { 0x97, 0x10, 0x85, 0xaf, 0xff, 0xc9, 0x04, 0xd7 } } /*"cb8fc780-2c05-495a-9710-85afffc904d7"*/, "Windows 8.1 VL",           EPID_WINDOWS,    6, 25 },
-	/* 006 */ { { 0x6d646890, 0x3606, 0x461a, { 0x86, 0xab, 0x59, 0x8b, 0xb8, 0x4a, 0xce, 0x82 } } /*"6d646890-3606-461a-86ab-598bb84ace82"*/, "Windows 8.1 Retail",       EPID_WINDOWS,    6, 25 },
-	/* 007 */ { { 0x33e156e4, 0xb76f, 0x4a52, { 0x9f, 0x91, 0xf6, 0x41, 0xdd, 0x95, 0xac, 0x48 } } /*"33e156e4-b76f-4a52-9f91-f641dd95ac48"*/, "Windows 2008 A",           EPID_WINDOWS,    4,  5 },
-	/* 008 */ { { 0x8fe53387, 0x3087, 0x4447, { 0x89, 0x85, 0xf7, 0x51, 0x32, 0x21, 0x5a, 0xc9 } } /*"8fe53387-3087-4447-8985-f75132215ac9"*/, "Windows 2008 B",           EPID_WINDOWS,    4,  5 },
-	/* 009 */ { { 0x8a21fdf3, 0xcbc5, 0x44eb, { 0x83, 0xf3, 0xfe, 0x28, 0x4e, 0x66, 0x80, 0xa7 } } /*"8a21fdf3-cbc5-44eb-83f3-fe284e6680a7"*/, "Windows 2008 C",           EPID_WINDOWS,    4,  5 },
-	/* 010 */ { { 0x0fc6ccaf, 0xff0e, 0x4fae, { 0x9d, 0x08, 0x43, 0x70, 0x78, 0x5b, 0xf7, 0xed } } /*"0fc6ccaf-ff0e-4fae-9d08-4370785bf7ed"*/, "Windows 2008 R2 A",        EPID_WINDOWS,    4,  5 },
-	/* 011 */ { { 0xca87f5b6, 0xcd46, 0x40c0, { 0xb0, 0x6d, 0x8e, 0xcd, 0x57, 0xa4, 0x37, 0x3f } } /*"ca87f5b6-cd46-40c0-b06d-8ecd57a4373f"*/, "Windows 2008 R2 B",        EPID_WINDOWS,    4,  5 },
-	/* 012 */ { { 0xb2ca2689, 0xa9a8, 0x42d7, { 0x93, 0x8d, 0xcf, 0x8e, 0x9f, 0x20, 0x19, 0x58 } } /*"b2ca2689-a9a8-42d7-938d-cf8e9f201958"*/, "Windows 2008 R2 C",        EPID_WINDOWS,    4,  5 },
-	/* 013 */ { { 0x8665cb71, 0x468c, 0x4aa3, { 0xa3, 0x37, 0xcb, 0x9b, 0xc9, 0xd5, 0xea, 0xac } } /*"8665cb71-468c-4aa3-a337-cb9bc9d5eaac"*/, "Windows 2012",             EPID_WINDOWS,    5,  5 },
-	/* 014 */ { { 0x8456EFD3, 0x0C04, 0x4089, { 0x87, 0x40, 0x5b, 0x72, 0x38, 0x53, 0x5a, 0x65 } } /*"8456EFD3-0C04-4089-8740-5B7238535A65"*/, "Windows 2012 R2",          EPID_WINDOWS,    6,  5 },
-	/* 015 */ { { 0xe85af946, 0x2e25, 0x47b7, { 0x83, 0xe1, 0xbe, 0xbc, 0xeb, 0xea, 0xc6, 0x11 } } /*"e85af946-2e25-47b7-83e1-bebcebeac611"*/, "Office 2010",              EPID_OFFICE2010, 4,  5 },
-	/* 016 */ { { 0xe6a6f1bf, 0x9d40, 0x40c3, { 0xaa, 0x9f, 0xc7, 0x7b, 0xa2, 0x15, 0x78, 0xc0 } } /*"e6a6f1bf-9d40-40c3-aa9f-c77ba21578c0"*/, "Office 2013+",             EPID_OFFICE2013, 6,  5 },
-	/* 017 */ { { 0x6d5f5270, 0x31ac, 0x433e, { 0xb9, 0x0a, 0x39, 0x89, 0x29, 0x23, 0xc6, 0x57 } } /*"6d5f5270-31ac-433e-b90a-39892923c657"*/, "Windows Server Preview",   EPID_WINDOWS,    6,  5 },
-	/* 018 */ { { 0x85b5f61b, 0x320b, 0x4be3, { 0x81, 0x4a, 0xb7, 0x6b, 0x2b, 0xfa, 0xfc, 0x82 } } /*"85b5f61b-320b-4be3-814a-b76b2bfafc82"*/, "Office 2016",              EPID_OFFICE2013, 6,  5 },
-	/* 019 */ { { 0x58e2134f, 0x8e11, 0x4d17, { 0x9c, 0xb2, 0x91, 0x06, 0x9c, 0x15, 0x11, 0x48 } } /*"58e2134f-8e11-4d17-9cb2-91069c151148"*/, "Windows 10 VL",            EPID_WINDOWS,    6, 25 },
-	/* 020 */ { { 0xe1c51358, 0xfe3e, 0x4203, { 0xa4, 0xa2, 0x3b, 0x6b, 0x20, 0xc9, 0x73, 0x4e } } /*"e1c51358-fe3e-4203-a4a2-3b6b20c9734e"*/, "Windows 10 Retail",        EPID_WINDOWS,    6, 25 },
-	/* 021 */ { { 0x6e9fc069, 0x257d, 0x4bc4, { 0xb4, 0xa7, 0x75, 0x05, 0x14, 0xd3, 0x27, 0x43 } } /*"6e9fc069-257d-4bc4-b4a7-750514d32743"*/, "Windows 2016",             EPID_WINDOWS,    6,  5 },
-	/* 022 */ { { 0x00000000, 0x0000, 0x0000, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } }, NULL, NULL, 0, 0 }
+		/* 000 */ { { 0x212a64dc, 0x43b1, 0x4d3d, { 0xa3, 0x0c, 0x2f, 0xc6, 0x9d, 0x20, 0x95, 0xc6, } } /*212a64dc-43b1-4d3d-a30c-2fc69d2095c6*/, "Windows Vista",                                      EPID_WINDOWS,    4, 25 },
+		/* 001 */ { { 0x7fde5219, 0xfbfa, 0x484a, { 0x82, 0xc9, 0x34, 0xd1, 0xad, 0x53, 0xe8, 0x56, } } /*7fde5219-fbfa-484a-82c9-34d1ad53e856*/, "Windows 7",                                          EPID_WINDOWS,    4, 25 },
+		/* 002 */ { { 0x3c40b358, 0x5948, 0x45af, { 0x92, 0x3b, 0x53, 0xd2, 0x1f, 0xcc, 0x7e, 0x79, } } /*3c40b358-5948-45af-923b-53d21fcc7e79*/, "Windows 8 (Volume)",                                 EPID_WINDOWS,    5, 25 },
+		/* 003 */ { { 0x5f94a0bb, 0xd5a0, 0x4081, { 0xa6, 0x85, 0x58, 0x19, 0x41, 0x8b, 0x2f, 0xe0, } } /*5f94a0bb-d5a0-4081-a685-5819418b2fe0*/, "Windows Preview",                                    EPID_WINDOWS,    5, 25 },
+		/* 004 */ { { 0xbbb97b3b, 0x8ca4, 0x4a28, { 0x97, 0x17, 0x89, 0xfa, 0xbd, 0x42, 0xc4, 0xac, } } /*bbb97b3b-8ca4-4a28-9717-89fabd42c4ac*/, "Windows 8 (Retail)",                                 EPID_WINDOWS,    5, 25 },
+		/* 005 */ { { 0xcb8fc780, 0x2c05, 0x495a, { 0x97, 0x10, 0x85, 0xaf, 0xff, 0xc9, 0x04, 0xd7, } } /*cb8fc780-2c05-495a-9710-85afffc904d7*/, "Windows 8.1 (Volume)",                               EPID_WINDOWS,    6, 25 },
+		/* 006 */ { { 0x6d646890, 0x3606, 0x461a, { 0x86, 0xab, 0x59, 0x8b, 0xb8, 0x4a, 0xce, 0x82, } } /*6d646890-3606-461a-86ab-598bb84ace82*/, "Windows 8.1 (Retail)",                               EPID_WINDOWS,    6, 25 },
+		/* 007 */ { { 0x33e156e4, 0xb76f, 0x4a52, { 0x9f, 0x91, 0xf6, 0x41, 0xdd, 0x95, 0xac, 0x48, } } /*33e156e4-b76f-4a52-9f91-f641dd95ac48*/, "Windows Server 2008 A (Web and HPC)",                EPID_WINDOWS,    4,  5 },
+		/* 008 */ { { 0x8fe53387, 0x3087, 0x4447, { 0x89, 0x85, 0xf7, 0x51, 0x32, 0x21, 0x5a, 0xc9, } } /*8fe53387-3087-4447-8985-f75132215ac9*/, "Windows Server 2008 B (Standard and Enterprise)",    EPID_WINDOWS,    4,  5 },
+		/* 009 */ { { 0x8a21fdf3, 0xcbc5, 0x44eb, { 0x83, 0xf3, 0xfe, 0x28, 0x4e, 0x66, 0x80, 0xa7, } } /*8a21fdf3-cbc5-44eb-83f3-fe284e6680a7*/, "Windows Server 2008 C (Datacenter)",                 EPID_WINDOWS,    4,  5 },
+		/* 010 */ { { 0x0fc6ccaf, 0xff0e, 0x4fae, { 0x9d, 0x08, 0x43, 0x70, 0x78, 0x5b, 0xf7, 0xed, } } /*0fc6ccaf-ff0e-4fae-9d08-4370785bf7ed*/, "Windows Server 2008 R2 A (Web and HPC)",             EPID_WINDOWS,    4,  5 },
+		/* 011 */ { { 0xca87f5b6, 0xcd46, 0x40c0, { 0xb0, 0x6d, 0x8e, 0xcd, 0x57, 0xa4, 0x37, 0x3f, } } /*ca87f5b6-cd46-40c0-b06d-8ecd57a4373f*/, "Windows Server 2008 R2 B (Standard and Enterprise)", EPID_WINDOWS,    4,  5 },
+		/* 012 */ { { 0xb2ca2689, 0xa9a8, 0x42d7, { 0x93, 0x8d, 0xcf, 0x8e, 0x9f, 0x20, 0x19, 0x58, } } /*b2ca2689-a9a8-42d7-938d-cf8e9f201958*/, "Windows Server 2008 R2 C (Datacenter)",              EPID_WINDOWS,    4,  5 },
+		/* 013 */ { { 0x8665cb71, 0x468c, 0x4aa3, { 0xa3, 0x37, 0xcb, 0x9b, 0xc9, 0xd5, 0xea, 0xac, } } /*8665cb71-468c-4aa3-a337-cb9bc9d5eaac*/, "Windows Server 2012",                                EPID_WINDOWS,    5,  5 },
+		/* 014 */ { { 0x8456efd3, 0x0c04, 0x4089, { 0x87, 0x40, 0x5b, 0x72, 0x38, 0x53, 0x5a, 0x65, } } /*8456efd3-0c04-4089-8740-5b7238535a65*/, "Windows Server 2012 R2",                             EPID_WINDOWS,    6,  5 },
+		/* 015 */ { { 0xe85af946, 0x2e25, 0x47b7, { 0x83, 0xe1, 0xbe, 0xbc, 0xeb, 0xea, 0xc6, 0x11, } } /*e85af946-2e25-47b7-83e1-bebcebeac611*/, "Office 2010",                                        EPID_OFFICE2010, 4,  5 },
+		/* 016 */ { { 0xe6a6f1bf, 0x9d40, 0x40c3, { 0xaa, 0x9f, 0xc7, 0x7b, 0xa2, 0x15, 0x78, 0xc0, } } /*e6a6f1bf-9d40-40c3-aa9f-c77ba21578c0*/, "Office 2013",                                        EPID_OFFICE2013, 5,  5 },
+		/* 017 */ { { 0x6d5f5270, 0x31ac, 0x433e, { 0xb9, 0x0a, 0x39, 0x89, 0x29, 0x23, 0xc6, 0x57, } } /*6d5f5270-31ac-433e-b90a-39892923c657*/, "Windows Server Preview",                             EPID_WINDOWS,    6,  5 },
+		/* 018 */ { { 0x85b5f61b, 0x320b, 0x4be3, { 0x81, 0x4a, 0xb7, 0x6b, 0x2b, 0xfa, 0xfc, 0x82, } } /*85b5f61b-320b-4be3-814a-b76b2bfafc82*/, "Office 2016",                                        EPID_OFFICE2013, 6,  5 },
+		/* 019 */ { { 0x58e2134f, 0x8e11, 0x4d17, { 0x9c, 0xb2, 0x91, 0x06, 0x9c, 0x15, 0x11, 0x48, } } /*58e2134f-8e11-4d17-9cb2-91069c151148*/, "Windows 10 2015 (Volume)",                           EPID_WINDOWS,    6, 25 },
+		/* 020 */ { { 0xe1c51358, 0xfe3e, 0x4203, { 0xa4, 0xa2, 0x3b, 0x6b, 0x20, 0xc9, 0x73, 0x4e, } } /*e1c51358-fe3e-4203-a4a2-3b6b20c9734e*/, "Windows 10 (Retail)",                                EPID_WINDOWS,    6, 25 },
+		/* 021 */ { { 0x6e9fc069, 0x257d, 0x4bc4, { 0xb4, 0xa7, 0x75, 0x05, 0x14, 0xd3, 0x27, 0x43, } } /*6e9fc069-257d-4bc4-b4a7-750514d32743*/, "Windows Server 2016",                                EPID_WINDOWS,    6,  5 },
+		/* 022 */ { { 0xaa4c7968, 0xb9da, 0x4680, { 0x92, 0xb6, 0xac, 0xb2, 0x5e, 0x2f, 0x86, 0x6c, } } /*aa4c7968-b9da-4680-92b6-acb25e2f866c*/, "Office 2013 (Pre-Release)",                          EPID_OFFICE2013, 5,  5 },
+		/* 023 */ { { 0x969fe3c0, 0xa3ec, 0x491a, { 0x9f, 0x25, 0x42, 0x36, 0x05, 0xde, 0xb3, 0x65, } } /*969fe3c0-a3ec-491a-9f25-423605deb365*/, "Windows 10 2016 (Volume)",                           EPID_WINDOWS,    6, 25 },
+		/* 024 */ { { 0x00000000, 0x0000, 0x0000, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } }, NULL, NULL, 0, 0 }
 };
 #endif
 
@@ -71,30 +73,34 @@ const KmsIdList ExtendedProductList [] = {
 		{ { 0x7b9e1751, 0xa8da, 0x4f75, { 0x95, 0x60, 0x5f, 0xad, 0xfe, 0x3d, 0x8e, 0x38, } } /*7b9e1751-a8da-4f75-9560-5fadfe3d8e38*/, "Windows 10 Home N",                              EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN10_RETAIL },
 		{ { 0xcd918a57, 0xa41b, 0x4c82, { 0x8d, 0xce, 0x1a, 0x53, 0x8e, 0x22, 0x1a, 0x83, } } /*cd918a57-a41b-4c82-8dce-1a538e221a83*/, "Windows 10 Home Single Language",                EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN10_RETAIL },
 
-		// Windows 10 (Volume)
+		// Windows 10 2015 (Volume)
 		{ { 0xe0c42288, 0x980c, 0x4788, { 0xa0, 0x14, 0xc0, 0x80, 0xd2, 0xe1, 0x92, 0x6e, } } /*e0c42288-980c-4788-a014-c080d2e1926e*/, "Windows 10 Education",                           EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN10_VL },
 		{ { 0x3c102355, 0xd027, 0x42c6, { 0xad, 0x23, 0x2e, 0x7e, 0xf8, 0xa0, 0x25, 0x85, } } /*3c102355-d027-42c6-ad23-2e7ef8a02585*/, "Windows 10 Education N",                         EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN10_VL },
 		{ { 0x73111121, 0x5638, 0x40f6, { 0xbc, 0x11, 0xf1, 0xd7, 0xb0, 0xd6, 0x43, 0x00, } } /*73111121-5638-40f6-bc11-f1d7b0d64300*/, "Windows 10 Enterprise",                          EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN10_VL },
 		{ { 0x7b51a46c, 0x0c04, 0x4e8f, { 0x9a, 0xf4, 0x84, 0x96, 0xcc, 0xa9, 0x0d, 0x5e, } } /*7b51a46c-0c04-4e8f-9af4-8496cca90d5e*/, "Windows 10 Enterprise 2015 LTSB",                EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN10_VL },
 		{ { 0x87b838b7, 0x41b6, 0x4590, { 0x83, 0x18, 0x57, 0x97, 0x95, 0x1d, 0x85, 0x29, } } /*87b838b7-41b6-4590-8318-5797951d8529*/, "Windows 10 Enterprise 2015 LTSB N",              EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN10_VL },
-		{ { 0x2d5a5a60, 0x3040, 0x48bf, { 0xbe, 0xb0, 0xfc, 0xd7, 0x70, 0xc2, 0x0c, 0xe0, } } /*2d5a5a60-3040-48bf-beb0-fcd770c20ce0*/, "Windows 10 Enterprise 2016 LTSB",                EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN10_VL },
-		{ { 0x9f776d83, 0x7156, 0x45b2, { 0x8a, 0x5c, 0x35, 0x9b, 0x9c, 0x9f, 0x22, 0xa3, } } /*9f776d83-7156-45b2-8a5c-359b9c9f22a3*/, "Windows 10 Enterprise 2016 LTSB N",              EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN10_VL },
 		{ { 0xe272e3e2, 0x732f, 0x4c65, { 0xa8, 0xf0, 0x48, 0x47, 0x47, 0xd0, 0xd9, 0x47, } } /*e272e3e2-732f-4c65-a8f0-484747d0d947*/, "Windows 10 Enterprise N",                        EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN10_VL },
+		{ { 0x43f2ab05, 0x7c87, 0x4d56, { 0xb2, 0x7c, 0x44, 0xd0, 0xf9, 0xa3, 0xda, 0xbd, } } /*43f2ab05-7c87-4d56-b27c-44d0f9a3dabd*/, "Windows 10 Enterprise Preview",                  EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN10_VL },
 		{ { 0x2de67392, 0xb7a7, 0x462a, { 0xb1, 0xca, 0x10, 0x8d, 0xd1, 0x89, 0xf5, 0x88, } } /*2de67392-b7a7-462a-b1ca-108dd189f588*/, "Windows 10 Professional",                        EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN10_VL },
 		{ { 0x3f1afc82, 0xf8ac, 0x4f6c, { 0x80, 0x05, 0x1d, 0x23, 0x3e, 0x60, 0x6e, 0xee, } } /*3f1afc82-f8ac-4f6c-8005-1d233e606eee*/, "Windows 10 Professional Education",              EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN10_VL },
 		{ { 0x5300b18c, 0x2e33, 0x4dc2, { 0x82, 0x91, 0x47, 0xff, 0xce, 0xc7, 0x46, 0xdd, } } /*5300b18c-2e33-4dc2-8291-47ffcec746dd*/, "Windows 10 Professional Education N",            EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN10_VL },
-		{ { 0xa80b5abf, 0x75ad, 0x428b, { 0xb0, 0x5d, 0xa4, 0x7d, 0x2d, 0xff, 0xee, 0xbf, } } /*a80b5abf-75ad-428b-b05d-a47d2dffeebf*/, "Windows 10 Professional N",                      EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN10_VL },
+		{ { 0xa80b5abf, 0x76ad, 0x428b, { 0xb0, 0x5d, 0xa4, 0x7d, 0x2d, 0xff, 0xee, 0xbf, } } /*a80b5abf-76ad-428b-b05d-a47d2dffeebf*/, "Windows 10 Professional N",                      EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN10_VL },
+		{ { 0xff808201, 0xfec6, 0x4fd4, { 0xae, 0x16, 0xab, 0xbd, 0xda, 0xde, 0x57, 0x06, } } /*ff808201-fec6-4fd4-ae16-abbddade5706*/, "Windows 10 Professional Preview",                EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN10_VL },
+
+		// Windows 10 2016 (Volume)
+		{ { 0x2d5a5a60, 0x3040, 0x48bf, { 0xbe, 0xb0, 0xfc, 0xd7, 0x70, 0xc2, 0x0c, 0xe0, } } /*2d5a5a60-3040-48bf-beb0-fcd770c20ce0*/, "Windows 10 Enterprise 2016 LTSB",                EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN10_LTSB2016 },
+		{ { 0x9f776d83, 0x7156, 0x45b2, { 0x8a, 0x5c, 0x35, 0x9b, 0x9c, 0x9f, 0x22, 0xa3, } } /*9f776d83-7156-45b2-8a5c-359b9c9f22a3*/, "Windows 10 Enterprise 2016 LTSB N",              EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN10_LTSB2016 },
 
 		// Windows 7
-		{ { 0x0ab82d54, 0x47f4, 0x4acb, { 0x81, 0x8c, 0xcc, 0x5b, 0xf0, 0xec, 0xb6, 0x49, } } /*0ab82d54-47f4-4acb-818c-cc5bf0ecb649*/, "Windows 7 Embedded Industry",                    EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN7 },
+		{ { 0xdb537896, 0x376f, 0x48ae, { 0xa4, 0x92, 0x53, 0xd0, 0x54, 0x77, 0x73, 0xd0, } } /*db537896-376f-48ae-a492-53d0547773d0*/, "Windows 7 Embedded POSReady",                    EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN7 },
+		{ { 0xe1a8296a, 0xdb37, 0x44d1, { 0x8c, 0xce, 0x7b, 0xc9, 0x61, 0xd5, 0x9c, 0x54, } } /*e1a8296a-db37-44d1-8cce-7bc961d59c54*/, "Windows 7 Embedded Standard",                    EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN7 },
 		{ { 0xae2ee509, 0x1b34, 0x41c0, { 0xac, 0xb7, 0x6d, 0x46, 0x50, 0x16, 0x89, 0x15, } } /*ae2ee509-1b34-41c0-acb7-6d4650168915*/, "Windows 7 Enterprise",                           EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN7 },
 		{ { 0x46bbed08, 0x9c7b, 0x48fc, { 0xa6, 0x14, 0x95, 0x25, 0x05, 0x73, 0xf4, 0xea, } } /*46bbed08-9c7b-48fc-a614-95250573f4ea*/, "Windows 7 Enterprise E",                         EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN7 },
 		{ { 0x1cb6d605, 0x11b3, 0x4e14, { 0xbb, 0x30, 0xda, 0x91, 0xc8, 0xe3, 0x98, 0x3a, } } /*1cb6d605-11b3-4e14-bb30-da91c8e3983a*/, "Windows 7 Enterprise N",                         EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN7 },
 		{ { 0xb92e9980, 0xb9d5, 0x4821, { 0x9c, 0x94, 0x14, 0x0f, 0x63, 0x2f, 0x63, 0x12, } } /*b92e9980-b9d5-4821-9c94-140f632f6312*/, "Windows 7 Professional",                         EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN7 },
 		{ { 0x5a041529, 0xfef8, 0x4d07, { 0xb0, 0x6f, 0xb5, 0x9b, 0x57, 0x3b, 0x32, 0xd2, } } /*5a041529-fef8-4d07-b06f-b59b573b32d2*/, "Windows 7 Professional E",                       EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN7 },
 		{ { 0x54a09a0d, 0xd57b, 0x4c10, { 0x8b, 0x69, 0xa8, 0x42, 0xd6, 0x59, 0x0a, 0xd5, } } /*54a09a0d-d57b-4c10-8b69-a842d6590ad5*/, "Windows 7 Professional N",                       EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN7 },
-		{ { 0xdb537896, 0x376f, 0x48ae, { 0xa4, 0x92, 0x53, 0xd0, 0x54, 0x77, 0x73, 0xd0, } } /*db537896-376f-48ae-a492-53d0547773d0*/, "Windows Embedded POSReady 7",                    EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN7 },
-		{ { 0xaa6dd3aa, 0xc2b4, 0x40e2, { 0xa5, 0x44, 0xa6, 0xbb, 0xb3, 0xf5, 0xc3, 0x95, } } /*aa6dd3aa-c2b4-40e2-a544-a6bbb3f5c395*/, "Windows ThinPC",                                 EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN7 },
+		{ { 0xaa6dd3aa, 0xc2b4, 0x40e2, { 0xa5, 0x44, 0xa6, 0xbb, 0xb3, 0xf5, 0xc3, 0x95, } } /*aa6dd3aa-c2b4-40e2-a544-a6bbb3f5c395*/, "Windows 7 ThinPC",                               EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN7 },
 
 		// Windows 8 (Retail)
 		{ { 0xc04ed6bf, 0x55c8, 0x4b47, { 0x9f, 0x8e, 0x5a, 0x1f, 0x31, 0xce, 0xee, 0x60, } } /*c04ed6bf-55c8-4b47-9f8e-5a1f31ceee60*/, "Windows 8 Core",                                 EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN8_RETAIL },
@@ -104,8 +110,8 @@ const KmsIdList ExtendedProductList [] = {
 		{ { 0xa00018a3, 0xf20f, 0x4632, { 0xbf, 0x7c, 0x8d, 0xaa, 0x53, 0x51, 0xc9, 0x14, } } /*a00018a3-f20f-4632-bf7c-8daa5351c914*/, "Windows 8 Professional WMC",                     EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN8_RETAIL },
 
 		// Windows 8 (Volume)
-		{ { 0x10018baf, 0xce21, 0x4060, { 0x80, 0xbd, 0x47, 0xfe, 0x74, 0xed, 0x4d, 0xab, } } /*10018baf-ce21-4060-80bd-47fe74ed4dab*/, "Windows 8 Embedded Industry",                    EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN8_VL },
-		{ { 0x18db1848, 0x12e0, 0x4167, { 0xb9, 0xd7, 0xda, 0x7f, 0xcd, 0xa5, 0x07, 0xdb, } } /*18db1848-12e0-4167-b9d7-da7fcda507db*/, "Windows 8 Embedded Industry E",                  EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN8_VL },
+		{ { 0x18db1848, 0x12e0, 0x4167, { 0xb9, 0xd7, 0xda, 0x7f, 0xcd, 0xa5, 0x07, 0xdb, } } /*18db1848-12e0-4167-b9d7-da7fcda507db*/, "Windows 8 Embedded Industry Enterprise",         EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN8_VL },
+		{ { 0x10018baf, 0xce21, 0x4060, { 0x80, 0xbd, 0x47, 0xfe, 0x74, 0xed, 0x4d, 0xab, } } /*10018baf-ce21-4060-80bd-47fe74ed4dab*/, "Windows 8 Embedded Industry Professional",       EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN8_VL },
 		{ { 0x458e1bec, 0x837a, 0x45f6, { 0xb9, 0xd5, 0x92, 0x5e, 0xd5, 0xd2, 0x99, 0xde, } } /*458e1bec-837a-45f6-b9d5-925ed5d299de*/, "Windows 8 Enterprise",                           EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN8_VL },
 		{ { 0xe14997e7, 0x800a, 0x4cf7, { 0xad, 0x10, 0xde, 0x4b, 0x45, 0xb5, 0x78, 0xdb, } } /*e14997e7-800a-4cf7-ad10-de4b45b578db*/, "Windows 8 Enterprise N",                         EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN8_VL },
 		{ { 0xa98bcd6d, 0x5343, 0x4603, { 0x8a, 0xfe, 0x59, 0x08, 0xe4, 0x61, 0x11, 0x12, } } /*a98bcd6d-5343-4603-8afe-5908e4611112*/, "Windows 8 Professional",                         EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN8_VL },
@@ -126,12 +132,13 @@ const KmsIdList ExtendedProductList [] = {
 		{ { 0xba998212, 0x460a, 0x44db, { 0xbf, 0xb5, 0x71, 0xbf, 0x09, 0xd1, 0xc6, 0x8b, } } /*ba998212-460a-44db-bfb5-71bf09d1c68b*/, "Windows 8.1 Core Connected Country Specific",    EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN81_VL },
 		{ { 0xc6ddecd6, 0x2354, 0x4c19, { 0x90, 0x9b, 0x30, 0x6a, 0x30, 0x58, 0x48, 0x4e, } } /*c6ddecd6-2354-4c19-909b-306a3058484e*/, "Windows 8.1 Core Connected N",                   EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN81_VL },
 		{ { 0xb8f5e3a3, 0xed33, 0x4608, { 0x81, 0xe1, 0x37, 0xd6, 0xc9, 0xdc, 0xfd, 0x9c, } } /*b8f5e3a3-ed33-4608-81e1-37d6c9dcfd9c*/, "Windows 8.1 Core Connected Single Language",     EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN81_VL },
+		{ { 0xf7e88590, 0xdfc7, 0x4c78, { 0xbc, 0xcb, 0x6f, 0x38, 0x65, 0xb9, 0x9d, 0x1a, } } /*f7e88590-dfc7-4c78-bccb-6f3865b99d1a*/, "Windows 8.1 Embedded Industry Automotive",       EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN81_VL },
+		{ { 0xcd4e2d9f, 0x5059, 0x4a50, { 0xa9, 0x2d, 0x05, 0xd5, 0xbb, 0x12, 0x67, 0xc7, } } /*cd4e2d9f-5059-4a50-a92d-05d5bb1267c7*/, "Windows 8.1 Embedded Industry Enterprise",       EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN81_VL },
+		{ { 0x0ab82d54, 0x47f4, 0x4acb, { 0x81, 0x8c, 0xcc, 0x5b, 0xf0, 0xec, 0xb6, 0x49, } } /*0ab82d54-47f4-4acb-818c-cc5bf0ecb649*/, "Windows 8.1 Embedded Industry Professional",     EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN81_VL },
 		{ { 0x81671aaf, 0x79d1, 0x4eb1, { 0xb0, 0x04, 0x8c, 0xbb, 0xe1, 0x73, 0xaf, 0xea, } } /*81671aaf-79d1-4eb1-b004-8cbbe173afea*/, "Windows 8.1 Enterprise",                         EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN81_VL },
 		{ { 0x113e705c, 0xfa49, 0x48a4, { 0xbe, 0xea, 0x7d, 0xd8, 0x79, 0xb4, 0x6b, 0x14, } } /*113e705c-fa49-48a4-beea-7dd879b46b14*/, "Windows 8.1 Enterprise N",                       EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN81_VL },
 		{ { 0xc06b6981, 0xd7fd, 0x4a35, { 0xb7, 0xb4, 0x05, 0x47, 0x42, 0xb7, 0xaf, 0x67, } } /*c06b6981-d7fd-4a35-b7b4-054742b7af67*/, "Windows 8.1 Professional",                       EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN81_VL },
 		{ { 0x7476d79f, 0x8e48, 0x49b4, { 0xab, 0x63, 0x4d, 0x0b, 0x81, 0x3a, 0x16, 0xe4, } } /*7476d79f-8e48-49b4-ab63-4d0b813a16e4*/, "Windows 8.1 Professional N",                     EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN81_VL },
-		{ { 0xf7e88590, 0xdfc7, 0x4c78, { 0xbc, 0xcb, 0x6f, 0x38, 0x65, 0xb9, 0x9d, 0x1a, } } /*f7e88590-dfc7-4c78-bccb-6f3865b99d1a*/, "Windows Embedded Industry A 8.1",                EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN81_VL },
-		{ { 0xcd4e2d9f, 0x5059, 0x4a50, { 0xa9, 0x2d, 0x05, 0xd5, 0xbb, 0x12, 0x67, 0xc7, } } /*cd4e2d9f-5059-4a50-a92d-05d5bb1267c7*/, "Windows Embedded Industry E 8.1",                EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN81_VL },
 
 		// Windows Preview
 	#	ifdef INCLUDE_BETAS
@@ -142,31 +149,31 @@ const KmsIdList ExtendedProductList [] = {
 		{ { 0x631ead72, 0xa8ab, 0x4df8, { 0xbb, 0xdf, 0x37, 0x20, 0x29, 0x98, 0x9b, 0xdd, } } /*631ead72-a8ab-4df8-bbdf-372029989bdd*/, "Windows 8.x Preview ARM",                        EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN_BETA },
 	#	endif // INCLUDE_BETAS
 
-		// Windows Server 2008 A (Web and Standard)
-		{ { 0xad2542d4, 0x9154, 0x4c6d, { 0x8a, 0x44, 0x30, 0xf1, 0x1e, 0xe9, 0x69, 0x89, } } /*ad2542d4-9154-4c6d-8a44-30f11ee96989*/, "Windows Server 2008 Standard",                   EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008A },
-		{ { 0x2401e3d0, 0xc50a, 0x4b58, { 0x87, 0xb2, 0x7e, 0x79, 0x4b, 0x7d, 0x26, 0x07, } } /*2401e3d0-c50a-4b58-87b2-7e794b7d2607*/, "Windows Server 2008 Standard without Hyper-V",   EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008A },
+		// Windows Server 2008 A (Web and HPC)
+		{ { 0x7afb1156, 0x2c1d, 0x40fc, { 0xb2, 0x60, 0xaa, 0xb7, 0x44, 0x2b, 0x62, 0xfe, } } /*7afb1156-2c1d-40fc-b260-aab7442b62fe*/, "Windows Server 2008 Compute Cluster",            EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008A },
 		{ { 0xddfa9f7c, 0xf09e, 0x40b9, { 0x8c, 0x1a, 0xbe, 0x87, 0x7a, 0x9a, 0x7f, 0x4b, } } /*ddfa9f7c-f09e-40b9-8c1a-be877a9a7f4b*/, "Windows Server 2008 Web",                        EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008A },
 
-		// Windows Server 2008 B (Enterprise)
+		// Windows Server 2008 B (Standard and Enterprise)
 		{ { 0xc1af4d90, 0xd1bc, 0x44ca, { 0x85, 0xd4, 0x00, 0x3b, 0xa3, 0x3d, 0xb3, 0xb9, } } /*c1af4d90-d1bc-44ca-85d4-003ba33db3b9*/, "Windows Server 2008 Enterprise",                 EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008B },
 		{ { 0x8198490a, 0xadd0, 0x47b2, { 0xb3, 0xba, 0x31, 0x6b, 0x12, 0xd6, 0x47, 0xb4, } } /*8198490a-add0-47b2-b3ba-316b12d647b4*/, "Windows Server 2008 Enterprise without Hyper-V", EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008B },
+		{ { 0xad2542d4, 0x9154, 0x4c6d, { 0x8a, 0x44, 0x30, 0xf1, 0x1e, 0xe9, 0x69, 0x89, } } /*ad2542d4-9154-4c6d-8a44-30f11ee96989*/, "Windows Server 2008 Standard",                   EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008B },
+		{ { 0x2401e3d0, 0xc50a, 0x4b58, { 0x87, 0xb2, 0x7e, 0x79, 0x4b, 0x7d, 0x26, 0x07, } } /*2401e3d0-c50a-4b58-87b2-7e794b7d2607*/, "Windows Server 2008 Standard without Hyper-V",   EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008B },
 
 		// Windows Server 2008 C (Datacenter)
-		{ { 0x7afb1156, 0x2c1d, 0x40fc, { 0xb2, 0x60, 0xaa, 0xb7, 0x44, 0x2b, 0x62, 0xfe, } } /*7afb1156-2c1d-40fc-b260-aab7442b62fe*/, "Windows Server 2008 Compute Cluster",            EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008C },
 		{ { 0x68b6e220, 0xcf09, 0x466b, { 0x92, 0xd3, 0x45, 0xcd, 0x96, 0x4b, 0x95, 0x09, } } /*68b6e220-cf09-466b-92d3-45cd964b9509*/, "Windows Server 2008 Datacenter",                 EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008C },
 		{ { 0xfd09ef77, 0x5647, 0x4eff, { 0x80, 0x9c, 0xaf, 0x2b, 0x64, 0x65, 0x9a, 0x45, } } /*fd09ef77-5647-4eff-809c-af2b64659a45*/, "Windows Server 2008 Datacenter without Hyper-V", EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008C },
 		{ { 0x01ef176b, 0x3e0d, 0x422a, { 0xb4, 0xf8, 0x4e, 0xa8, 0x80, 0x03, 0x5e, 0x8f, } } /*01ef176b-3e0d-422a-b4f8-4ea880035e8f*/, "Windows Server 2008 for Itanium",                EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008C },
 
-		// Windows Server 2008 R2 A (Web and Standard)
+		// Windows Server 2008 R2 A (Web and HPC)
 		{ { 0xf772515c, 0x0e87, 0x48d5, { 0xa6, 0x76, 0xe6, 0x96, 0x2c, 0x3e, 0x11, 0x95, } } /*f772515c-0e87-48d5-a676-e6962c3e1195*/, "Windows MultiPoint Server 2010",                 EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008R2A },
-		{ { 0x68531fb9, 0x5511, 0x4989, { 0x97, 0xbe, 0xd1, 0x1a, 0x0f, 0x55, 0x63, 0x3f, } } /*68531fb9-5511-4989-97be-d11a0f55633f*/, "Windows Server 2008 R2 Standard",                EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008R2A },
+		{ { 0xcda18cf3, 0xc196, 0x46ad, { 0xb2, 0x89, 0x60, 0xc0, 0x72, 0x86, 0x99, 0x94, } } /*cda18cf3-c196-46ad-b289-60c072869994*/, "Windows Server 2008 R2 HPC Edition",             EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008R2A },
 		{ { 0xa78b8bd9, 0x8017, 0x4df5, { 0xb8, 0x6a, 0x09, 0xf7, 0x56, 0xaf, 0xfa, 0x7c, } } /*a78b8bd9-8017-4df5-b86a-09f756affa7c*/, "Windows Server 2008 R2 Web",                     EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008R2A },
 
-		// Windows Server 2008 R2 B (Enterprise)
+		// Windows Server 2008 R2 B (Standard and Enterprise)
 		{ { 0x620e2b3d, 0x09e7, 0x42fd, { 0x80, 0x2a, 0x17, 0xa1, 0x36, 0x52, 0xfe, 0x7a, } } /*620e2b3d-09e7-42fd-802a-17a13652fe7a*/, "Windows Server 2008 R2 Enterprise",              EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008R2B },
+		{ { 0x68531fb9, 0x5511, 0x4989, { 0x97, 0xbe, 0xd1, 0x1a, 0x0f, 0x55, 0x63, 0x3f, } } /*68531fb9-5511-4989-97be-d11a0f55633f*/, "Windows Server 2008 R2 Standard",                EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008R2B },
 
 		// Windows Server 2008 R2 C (Datacenter)
-		{ { 0xcda18cf3, 0xc196, 0x46ad, { 0xb2, 0x89, 0x60, 0xc0, 0x72, 0x86, 0x99, 0x94, } } /*cda18cf3-c196-46ad-b289-60c072869994*/, "Windows Server 2008 R2 Compute Cluster",         EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008R2C },
 		{ { 0x7482e61b, 0xc589, 0x4b7f, { 0x8e, 0xcc, 0x46, 0xd4, 0x55, 0xac, 0x3b, 0x87, } } /*7482e61b-c589-4b7f-8ecc-46d455ac3b87*/, "Windows Server 2008 R2 Datacenter",              EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008R2C },
 		{ { 0x8a26851c, 0x1c7e, 0x48d3, { 0xa6, 0x87, 0xfb, 0xca, 0x9b, 0x9a, 0xc1, 0x6b, } } /*8a26851c-1c7e-48d3-a687-fbca9b9ac16b*/, "Windows Server 2008 R2 for Itanium Enterprise",  EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2008R2C },
 
@@ -239,6 +246,26 @@ const KmsIdList ExtendedProductList [] = {
 		{ { 0xac4efaf0, 0xf81f, 0x4f61, { 0xbd, 0xf7, 0xea, 0x32, 0xb0, 0x2a, 0xb1, 0x17, } } /*ac4efaf0-f81f-4f61-bdf7-ea32b02ab117*/, "Office Visio Standard 2013",                     EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2013 },
 		{ { 0xd9f5b1c6, 0x5386, 0x495a, { 0x88, 0xf9, 0x9a, 0xd6, 0xb4, 0x1a, 0xc9, 0xb3, } } /*d9f5b1c6-5386-495a-88f9-9ad6b41ac9b3*/, "Office Word 2013",                               EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2013 },
 
+		// Office 2013 (Pre-Release)
+	#	ifdef INCLUDE_BETAS
+		{ { 0x44b538e2, 0xfb34, 0x4732, { 0x81, 0xe4, 0x64, 0x4c, 0x17, 0xd2, 0xe7, 0x46, } } /*44b538e2-fb34-4732-81e4-644c17d2e746*/, "Office Access 2013 (Pre-Release)",               EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2013_BETA },
+		{ { 0x9373bfa0, 0x97b3, 0x4587, { 0xab, 0x73, 0x30, 0x93, 0x44, 0x61, 0xd5, 0x5c, } } /*9373bfa0-97b3-4587-ab73-30934461d55c*/, "Office Excel 2013 (Pre-Release)",                EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2013_BETA },
+		{ { 0xaa286eb4, 0x556f, 0x4eeb, { 0x96, 0x7c, 0xc1, 0xb7, 0x71, 0xb7, 0x67, 0x3e, } } /*aa286eb4-556f-4eeb-967c-c1b771b7673e*/, "Office Groove 2013 (Pre-Release)",               EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2013_BETA },
+		{ { 0x7ccc8256, 0xfbaa, 0x49c6, { 0xb2, 0xa9, 0xf5, 0xaf, 0xb4, 0x25, 0x7c, 0xd2, } } /*7ccc8256-fbaa-49c6-b2a9-f5afb4257cd2*/, "Office InfoPath 2013 (Pre-Release)",             EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2013_BETA },
+		{ { 0xc53dfe17, 0xcc00, 0x4967, { 0xb1, 0x88, 0xa0, 0x88, 0xa9, 0x65, 0x49, 0x4d, } } /*c53dfe17-cc00-4967-b188-a088a965494d*/, "Office Lync 2013 (Pre-Release)",                 EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2013_BETA },
+		{ { 0x2816a87d, 0xe1ed, 0x4097, { 0xb3, 0x11, 0xe2, 0x34, 0x1c, 0x57, 0xb1, 0x79, } } /*2816a87d-e1ed-4097-b311-e2341c57b179*/, "Office Mondo 2013 (Pre-Release)",                EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2013_BETA },
+		{ { 0x67c0f908, 0x184f, 0x4f64, { 0x82, 0x50, 0x12, 0xdb, 0x79, 0x7a, 0xb3, 0xc3, } } /*67c0f908-184f-4f64-8250-12db797ab3c3*/, "Office OneNote 2013 (Pre-Release)",              EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2013_BETA },
+		{ { 0x7bce4e7a, 0xdd80, 0x4682, { 0x98, 0xfa, 0xf9, 0x93, 0x72, 0x58, 0x03, 0xd2, } } /*7bce4e7a-dd80-4682-98fa-f993725803d2*/, "Office Outlook 2013 (Pre-Release)",              EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2013_BETA },
+		{ { 0x1ec10c0a, 0x54f6, 0x453e, { 0xb8, 0x5a, 0x6f, 0xa1, 0xbb, 0xfe, 0xa9, 0xb7, } } /*1ec10c0a-54f6-453e-b85a-6fa1bbfea9b7*/, "Office PowerPoint 2013 (Pre-Release)",           EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2013_BETA },
+		{ { 0x87d2b5bf, 0xd47b, 0x41fb, { 0xaf, 0x62, 0x71, 0xc3, 0x82, 0xf5, 0xcc, 0x85, } } /*87d2b5bf-d47b-41fb-af62-71c382f5cc85*/, "Office Professional Plus 2013 (Pre-Release)",    EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2013_BETA },
+		{ { 0x3cfe50a9, 0x0e03, 0x4b29, { 0x97, 0x54, 0x9f, 0x19, 0x3f, 0x07, 0xb7, 0x1f, } } /*3cfe50a9-0e03-4b29-9754-9f193f07b71f*/, "Office Project Pro 2013 (Pre-Release)",          EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2013_BETA },
+		{ { 0x39e49e57, 0xae68, 0x4ee3, { 0xb0, 0x98, 0x26, 0x48, 0x0d, 0xf3, 0xda, 0x96, } } /*39e49e57-ae68-4ee3-b098-26480df3da96*/, "Office Project Standard 2013 (Pre-Release)",     EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2013_BETA },
+		{ { 0x15aa2117, 0x8f79, 0x49a8, { 0x83, 0x17, 0x75, 0x30, 0x26, 0xd6, 0xa0, 0x54, } } /*15aa2117-8f79-49a8-8317-753026d6a054*/, "Office Publisher 2013 (Pre-Release)",            EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2013_BETA },
+		{ { 0xcfbfd60e, 0x0b5f, 0x427d, { 0x91, 0x7c, 0xa4, 0xdf, 0x42, 0xa8, 0x0e, 0x44, } } /*cfbfd60e-0b5f-427d-917c-a4df42a80e44*/, "Office Visio Pro 2013 (Pre-Release)",            EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2013_BETA },
+		{ { 0x7012cc81, 0x8887, 0x42e9, { 0xb1, 0x7d, 0x4e, 0x5e, 0x42, 0x76, 0x0f, 0x0d, } } /*7012cc81-8887-42e9-b17d-4e5e42760f0d*/, "Office Visio Standard 2013 (Pre-Release)",       EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2013_BETA },
+		{ { 0xde9c7eb6, 0x5a85, 0x420d, { 0x97, 0x03, 0xff, 0xf1, 0x1b, 0xdd, 0x4d, 0x43, } } /*de9c7eb6-5a85-420d-9703-fff11bdd4d43*/, "Office Word 2013 (Pre-Release)",                 EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2013_BETA },
+	#	endif // INCLUDE_BETAS
+
 		// Office 2016
 		{ { 0x67c0fc0c, 0xdeba, 0x401b, { 0xbf, 0x8b, 0x9c, 0x8a, 0xd8, 0x39, 0x58, 0x04, } } /*67c0fc0c-deba-401b-bf8b-9c8ad8395804*/, "Office Access 2016",                             EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
 		{ { 0xc3e65d36, 0x141f, 0x4d2f, { 0xa3, 0x03, 0xa8, 0x42, 0xee, 0x75, 0x6a, 0x29, } } /*c3e65d36-141f-4d2f-a303-a842ee756a29*/, "Office Excel 2016",                              EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
@@ -293,10 +320,9 @@ static const struct KMSHostOS { uint16_t Type; uint16_t Build; } HostOS[] =
 
 // GroupID and PIDRange
 static const struct PKEYCONFIG { uint16_t GroupID; uint32_t RangeMin; uint32_t RangeMax; } pkeyconfig[] = {
-    { 206, 152000000, 191999999 }, // Windows Server 2012 KMS Host pkeyconfig
-    { 206, 271000000, 310999999 }, // Windows Server 2012 R2 KMS Host pkeyconfig
-    {  96, 199000000, 217999999 }, // Office2010 KMS Host pkeyconfig
-    { 206, 234000000, 255999999 }, // Office2013 KMS Host pkeyconfig
+    { 206, 471000000, 530999999 }, // Windows Server 2016
+    {  96, 199000000, 217999999 }, // Office2010
+    { 206, 437000000, 458999999 }, // Office2016
 };
 
 // Valid language identifiers to be used in the ePID
@@ -419,9 +445,8 @@ static int getRandomServerType()
 /*
  * Generates a random ePID
  */
-static void generateRandomPid(const int index, char *const szPid, int serverType, int16_t lang)
+static void generateRandomPid(int index, char *const szPid, int serverType, int16_t lang)
 {
-	int clientApp;
 	char numberBuffer[12];
 
 	if (serverType < 0 || serverType >= (int)_countof(HostOS))
@@ -432,17 +457,12 @@ static void generateRandomPid(const int index, char *const szPid, int serverType
 	strcpy(szPid, itoc(numberBuffer, HostOS[serverType].Type, 5));
 	strcat(szPid, "-");
 
-	if (index == 2)
-		clientApp = 3;
-	else if (index == 1)
-		clientApp = 2;
-	else
-		clientApp = serverType >= 3 /*change if HostOS changes*/ ? 1 : 0;
+	if (index > 2) index=0;
 
-	strcat(szPid, itoc(numberBuffer, pkeyconfig[clientApp].GroupID, 5));
+	strcat(szPid, itoc(numberBuffer, pkeyconfig[index].GroupID, 5));
 	strcat(szPid, "-");
 
-	int keyId = (rand32() % (pkeyconfig[clientApp].RangeMax - pkeyconfig[clientApp].RangeMin)) + pkeyconfig[clientApp].RangeMin;
+	int keyId = (rand32() % (pkeyconfig[index].RangeMax - pkeyconfig[index].RangeMin)) + pkeyconfig[index].RangeMin;
 	strcat(szPid, itoc(numberBuffer, keyId / 1000000, 3));
 	strcat(szPid, "-");
 	strcat(szPid, itoc(numberBuffer, keyId % 1000000, 6));
