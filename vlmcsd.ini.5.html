@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Sat Aug 27 18:14:38 2016 -->
+<!-- CreationDate: Sat Sep  3 01:38:09 2016 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -25,7 +25,7 @@
 <a href="#DESCRIPTION">DESCRIPTION</a><br>
 <a href="#SYNTAX">SYNTAX</a><br>
 <a href="#KEYWORDS">KEYWORDS</a><br>
-<a href="#SPECIAL KEYWORDS">SPECIAL KEYWORDS</a><br>
+<a href="#VALID EPIDS">VALID EPIDS</a><br>
 <a href="#FILES">FILES</a><br>
 <a href="#AUTHOR">AUTHOR</a><br>
 <a href="#CREDITS">CREDITS</a><br>
@@ -246,7 +246,9 @@ RPC. See options <b>-b0</b> and <b>-b1</b> in
 <p style="margin-left:22%;">The <i>argument</i> must 0, 1
 or 2. This specifies the ePID randomization level. See
 options <b>-r0</b>, <b>-r1</b> and <b>-r2</b> in
-<b>vlmcsd</b>(8). The default randomization level is 1.</p>
+<b>vlmcsd</b>(8). The default randomization level is 1. A
+<b>RandomizationLevel</b> of 2 is not recommended and should
+be treated as a debugging level.</p>
 
 <table width="100%" border="0" rules="none" frame="void"
        cellspacing="0" cellpadding="0">
@@ -402,46 +404,48 @@ Windows version of vlmcsd. See <b>-g</b> in
 by sending SIGHUP to vlmcsd.</p></td></tr>
 </table>
 
-<h2>SPECIAL KEYWORDS
-<a name="SPECIAL KEYWORDS"></a>
+<p style="margin-left:11%;"><b>Windows</b></p>
+
+<p style="margin-left:22%;">The <i>argument</i> has the
+form <i>ePID</i> [ / <i>HwId</i> ]. Always use <i>ePID</i>
+and <i>HwId</i> for Windows activations. If specified,
+<b>RandomizationLevel</b> for Windows activitations will be
+ignored.</p>
+
+<p style="margin-left:11%;"><b>Office2010</b></p>
+
+<p style="margin-left:22%;">The <i>argument</i> has the
+form <i>ePID</i> [ / <i>HwId</i> ]. Always use <i>ePID</i>
+and <i>HwId</i> for Office 2010 activations. If specified,
+<b>RandomizationLevel</b> for Office 2010 activitations will
+be ignored.</p>
+
+<p style="margin-left:11%;"><b>Office2013</b></p>
+
+<p style="margin-left:22%;">The <i>argument</i> has the
+form <i>ePID</i> [ / <i>HwId</i> ]. Always use <i>ePID</i>
+and <i>HwId</i> for Office 2013 activations. If specified,
+<b>RandomizationLevel</b> for Office 2013 activitations will
+be ignored.</p>
+
+<p style="margin-left:11%;"><b>Office2016</b></p>
+
+<p style="margin-left:22%;">The <i>argument</i> has the
+form <i>ePID</i> [ / <i>HwId</i> ]. Always use <i>ePID</i>
+and <i>HwId</i> for Office 2016 activations. If specified,
+<b>RandomizationLevel</b> for Office 2016 activitations will
+be ignored.</p>
+
+<h2>VALID EPIDS
+<a name="VALID EPIDS"></a>
 </h2>
 
-
-<p style="margin-left:11%; margin-top: 1em">Any valid GUID
-is being treated as a special <b>keyword</b> in the ini
-file. It is used to select a specfic ePID and HwId for an
-application GUID. The <i>argument</i> has the form
-<i>ePID</i> [ / <i>HwId</i> ]. KMS currently knows only 3
-application GUIDs:</p>
-
-
-<p style="margin-left:11%; margin-top: 1em">55c92734&minus;d682&minus;4d71&minus;983e&minus;d6ec3f16059f&nbsp;(Windows)
-<br>
-
-59a52881&minus;a989&minus;479d&minus;af46&minus;f275c6370663&nbsp;(Office
-2010) <br>
-
-0ff1ce15&minus;a989&minus;479d&minus;af46&minus;f275c6370663&nbsp;(Office
-2013)</p>
-
-<p style="margin-left:11%; margin-top: 1em">To use specific
-ePIDs for Windows, Office 2010 and Office 2013/2016 you
-could add the following lines to vlmcsd.ini:</p>
-
-
-<p style="margin-left:11%; margin-top: 1em"><small>55c92734&minus;d682&minus;4d71&minus;983e&minus;d6ec3f16059f&nbsp;=&nbsp;55041&minus;00206&minus;184&minus;207146&minus;03&minus;1062&minus;6002.0000&minus;3322013
-<br>
-
-59a52881&minus;a989&minus;479d&minus;af46&minus;f275c6370663&nbsp;=&nbsp;55041&minus;00096&minus;216&minus;598637&minus;03&minus;17418&minus;6002.0000&minus;3312013
-<br>
-
-0ff1ce15&minus;a989&minus;479d&minus;af46&minus;f275c6370663&nbsp;=&nbsp;55041&minus;00206-234&minus;742099&minus;03&minus;9217&minus;6002.0000&minus;2942013</small></p>
 
 <p style="margin-left:11%; margin-top: 1em">The ePID is
 currently a comment only. You can specify any string up to
 63 bytes. In Windows 7 Microsoft has blacklisted few ( &lt;
 10 ) ePIDs that were used in KMSv5 versions of the
-&quot;ratiborus virtual machine&quot;. Microsoft has given
+&quot;Ratiborus Virtual Machine&quot;. Microsoft has given
 up on blacklisting when KMS emulators appeared in the
 wild.</p>
 

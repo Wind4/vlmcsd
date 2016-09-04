@@ -138,133 +138,142 @@ KEYWORDS
        RandomizationLevel
               The  argument must 0, 1 or 2. This specifies the ePID randomiza‐
               tion level. See options -r0,  -r1  and  -r2  in  vlmcsd(8).  The
-              default randomization level is 1.
+              default  randomization  level is 1. A RandomizationLevel of 2 is
+              not recommended and should be treated as a debugging level.
 
 
        LCID   Use a specific culture id (LCID) even if the ePID is randomized.
-              The argument must be a number between 1  and  32767.  While  any
+              The  argument  must  be  a number between 1 and 32767. While any
               number in that range is valid, you should use an offcial LCID. A
-              list of  assigned  LCIDs  can  be  found  at  http://msdn.micro‐
-              soft.com/en-us/goglobal/bb964664.aspx.  On  the command line you
+              list  of  assigned  LCIDs  can  be  found  at http://msdn.micro‐
+              soft.com/en-us/goglobal/bb964664.aspx. On the command  line  you
               control this setting with option -C.
 
 
        MaxWorkers
               The argument specifies the maximum number of worker processes or
-              threads  that  will be used to serve activation requests concur‐
-              rently. This is the same as specifying -m on the  command  line.
-              Minimum  is  1. The maximum is platform specific and is at least
-              32767 but is likely to be greater on most systems.  The  default
+              threads that will be used to serve activation  requests  concur‐
+              rently.  This  is the same as specifying -m on the command line.
+              Minimum is 1. The maximum is platform specific and is  at  least
+              32767  but  is likely to be greater on most systems. The default
               is no limit.
 
 
        ConnectionTimeout
-              Used  to  control  when  the vlmcsd disconnects idle TPC connec‐
+              Used to control when the vlmcsd  disconnects  idle  TPC  connec‐
               tions. The default is 30 seconds. This is the same setting as -t
               on the command line.
 
 
        DisconnectClientsImmediately
-              Set  this to TRUE to disconnect a client after it got an activa‐
-              tion response regardless whether a timeout has occured  or  not.
-              The  default  is  FALSE.  Setting  this  to TRUE is non-standard
-              behavior. Use only if you are experiencing DoS or DDoS  attacks.
-              On  the  command  line you control this behavior with options -d
+              Set this to TRUE to disconnect a client after it got an  activa‐
+              tion  response  regardless whether a timeout has occured or not.
+              The default is FALSE.  Setting  this  to  TRUE  is  non-standard
+              behavior.  Use only if you are experiencing DoS or DDoS attacks.
+              On the command line you control this behavior  with  options  -d
               and -k.
 
 
        PidFile
-              Write a pid file. The argument is the full  pathname  of  a  pid
-              file.  The  pid  file  contains  is  single  line containing the
-              process id of the  vlmcsd  process.  It  can  be  used  to  stop
-              (SIGTERM)  or  restart  (SIGHUP)  vlmcsd.  This directive can be
+              Write  a  pid  file.  The argument is the full pathname of a pid
+              file. The pid  file  contains  is  single  line  containing  the
+              process  id  of  the  vlmcsd  process.  It  can  be used to stop
+              (SIGTERM) or restart (SIGHUP)  vlmcsd.  This  directive  can  be
               overriden using -p on the command line.
 
 
        LogFile
-              Write a log file. The argument is the full  pathname  of  a  log
-              file.  On  a  unixoid OS and with Cygwin you can use the special
-              filename 'syslog' to log to the syslog  facility.  This  is  the
+              Write  a  log  file.  The argument is the full pathname of a log
+              file. On a unixoid OS and with Cygwin you can  use  the  special
+              filename  'syslog'  to  log  to the syslog facility. This is the
               same as specifying -l on the command line.
 
 
        LogDateAndTime
               Can be TRUE or FALSE. The default is TRUE. If set to FALSE, log‐
-              ging output does not include date and time. This  is  useful  if
-              you  log  to  stdout(3)  which  is redirected to another logging
+              ging  output  does  not include date and time. This is useful if
+              you log to stdout(3) which  is  redirected  to  another  logging
               mechanism that already includes date and time in its output, for
-              instance  systemd-journald(8). If you log to syslog(3), LogDate‐
-              AndTime is ignored and date and time will never be  included  in
+              instance systemd-journald(8). If you log to syslog(3),  LogDate‐
+              AndTime  is  ignored and date and time will never be included in
               the output sent to syslog(3). Using the command line you control
               this setting with options -T0 and -T1.
 
 
        LogVerbose
-              Set this to either TRUE or FALSE. The default is FALSE.  If  set
+              Set  this  to either TRUE or FALSE. The default is FALSE. If set
               to TRUE, more details of each activation will be logged. You use
-              -v and -q in the command line to control this  setting.  LogVer‐
-              bose  has  an  effect only if you specify a log file or redirect
+              -v  and  -q in the command line to control this setting. LogVer‐
+              bose has an effect only if you specify a log  file  or  redirect
               logging to stdout(3).
 
 
        ActivationInterval
-              This is the same as specifying -A on the command line. See  vlm‐
+              This  is the same as specifying -A on the command line. See vlm‐
               csd(8) for details. The default is 2 hours. Example: Activation‐
               Interval = 1h
 
 
        RenewalInterval
-              This is the same as specifying -R on the command line. See  vlm‐
-              csd(8)  for  details. The default is 7 days. Example: RenewalIn‐
+              This  is the same as specifying -R on the command line. See vlm‐
+              csd(8) for details. The default is 7 days.  Example:  RenewalIn‐
               terval = 3d. Please note that the KMS client decides itself when
               to renew activation. Even though vlmcsd sends the renewal inter‐
-              val you specify, it is no more than some kind of  recommendation
-              to  the  client. Older KMS clients did follow the recommendation
+              val  you specify, it is no more than some kind of recommendation
+              to the client. Older KMS clients did follow  the  recommendation
               from a KMS server or emulator. Newer clients do not.
 
 
-       User   Run vlmcsd as another, preferrably less  privileged,  user.  The
-              argument  can be a user name or a numeric user id. You must have
-              the required privileges (capabilities on Linux)  to  change  the
-              security  context of a process without providing any credentials
-              (a password in most cases). On most unixoid OSses 'root' is  the
+       User   Run  vlmcsd  as  another, preferrably less privileged, user. The
+              argument can be a user name or a numeric user id. You must  have
+              the  required  privileges  (capabilities on Linux) to change the
+              security context of a process without providing any  credentials
+              (a  password in most cases). On most unixoid OSses 'root' is the
               only user who has these privileges in the default configuration.
-              This setting is not available in the native Windows  version  of
-              vlmcsd.  See  -u in vlmcsd(8). This setting cannot be changed on
+              This  setting  is not available in the native Windows version of
+              vlmcsd. See -u in vlmcsd(8). This setting cannot be  changed  on
               the fly by sending SIGHUP to vlmcsd.
 
 
-       Group  Run vlmcsd as another, preferrably less privileged,  group.  The
-              argument  can  be  a  group name or a numeric group id. You must
-              have the required privileges (capabilities on Linux)  to  change
-              the  security context of a process without providing any creden‐
-              tials (a password in most cases). On most unixoid  OSses  'root'
+       Group  Run  vlmcsd  as another, preferrably less privileged, group. The
+              argument can be a group name or a numeric  group  id.  You  must
+              have  the  required privileges (capabilities on Linux) to change
+              the security context of a process without providing any  creden‐
+              tials  (a  password in most cases). On most unixoid OSses 'root'
               is the only user who has these privileges in the default config‐
-              uration. This setting is not available  in  the  native  Windows
-              version  of  vlmcsd. See -g in vlmcsd(8). This setting cannot be
+              uration.  This  setting  is  not available in the native Windows
+              version of vlmcsd. See -g in vlmcsd(8). This setting  cannot  be
               changed on the fly by sending SIGHUP to vlmcsd.
 
 
-SPECIAL KEYWORDS
-       Any valid GUID is being treated as a special keyword in the  ini  file.
-       It  is  used to select a specfic ePID and HwId for an application GUID.
-       The argument has the form ePID [ / HwId ]. KMS currently knows  only  3
-       application GUIDs:
+       Windows
+              The  argument  has the form ePID [ / HwId ]. Always use ePID and
+              HwId for Windows activations. If  specified,  RandomizationLevel
+              for Windows activitations will be ignored.
 
-       55c92734-d682-4d71-983e-d6ec3f16059f (Windows)
-       59a52881-a989-479d-af46-f275c6370663 (Office 2010)
-       0ff1ce15-a989-479d-af46-f275c6370663 (Office 2013)
 
-       To use specific ePIDs for Windows, Office 2010 and Office 2013/2016 you
-       could add the following lines to vlmcsd.ini:
+       Office2010
+              The  argument  has the form ePID [ / HwId ]. Always use ePID and
+              HwId for Office 2010 activations. If  specified,  Randomization‐
+              Level for Office 2010 activitations will be ignored.
 
-       55c92734-d682-4d71-983e-d6ec3f16059f = 55041-00206-184-207146-03-1062-6002.0000-3322013
-       59a52881-a989-479d-af46-f275c6370663 = 55041-00096-216-598637-03-17418-6002.0000-3312013
-       0ff1ce15-a989-479d-af46-f275c6370663 = 55041-00206-234-742099-03-9217-6002.0000-2942013
 
+       Office2013
+              The  argument  has the form ePID [ / HwId ]. Always use ePID and
+              HwId for Office 2013 activations. If  specified,  Randomization‐
+              Level for Office 2013 activitations will be ignored.
+
+
+       Office2016
+              The  argument  has the form ePID [ / HwId ]. Always use ePID and
+              HwId for Office 2016 activations. If  specified,  Randomization‐
+              Level for Office 2016 activitations will be ignored.
+
+
+VALID EPIDS
        The  ePID is currently a comment only. You can specify any string up to
        63 bytes. In Windows 7 Microsoft has blacklisted few (  <  10  )  ePIDs
-       that  were  used  in KMSv5 versions of the "ratiborus virtual machine".
+       that  were  used  in KMSv5 versions of the "Ratiborus Virtual Machine".
        Microsoft has given up on blacklisting when KMS emulators  appeared  in
        the wild.
 
@@ -303,4 +312,4 @@ SEE ALSO
 
 
 
-Hotbird64                          July 2016                     VLMCSD.INI(5)
+Hotbird64                       September 2016                   VLMCSD.INI(5)

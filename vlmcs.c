@@ -66,6 +66,7 @@ static int AddressFamily = AF_UNSPEC;
 static int_fast8_t incompatibleOptions = 0;
 static const char* fn_ini_client = NULL;
 static int_fast16_t kmsVersionMinor = 0;
+static const char* ePidGroup[] = { "Windows", "Office2010", "Office2013", "Office2016" };
 
 #ifndef NO_DNS
 static int_fast8_t NoSrvRecordPriority = FALSE;
@@ -84,7 +85,7 @@ typedef struct
 } LicensePack;
 
 
-typedef char iniFileEpidLines[3][256];
+typedef char iniFileEpidLines[4][256];
 
 // Well known "license packs"
 static const LicensePack LicensePackList[] =
@@ -1069,7 +1070,7 @@ static void updateIniFile(iniFileEpidLines* const restrict lines)
 	{
 		for (i = 0; i < _countof(*lines); i++)
 		{
-			if (*(*lines)[i] && !strncasecmp(sourceLine, (*lines)[i], GUID_STRING_LENGTH))
+			if (*(*lines)[i] && !strncasecmp(sourceLine, (*lines)[i], strlen(ePidGroup[i])))
 			{
 				if (lineWritten[i]) break;
 
@@ -1119,7 +1120,7 @@ static void grabServerData()
 	RpcCtx s = INVALID_RPCCTX;
     WORD MajorVer = 6;
 	iniFileEpidLines lines;
-    int_fast8_t Licenses[_countof(lines)] = { 0, 15, 14 };
+    static int_fast8_t Licenses[_countof(lines)] = { 0, 16, 17, 19 };
     uint_fast8_t i;
 	RESPONSE response;
 	RESPONSE_RESULT result;
@@ -1152,25 +1153,22 @@ static void grabServerData()
     		continue;
     	}
 
-    	printf("%i of %i", (int)(i + 7 - MajorVer), (int)(9 - MajorVer));
+    	printf("%i of %i", (int)(i + 7 - MajorVer), (int)(10 - MajorVer));
     	displayResponse(result, &request, &response, hwid);
 
-    	char guidBuffer[GUID_STRING_LENGTH + 1];
     	char ePID[3 * PID_BUFFER_SIZE];
-
-    	uuid2StringLE(&request.AppID, guidBuffer);
 
     	if (!ucs2_to_utf8(response.KmsPID, ePID, PID_BUFFER_SIZE, 3 * PID_BUFFER_SIZE))
     	{
     		memset(ePID + 3 * PID_BUFFER_SIZE - 3, 0, 3);
     	}
 
-    	snprintf(lines[i], sizeof(lines[0]), "%s = %s", guidBuffer, ePID);
+    	snprintf(lines[i], sizeof(lines[0]), "%s = %s", ePidGroup[i], ePID);
 
     	if (response.MajorVer > 5)
     	{
     		len = strlen(lines[i]);
-    		snprintf (lines[i] + len, sizeof(lines[0]) - len, "/ %02X %02X %02X %02X %02X %02X %02X %02X", hwid[0], hwid[1], hwid[2], hwid[3], hwid[4], hwid[5], hwid[6], hwid[7]);
+    		snprintf (lines[i] + len, sizeof(lines[0]) - len, " / %02X %02X %02X %02X %02X %02X %02X %02X", hwid[0], hwid[1], hwid[2], hwid[3], hwid[4], hwid[5], hwid[6], hwid[7]);
     	}
 
 		len = strlen(lines[i]);

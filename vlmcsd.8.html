@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Sat Aug 27 18:14:38 2016 -->
+<!-- CreationDate: Sat Sep  3 01:38:09 2016 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -502,9 +502,15 @@ is disregarded for Office 2010.</p>
 
 <p style="margin-left:11%;"><b>-3</b> <i>ePID</i></p>
 
-<p style="margin-left:22%;">Use <i>ePID</i> as Office
-2013/2016 ePID (including Project and Visio). If specified,
-<b>-r</b> is disregarded for Office 2013/2016.</p>
+<p style="margin-left:22%;">Use <i>ePID</i> as Office 2013
+ePID (including Project and Visio). If specified, <b>-r</b>
+is disregarded for Office 2013.</p>
+
+<p style="margin-left:11%;"><b>-6</b> <i>ePID</i></p>
+
+<p style="margin-left:22%;">Use <i>ePID</i> as Office 2016
+ePID (including Project and Visio). If specified, <b>-r</b>
+is disregarded for Office 2016.</p>
 
 <p style="margin-left:11%;"><b>-H</b> <i>HwId</i></p>
 
@@ -549,14 +555,14 @@ ePIDs are generated if</p>
 sprecify an ePID in the command line and <br>
 - you haven&rsquo;t used <b>-i</b> or <br>
 - the file specified by <b>-i</b> cannot be opened or <br>
-- the file specified by <b>-i</b> does not contain the
-<i>application-guid</i> for the KMS request</p>
+- the file specified by <b>-i</b> does not contain an ePID
+for the KMS request</p>
 
 <p style="margin-left:22%; margin-top: 1em"><b>-r0</b>
 means there are no random ePIDs. vlmcsd simply issues
 default ePIDs that are built into the binary at compile
 time. <b>Pro:</b> behaves like real KMS server that also
-always issues the same ePID. <b>Con</b>: Microsoft may start
+always issues the same ePID. <b>Con:</b> Microsoft may start
 blacklisting again and the default ePID may not work any
 longer.</p>
 
@@ -576,17 +582,19 @@ id).</p>
 
 <p style="margin-left:22%; margin-top: 1em">If vlmcsd has
 been started by an internet superserver, <b>-r1</b> works
-identically to <b>-r2</b>. This is simply due to the fact
-that vlmcsd is started upon a connection request and does
-not stay in memory after servicing a KMS request.</p>
+almost identically to <b>-r2</b>. The only exception occurs
+if you send more than one activation request over the same
+TCP connection. This is simply due to the fact that vlmcsd
+is started upon a connection request and does not stay in
+memory after servicing a KMS request. Consider using
+<b>-r0</b> or <b>-w</b>, <b>-0</b>, <b>-3</b> and <b>-6 when
+starting vlmcsd by an internet superserver.</b></p>
 
 <p style="margin-left:22%; margin-top: 1em"><b>-r2</b>
 behaves like most other KMS server emulators with random
 support and generates a new random ePID on every request.
-Use this mode with &quot;care&quot;. However since Microsoft
-currently does not seem to do any verification of the ePID,
-you currently don&rsquo;t need to pay attention to ePIDs at
-all.</p>
+<b>-r2</b> should be treated as debugging option only
+because it allows very easy emulator detection.</p>
 
 <p style="margin-left:11%;"><b>-C</b> <i>LCID</i></p>
 

@@ -12,9 +12,9 @@ CFMSRPC="-Wno-missing-braces -Wno-unused-variable $CF" # -fno-common -fno-stack-
 PF32=""
 PF64="-mpreferred-stack-boundary=4 -march=nocona -mtune=generic"
 LFCYG32="-fwhole-program -Wl,--nxcompat,--dynamicbase,--tsaware,--large-address-aware,--disable-long-section-names"
-LFWIN32="-fwhole-program -Wl,--nxcompat,--dynamicbase,--tsaware,--large-address-aware,--disable-long-section-names"
+LFWIN32="-fwhole-program -Wl,--nxcompat,--dynamicbase,--tsaware,--large-address-aware,--disable-long-section-names,--no-seh"
 LFCYG64="-fwhole-program -Wl,--nxcompat,--dynamicbase,--tsaware,--disable-long-section-names,--high-entropy-va"
-LFWIN64="-fwhole-program -Wl,--nxcompat,--dynamicbase,--tsaware,--disable-long-section-names,--high-entropy-va"
+LFWIN64="-fwhole-program -Wl,--nxcompat,--dynamicbase,--tsaware,--disable-long-section-names,--high-entropy-va,--no-seh"
 
 MAKEFLAGS="-j$NUMCPU -B"
 REUSEFLAGS="-j$NUMCPU"
@@ -37,10 +37,11 @@ export CAT=2
 #unset CAT
 make $MAKEFLAGS libkms32.dll CRYPTO=windows FEATURES=minimum THREADS=1 DLL_NAME=libkms32.dll CC=i686-w64-MingW32-gcc.exe CFLAGS="$CF -flto=jobserver -fvisibility=hidden" PLATFORMFLAGS="$PF32" LDFLAGS="-static-libgcc $LFWIN32"
 make $MAKEFLAGS libkms64.dll CRYPTO=windows FEATURES=minimum THREADS=1 DLL_NAME=libkms64.dll CC=x86_64-w64-MingW32-gcc.exe CFLAGS="$CF -flto=jobserver -fvisibility=hidden" PLATFORMFLAGS="$PF64" LDFLAGS="-static-libgcc $LFWIN64"
-#make $MAKEFLAGS all vlmcsdmulti-Windows-x86 THREADS=1 CRYPTO=windows CLIENT_NAME=vlmcs-Windows-x86 PROGRAM_NAME=vlmcsd-Windows-x86 MULTI_NAME=vlmcsdmulti-Windows-x86 CC=i686-w64-MingW32-gcc.exe CFLAGS="$CF" PLATFORMFLAGS="$PF32" LDFLAGS="$LFWIN32"
-#make $MAKEFLAGS all vlmcsdmulti-Windows-x64 THREADS=1 CRYPTO=windows CLIENT_NAME=vlmcs-Windows-x64 PROGRAM_NAME=vlmcsd-Windows-x64 MULTI_NAME=vlmcsdmulti-Windows-x64 CC=x86_64-w64-MingW32-gcc.exe CFLAGS="$CF" PLATFORMFLAGS="$PF64" LDFLAGS="$LFWIN64"
-#make -Bj MSRPC=1 CRYPTO=windows CLIENT_NAME=vlmcs-Windows-msrpc-x86 PROGRAM_NAME=vlmcsd-Windows-msrpc-x86 MULTI_NAME=vlmcsdmulti-Windows-msrpc-x86 CC=i686-w64-MingW32-gcc.exe CFLAGS="$CFMSRPC"  PLATFORMFLAGS="$PF32" LDFLAGS="-Wl,--nxcompat,--dynamicbase,--tsaware,--large-address-aware"
-#make $MAKEFLAGS THREADS=1 MSRPC=1 CRYPTO=windows CLIENT_NAME=vlmcs-Windows-msrpc-x64 PROGRAM_NAME=vlmcsd-Windows-msrpc-x64 MULTI_NAME=vlmcsdmulti-Windows-msrpc-x64 CC=x86_64-w64-MingW32-gcc.exe CFLAGS="$CFMSRPC" PLATFORMFLAGS="$PF64" LDFLAGS="$LFCYG64"
+make $MAKEFLAGS allmulti THREADS=1 CRYPTO=windows CLIENT_NAME=vlmcs-Windows-x86 PROGRAM_NAME=vlmcsd-Windows-x86 MULTI_NAME=vlmcsdmulti-Windows-x86 CC=i686-w64-MingW32-gcc.exe CFLAGS="$CF -fno-lto" PLATFORMFLAGS="$PF32" LDFLAGS="$LFWIN32"
+make $MAKEFLAGS allmulti THREADS=1 CRYPTO=windows CLIENT_NAME=vlmcs-Windows-x64 PROGRAM_NAME=vlmcsd-Windows-x64 MULTI_NAME=vlmcsdmulti-Windows-x64 CC=x86_64-w64-MingW32-gcc.exe CFLAGS="$CF -fno-lto" PLATFORMFLAGS="$PF64" LDFLAGS="$LFWIN64"
+unset CAT
+make -Bj allmulti MSRPC=1 CRYPTO=windows CLIENT_NAME=vlmcs-Windows-msrpc-x86 PROGRAM_NAME=vlmcsd-Windows-msrpc-x86 MULTI_NAME=vlmcsdmulti-Windows-msrpc-x86 CC=i686-w64-MingW32-gcc.exe CFLAGS="$CFMSRPC -fno-lto"  PLATFORMFLAGS="$PF32" LDFLAGS="$LFWIN32"
+make $MAKEFLAGS allmulti THREADS=1 MSRPC=1 CRYPTO=windows CLIENT_NAME=vlmcs-Windows-msrpc-x64 PROGRAM_NAME=vlmcsd-Windows-msrpc-x64 MULTI_NAME=vlmcsdmulti-Windows-msrpc-x64 CC=x86_64-w64-MingW32-gcc.exe CFLAGS="$CFMSRPC -fno-lto" PLATFORMFLAGS="$PF64" LDFLAGS="$LFWIN64"
 #unset CAT
 #make $MAKEFLAGS vlmcsdmulti-Windows-msrpc-x86 THREADS=1 MSRPC=1 CRYPTO=windows MULTI_NAME=vlmcsdmulti-Windows-msrpc-x86 CC=i686-w64-MingW32-gcc.exe CFLAGS="$CFMSRPC" PLATFORMFLAGS="$PF32" LDFLAGS="-Wl,--nxcompat,--dynamicbase,--tsaware,--large-address-aware"
 #make $MAKEFLAGS vlmcsdmulti-Windows-msrpc-x64 THREADS=1 MSRPC=1 CRYPTO=windows MULTI_NAME=vlmcsdmulti-Windows-msrpc-x64 CC=x86_64-w64-MingW32-gcc.exe CFLAGS="$CFMSRPC" PLATFORMFLAGS="$PF64" LDFLAGS="$LFCYG64"
@@ -48,10 +49,10 @@ export CAT=2
 
 rm -f *_all.* *.o 2> /dev/null &
 
-echo ""
-echo "Copying MingW binaries from distribution server"
+#echo ""
+#echo "Copying MingW binaries from distribution server"
 
-scp -p root@ubuntu64:x/binaries/Windows/intel/*Windows* root@ubuntu64:x/binaries/Windows/intel/libkms* .
+#scp -p root@ubuntu64:x/binaries/Windows/intel/*Windows* root@ubuntu64:x/binaries/Windows/intel/libkms* .
 
 echo ""
 echo "Installing binaries"

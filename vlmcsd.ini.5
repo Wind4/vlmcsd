@@ -1,4 +1,4 @@
-.TH VLMCSD.INI 5 "July 2016" "Hotbird64" "KMS Activation Manual"
+.TH VLMCSD.INI 5 "September 2016" "Hotbird64" "KMS Activation Manual"
 .LO 8
 
 .SH NAME
@@ -73,7 +73,7 @@ Can be TRUE or FALSE. Specifies whether you want to use the NDR64 transfer synta
 Can be TRUE or FALSE. Specifies whether you want to use bind time feature negotiation in RPC. See options \fB-b0\fR and \fB-b1\fR in \fBvlmcsd\fR(8). The default is TRUE.
 
 .IP "\fBRandomizationLevel\fR"
-The \fIargument\fR must 0, 1 or 2. This specifies the ePID randomization level. See options \fB-r0\fR, \fB-r1\fR and \fB-r2\fR in \fBvlmcsd\fR(8). The default randomization level is 1.
+The \fIargument\fR must 0, 1 or 2. This specifies the ePID randomization level. See options \fB-r0\fR, \fB-r1\fR and \fB-r2\fR in \fBvlmcsd\fR(8). The default randomization level is 1. A \fBRandomizationLevel\fR of 2 is not recommended and should be treated as a debugging level.
 
 .IP "\fBLCID\fR"
 Use a specific culture id (LCID) even if the ePID is randomized. The \fIargument\fR must be a number between 1 and 32767. While any number in that range is valid, you should use an offcial LCID. A list of assigned LCIDs can be found at http://msdn.microsoft.com/en\-us/goglobal/bb964664.aspx. On the command line you control this setting with option \fB-C\fR. 
@@ -111,24 +111,20 @@ Run vlmcsd as another, preferrably less privileged, user. The \fIargument\fR can
 .IP "\fBGroup\fR"
 Run vlmcsd as another, preferrably less privileged, group. The \fIargument\fR can be a group name or a numeric group id. You must have the required privileges (capabilities on Linux) to change the security context of a process without providing any credentials (a password in most cases). On most unixoid OSses 'root' is the only user who has these privileges in the default configuration. This setting is not available in the native Windows version of vlmcsd. See \fB-g\fR in \fBvlmcsd\fR(8). This setting cannot be changed on the fly by sending SIGHUP to vlmcsd.
 
-.SH "SPECIAL KEYWORDS"
-Any valid GUID is being treated as a special \fBkeyword\fR in the ini file. It is used to select a specfic ePID and HwId for an application GUID. The \fIargument\fR has the form \fIePID\fR [ / \fIHwId\fR ]. KMS currently knows only 3 application GUIDs:
+.IP "\fBWindows\fR"
+The \fIargument\fR has the form \fIePID\fR [ / \fIHwId\fR ]. Always use \fIePID\fR and \fIHwId\fR for Windows activations. If specified, \fBRandomizationLevel\fR for Windows activitations will be ignored.
 
-55c92734\-d682\-4d71\-983e\-d6ec3f16059f\ (Windows)
-.br
-59a52881\-a989\-479d\-af46\-f275c6370663\ (Office 2010)
-.br
-0ff1ce15\-a989\-479d\-af46\-f275c6370663\ (Office 2013)
+.IP "\fBOffice2010\fR"
+The \fIargument\fR has the form \fIePID\fR [ / \fIHwId\fR ]. Always use \fIePID\fR and \fIHwId\fR for Office 2010 activations. If specified, \fBRandomizationLevel\fR for Office 2010 activitations will be ignored.
 
-To use specific ePIDs for Windows, Office 2010 and Office 2013/2016 you could add the following lines to vlmcsd.ini:
+.IP "\fBOffice2013\fR"
+The \fIargument\fR has the form \fIePID\fR [ / \fIHwId\fR ]. Always use \fIePID\fR and \fIHwId\fR for Office 2013 activations. If specified, \fBRandomizationLevel\fR for Office 2013 activitations will be ignored.
 
-.SM "55c92734\-d682\-4d71\-983e\-d6ec3f16059f\ =\ 55041\-00206\-184\-207146\-03\-1062\-6002.0000\-3322013"
-.br
-.SM "59a52881\-a989\-479d\-af46\-f275c6370663\ =\ 55041\-00096\-216\-598637\-03\-17418\-6002.0000\-3312013"
-.br
-.SM "0ff1ce15\-a989\-479d\-af46\-f275c6370663\ =\ 55041\-00206-234\-742099\-03\-9217\-6002.0000\-2942013"
+.IP "\fBOffice2016\fR"
+The \fIargument\fR has the form \fIePID\fR [ / \fIHwId\fR ]. Always use \fIePID\fR and \fIHwId\fR for Office 2016 activations. If specified, \fBRandomizationLevel\fR for Office 2016 activitations will be ignored.
 
-The ePID is currently a comment only. You can specify any string up to 63 bytes. In Windows 7 Microsoft has blacklisted few ( < 10 ) ePIDs that were used in KMSv5 versions of the "ratiborus virtual machine". Microsoft has given up on blacklisting when KMS emulators appeared in the wild.
+.SH "VALID EPIDS"
+The ePID is currently a comment only. You can specify any string up to 63 bytes. In Windows 7 Microsoft has blacklisted few ( < 10 ) ePIDs that were used in KMSv5 versions of the "Ratiborus Virtual Machine". Microsoft has given up on blacklisting when KMS emulators appeared in the wild.
 
 Even if you can use "Activated by cool hacker guys" as an ePID, you may wish to use ePIDs that cannot be detected as non-MS ePIDs. If you don't know how these "valid" ePIDs look like exactly, do not use GUIDS in vlmcsd.ini. vlmcsd provides internal mechanisms to generate valid ePIDs.
 

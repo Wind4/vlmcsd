@@ -1,5 +1,5 @@
 .mso www.tmac
-.TH VLMCSD 8 "July 2016" "Hotbird64" "KMS Activation Manual"
+.TH VLMCSD 8 "September 2016" "Hotbird64" "KMS Activation Manual"
 .LO 8
 
 .SH NAME
@@ -135,7 +135,10 @@ Use \fIePID\fR as Windows ePID. If specified, \fB-r\fR is disregarded for Window
 Use \fIePID\fR as Office 2010 ePID (including Project and Visio). If specified, \fB-r\fR is disregarded for Office 2010.
 
 .IP "\fB-3\fR \fIePID\fR"
-Use \fIePID\fR as Office 2013/2016 ePID (including Project and Visio). If specified, \fB-r\fR is disregarded for Office 2013/2016.
+Use \fIePID\fR as Office 2013 ePID (including Project and Visio). If specified, \fB-r\fR is disregarded for Office 2013.
+
+.IP "\fB-6\fR \fIePID\fR"
+Use \fIePID\fR as Office 2016 ePID (including Project and Visio). If specified, \fB-r\fR is disregarded for Office 2016.
 
 .IP "\fB-H\fR \fIHwId\fR"
 Use \fIHwId\fR for all products. All HWIDs in the ini file (see \fB-i\fR) will not be used. In an ini file you can specify a seperate HWID for each \fIapplication-guid\fR. This is not possible when entering a HWID from the command line.
@@ -162,15 +165,15 @@ These options determine how ePIDs are generated if
 .br
 - the file specified by \fB-i\fR cannot be opened or
 .br
-- the file specified by \fB-i\fR does not contain the \fIapplication-guid\fR for the KMS request
+- the file specified by \fB-i\fR does not contain an ePID for the KMS request
 
-\fB-r0\fR means there are no random ePIDs. vlmcsd simply issues default ePIDs that are built into the binary at compile time. \fBPro:\fR behaves like real KMS server that also always issues the same ePID. \fBCon\fR: Microsoft may start blacklisting again and the default ePID may not work any longer.
+\fB-r0\fR means there are no random ePIDs. vlmcsd simply issues default ePIDs that are built into the binary at compile time. \fBPro:\fR behaves like real KMS server that also always issues the same ePID. \fBCon:\fR Microsoft may start blacklisting again and the default ePID may not work any longer.
 
 \fB-r1\fR instructs vlmcsd to generate random ePIDs when the program starts or receives a SIGHUP signal and uses these ePIDs until it is stopped or receives another SIGHUP. Most other KMS emulators generate a new ePID on every KMS request. This is easily detectable. Microsoft could just modify sppsvc.exe in a way that it always sends two identical KMS requests in two RPC requests but over the same TCP connection. If both KMS responses contain the different ePIDs, the KMS server is not genuine. \fB-r1\fR is the default mode. \fB-r1\fR also ensures that all three ePIDs (Windows, Office 2010 and Office 2013) use the same OS build number and LCID (language id).
 
-If vlmcsd has been started by an internet superserver, \fB-r1\fR works identically to \fB-r2\fR. This is simply due to the fact that vlmcsd is started upon a connection request and does not stay in memory after servicing a KMS request.
+If vlmcsd has been started by an internet superserver, \fB-r1\fR works almost identically to \fB-r2\fR. The only exception occurs if you send more than one activation request over the same TCP connection. This is simply due to the fact that vlmcsd is started upon a connection request and does not stay in memory after servicing a KMS request. Consider using \fB-r0\fR or \fB-w\fR, \fB-0\fR, \fB-3\fR and \fB-6\fB when starting vlmcsd by an internet superserver.
 
-\fB-r2\fR behaves like most other KMS server emulators with random support and generates a new random ePID on every request. Use this mode with "care". However since Microsoft currently does not seem to do any verification of the ePID, you currently don't need to pay attention to ePIDs at all.
+\fB-r2\fR behaves like most other KMS server emulators with random support and generates a new random ePID on every request. \fB-r2\fR should be treated as debugging option only because it allows very easy emulator detection.
 
 .IP "\fB-C\fR \fILCID\fR"
 Do not randomize the locale id part of the ePID and use \fILCID\fR instead. The \fILCID\fR must be specified as a decimal number, e.g. 1049 for "Russian - Russia". This option has no effect if the ePID is not randomized at all, e.g. if it is selected from the command line or an ini file.

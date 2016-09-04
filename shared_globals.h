@@ -45,7 +45,7 @@
 //#include <semaphore.h>
 #include "types.h"
 
-#define MAX_KMSAPPS 3
+#define MAX_KMSAPPS 4
 typedef struct
 {
 	const char* Epid;

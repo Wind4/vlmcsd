@@ -72,7 +72,7 @@
 #include "ntservice.h"
 #include "helpers.h"
 
-static const char* const optstring = "N:B:m:t:w:0:3:H:A:R:u:g:L:p:i:P:l:r:U:W:C:F:o:T:SseDdVvqkZ";
+static const char* const optstring = "N:B:m:t:w:0:3:6:H:A:R:u:g:L:p:i:P:l:r:U:W:C:F:o:T:SseDdVvqkZ";
 
 #if !defined(NO_SOCKETS) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 static uint_fast8_t maxsockets = 0;
@@ -103,6 +103,12 @@ char* IniFileErrorBuffer = NULL;
 
 static IniFileParameter_t IniFileParameterList[] =
 {
+#	ifndef NO_BASIC_PRODUCT_LIST
+		{ "Windows", INI_PARAM_WINDOWS },
+		{ "Office2010", INI_PARAM_OFFICE2010 },
+		{ "Office2013", INI_PARAM_OFFICE2013 },
+		{ "Office2016", INI_PARAM_OFFICE2016 },
+#	endif // NO_BASIC_PRODUCT_LIST
 #	ifndef NO_RANDOM_EPID
 		{ "RandomizationLevel", INI_PARAM_RANDOMIZATION_LEVEL },
 		{ "LCID", INI_PARAM_LCID },
@@ -262,9 +268,12 @@ static __noreturn void usage()
 			"   %s [ options ]\n\n"
 			"Where:\n"
 			#ifndef NO_CL_PIDS
+			#ifndef NO_BASIC_PRODUCT_LIST
 			"  -w <ePID>		always use <ePID> for Windows\n"
 			"  -0 <ePID>		always use <ePID> for Office2010\n"
 			"  -3 <ePID>		always use <ePID> for Office2013\n"
+			"  -6 <ePID>		always use <ePID> for Office2016\n"
+			#endif // NO_BASIC_PRODUCT_LIST
 			"  -H <HwId>		always use hardware Id <HwId>\n"
 			#endif // NO_CL_PIDS
 			#if !defined(_WIN32) && !defined(NO_USER_SWITCH)
@@ -477,13 +486,125 @@ static char* allocateStringArgument(const char *const argument)
 }
 
 
+static __pure int isControlCharOrSlash(const char c)
+{
+	if ((unsigned char)c < '!') return !0;
+	if (c == '/') return !0;
+	return 0;
+}
+
+
+static void iniFileLineNextWord(const char **s)
+{
+	while ( **s && isspace((int)**s) ) (*s)++;
+}
+
+
+static BOOL setHwIdFromIniFileLine(const char **s, const ProdListIndex_t index)
+{
+	iniFileLineNextWord(s);
+
+	if (**s == '/')
+	{
+		if (KmsResponseParameters[index].HwId) return TRUE;
+
+		BYTE* HwId = (BYTE*)vlmcsd_malloc(sizeof(((RESPONSE_V6 *)0)->HwId));
+		hex2bin(HwId, *s + 1, sizeof(((RESPONSE_V6 *)0)->HwId));
+		KmsResponseParameters[index].HwId = HwId;
+	}
+
+	return TRUE;
+}
+
+
+//static BOOL checkGuidInIniFileLine(const char **s, ProdListIndex_t *const index)
+//{
+//	GUID AppGuid;
+//
+//	if (!string2Uuid(*s, &AppGuid)) return FALSE;
+//
+//	(*s) += GUID_STRING_LENGTH;
+//	getProductNameHE(&AppGuid, AppList, index);
+//
+//	if (*index > getAppListSize() - 2)
+//	{
+//		IniFileErrorMessage = "Unknown App Guid.";
+//		return FALSE;
+//	}
+//
+//	iniFileLineNextWord(s);
+//	if ( *(*s)++ != '=' ) return FALSE;
+//
+//	return TRUE;
+//}
+
+
+static BOOL setEpidFromIniFileLine(const char **s, const ProdListIndex_t index)
+{
+	iniFileLineNextWord(s);
+	const char *savedPosition = *s;
+	uint_fast16_t i;
+
+	for (i = 0; !isControlCharOrSlash(**s); i++)
+	{
+		if (utf8_to_ucs2_char((const unsigned char*)*s, (const unsigned char**)s) == (WCHAR)~0)
+		{
+			return FALSE;
+		}
+	}
+
+	if (i < 1 || i >= PID_BUFFER_SIZE) return FALSE;
+	if (KmsResponseParameters[index].Epid) return TRUE;
+
+	size_t size = *s - savedPosition + 1;
+
+	char* epidbuffer = (char*)vlmcsd_malloc(size);
+	memcpy(epidbuffer, savedPosition, size - 1);
+	epidbuffer[size - 1] = 0;
+
+	KmsResponseParameters[index].Epid = epidbuffer;
+
+	#ifndef NO_LOG
+	KmsResponseParameters[index].EpidSource = fn_ini;
+	#endif //NO_LOG
+
+	return TRUE;
+}
+
+
 static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 {
 	unsigned int result;
 	BOOL success = TRUE;
+	const char *s = (const char*)iniarg;
 
 	switch(id)
 	{
+
+#	ifndef NO_BASIC_PRODUCT_LIST
+
+		case INI_PARAM_WINDOWS:
+			setEpidFromIniFileLine(&s, 0);
+			setHwIdFromIniFileLine(&s, 0);
+			break;
+
+		case INI_PARAM_OFFICE2010:
+			setEpidFromIniFileLine(&s, 1);
+			setHwIdFromIniFileLine(&s, 1);
+			break;
+
+		case INI_PARAM_OFFICE2013:
+			setEpidFromIniFileLine(&s, 2);
+			setHwIdFromIniFileLine(&s, 2);
+			break;
+
+		case INI_PARAM_OFFICE2016:
+			setEpidFromIniFileLine(&s, 3);
+			setHwIdFromIniFileLine(&s, 3);
+			break;
+
+#	endif
+
 #	if !defined(NO_USER_SWITCH) && !defined(_WIN32)
 
 		case INI_PARAM_GID:
@@ -651,92 +772,6 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 }
 
 
-static __pure int isControlCharOrSlash(const char c)
-{
-	if ((unsigned char)c < '!') return !0;
-	if (c == '/') return !0;
-	return 0;
-}
-
-
-static void iniFileLineNextWord(const char **s)
-{
-	while ( **s && isspace((int)**s) ) (*s)++;
-}
-
-
-static BOOL setHwIdFromIniFileLine(const char **s, const ProdListIndex_t index)
-{
-	iniFileLineNextWord(s);
-
-	if (**s == '/')
-	{
-		if (KmsResponseParameters[index].HwId) return TRUE;
-
-		BYTE* HwId = (BYTE*)vlmcsd_malloc(sizeof(((RESPONSE_V6 *)0)->HwId));
-		hex2bin(HwId, *s + 1, sizeof(((RESPONSE_V6 *)0)->HwId));
-		KmsResponseParameters[index].HwId = HwId;
-	}
-
-	return TRUE;
-}
-
-
-static BOOL checkGuidInIniFileLine(const char **s, ProdListIndex_t *const index)
-{
-	GUID AppGuid;
-
-	if (!string2Uuid(*s, &AppGuid)) return FALSE;
-
-	(*s) += GUID_STRING_LENGTH;
-	getProductNameHE(&AppGuid, AppList, index);
-
-	if (*index > getAppListSize() - 2)
-	{
-		IniFileErrorMessage = "Unknown App Guid.";
-		return FALSE;
-	}
-
-	iniFileLineNextWord(s);
-	if ( *(*s)++ != '=' ) return FALSE;
-
-	return TRUE;
-}
-
-
-static BOOL setEpidFromIniFileLine(const char **s, const ProdListIndex_t index)
-{
-	iniFileLineNextWord(s);
-	const char *savedPosition = *s;
-	uint_fast16_t i;
-
-	for (i = 0; !isControlCharOrSlash(**s); i++)
-	{
-		if (utf8_to_ucs2_char((const unsigned char*)*s, (const unsigned char**)s) == (WCHAR)~0)
-		{
-			return FALSE;
-		}
-	}
-
-	if (i < 1 || i >= PID_BUFFER_SIZE) return FALSE;
-	if (KmsResponseParameters[index].Epid) return TRUE;
-
-	size_t size = *s - savedPosition + 1;
-
-	char* epidbuffer = (char*)vlmcsd_malloc(size);
-	memcpy(epidbuffer, savedPosition, size - 1);
-	epidbuffer[size - 1] = 0;
-
-	KmsResponseParameters[index].Epid = epidbuffer;
-
-	#ifndef NO_LOG
-	KmsResponseParameters[index].EpidSource = fn_ini;
-	#endif //NO_LOG
-
-	return TRUE;
-}
-
-
 static BOOL getIniFileArgument(const char **s)
 {
 	while (!isspace((int)**s) && **s != '=' && **s) (*s)++;
@@ -797,7 +832,6 @@ static BOOL readIniFile(const uint_fast8_t pass)
 {
 	char  line[256];
 	const char *s;
-	ProdListIndex_t appIndex;
 	unsigned int lineNumber;
 	uint_fast8_t lineParseError;
 
@@ -821,9 +855,9 @@ static BOOL readIniFile(const uint_fast8_t pass)
 		{
 			if (handleIniFileParameter(s)) continue;
 
-			lineParseError = !checkGuidInIniFileLine(&s, &appIndex) ||
+			lineParseError = TRUE;/*!checkGuidInIniFileLine(&s, &appIndex) ||
 					!setEpidFromIniFileLine(&s, appIndex) ||
-					!setHwIdFromIniFileLine(&s, appIndex);
+					!setHwIdFromIniFileLine(&s, appIndex);*/
 		}
 #		if !defined(NO_SOCKETS) && !defined(SIMPLE_SOCKETS) && !defined(USE_MSRPC)
 		else if (pass == INI_FILE_PASS_2)
@@ -1080,6 +1114,8 @@ static void parseGeneralArguments() {
 		#endif // !defined(NO_SOCKETS) && !defined(NO_SIGHUP) && !defined(_WIN32)
 
 		#ifndef NO_CL_PIDS
+		#ifndef NO_BASIC_PRODUCT_LIST
+
 		case 'w':
 			KmsResponseParameters[APP_ID_WINDOWS].Epid          = getCommandLineArg(optarg);
 			#ifndef NO_LOG
@@ -1101,6 +1137,15 @@ static void parseGeneralArguments() {
 			#endif // NO_LOG
 			break;
 
+		case '6':
+			KmsResponseParameters[3].Epid       = getCommandLineArg(optarg);
+			#ifndef NO_LOG
+			KmsResponseParameters[3].EpidSource = "command line";
+			#endif // NO_LOG
+			break;
+
+		#endif // NO_BASIC_PRODUCT_LIST
+
 		case 'H':
 			HwId = (BYTE*)vlmcsd_malloc(sizeof(((RESPONSE_V6 *)0)->HwId));
 
@@ -1109,7 +1154,9 @@ static void parseGeneralArguments() {
 			KmsResponseParameters[APP_ID_WINDOWS].HwId = HwId;
 			KmsResponseParameters[APP_ID_OFFICE2010].HwId = HwId;
 			KmsResponseParameters[APP_ID_OFFICE2013].HwId = HwId;
+			KmsResponseParameters[3].HwId = HwId;
 			break;
+
 		#endif // NO_CL_PIDS
 
 		#ifndef NO_SOCKETS

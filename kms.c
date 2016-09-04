@@ -23,6 +23,7 @@
 #define FRIENDLY_NAME_OFFICE2010 "Office 2010"
 #define FRIENDLY_NAME_OFFICE2013 "Office 2013+"
 
+#ifndef IS_LIBRARY
 #ifndef NO_BASIC_PRODUCT_LIST
 // Do not change the order of this list. Append items as necessary
 const KmsIdList ProductList[] = {
@@ -44,7 +45,7 @@ const KmsIdList ProductList[] = {
 		/* 015 */ { { 0xe85af946, 0x2e25, 0x47b7, { 0x83, 0xe1, 0xbe, 0xbc, 0xeb, 0xea, 0xc6, 0x11, } } /*e85af946-2e25-47b7-83e1-bebcebeac611*/, "Office 2010",                                        EPID_OFFICE2010, 4,  5 },
 		/* 016 */ { { 0xe6a6f1bf, 0x9d40, 0x40c3, { 0xaa, 0x9f, 0xc7, 0x7b, 0xa2, 0x15, 0x78, 0xc0, } } /*e6a6f1bf-9d40-40c3-aa9f-c77ba21578c0*/, "Office 2013",                                        EPID_OFFICE2013, 5,  5 },
 		/* 017 */ { { 0x6d5f5270, 0x31ac, 0x433e, { 0xb9, 0x0a, 0x39, 0x89, 0x29, 0x23, 0xc6, 0x57, } } /*6d5f5270-31ac-433e-b90a-39892923c657*/, "Windows Server Preview",                             EPID_WINDOWS,    6,  5 },
-		/* 018 */ { { 0x85b5f61b, 0x320b, 0x4be3, { 0x81, 0x4a, 0xb7, 0x6b, 0x2b, 0xfa, 0xfc, 0x82, } } /*85b5f61b-320b-4be3-814a-b76b2bfafc82*/, "Office 2016",                                        EPID_OFFICE2013, 6,  5 },
+		/* 018 */ { { 0x85b5f61b, 0x320b, 0x4be3, { 0x81, 0x4a, 0xb7, 0x6b, 0x2b, 0xfa, 0xfc, 0x82, } } /*85b5f61b-320b-4be3-814a-b76b2bfafc82*/, "Office 2016",                                        EPID_OFFICE2016, 6,  5 },
 		/* 019 */ { { 0x58e2134f, 0x8e11, 0x4d17, { 0x9c, 0xb2, 0x91, 0x06, 0x9c, 0x15, 0x11, 0x48, } } /*58e2134f-8e11-4d17-9cb2-91069c151148*/, "Windows 10 2015 (Volume)",                           EPID_WINDOWS,    6, 25 },
 		/* 020 */ { { 0xe1c51358, 0xfe3e, 0x4203, { 0xa4, 0xa2, 0x3b, 0x6b, 0x20, 0xc9, 0x73, 0x4e, } } /*e1c51358-fe3e-4203-a4a2-3b6b20c9734e*/, "Windows 10 (Retail)",                                EPID_WINDOWS,    6, 25 },
 		/* 021 */ { { 0x6e9fc069, 0x257d, 0x4bc4, { 0xb4, 0xa7, 0x75, 0x05, 0x14, 0xd3, 0x27, 0x43, } } /*6e9fc069-257d-4bc4-b4a7-750514d32743*/, "Windows Server 2016",                                EPID_WINDOWS,    6,  5 },
@@ -54,7 +55,6 @@ const KmsIdList ProductList[] = {
 };
 #endif
 
-#ifndef IS_LIBRARY
 // Application ID is used by KMS server to count KeyManagementServiceCurrentCount
 // Do not change the order of this list. Append items as necessary
 const KmsIdList AppList[] = {
@@ -63,7 +63,6 @@ const KmsIdList AppList[] = {
 	/* 002 */ { { 0x0FF1CE15, 0xA989, 0x479D, { 0xaf, 0x46, 0xf2, 0x75, 0xc6, 0x37, 0x06, 0x63 } } /*"0FF1CE15-A989-479D-AF46-F275C6370663"*/, FRIENDLY_NAME_OFFICE2013, EPID_OFFICE2013,	0,	0},
 	/* 003 */ { { 0x00000000, 0x0000, 0x0000, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } }, NULL, NULL, 0, 0 }
 };
-#endif // IS_LIBRARY
 
 #ifndef NO_EXTENDED_PRODUCT_LIST
 const KmsIdList ExtendedProductList [] = {
@@ -267,26 +266,26 @@ const KmsIdList ExtendedProductList [] = {
 	#	endif // INCLUDE_BETAS
 
 		// Office 2016
-		{ { 0x67c0fc0c, 0xdeba, 0x401b, { 0xbf, 0x8b, 0x9c, 0x8a, 0xd8, 0x39, 0x58, 0x04, } } /*67c0fc0c-deba-401b-bf8b-9c8ad8395804*/, "Office Access 2016",                             EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
-		{ { 0xc3e65d36, 0x141f, 0x4d2f, { 0xa3, 0x03, 0xa8, 0x42, 0xee, 0x75, 0x6a, 0x29, } } /*c3e65d36-141f-4d2f-a303-a842ee756a29*/, "Office Excel 2016",                              EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
-		{ { 0x9caabccb, 0x61b1, 0x4b4b, { 0x8b, 0xec, 0xd1, 0x0a, 0x3c, 0x3a, 0xc2, 0xce, } } /*9caabccb-61b1-4b4b-8bec-d10a3c3ac2ce*/, "Office Mondo 2016",                              EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
-		{ { 0xe914ea6e, 0xa5fa, 0x4439, { 0xa3, 0x94, 0xa9, 0xbb, 0x32, 0x93, 0xca, 0x09, } } /*e914ea6e-a5fa-4439-a394-a9bb3293ca09*/, "Office Mondo R 2016",                            EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
-		{ { 0xd8cace59, 0x33d2, 0x4ac7, { 0x9b, 0x1b, 0x9b, 0x72, 0x33, 0x9c, 0x51, 0xc8, } } /*d8cace59-33d2-4ac7-9b1b-9b72339c51c8*/, "Office OneNote 2016",                            EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
-		{ { 0xec9d9265, 0x9d1e, 0x4ed0, { 0x83, 0x8a, 0xcd, 0xc2, 0x0f, 0x25, 0x51, 0xa1, } } /*ec9d9265-9d1e-4ed0-838a-cdc20f2551a1*/, "Office Outlook 2016",                            EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
-		{ { 0xd70b1bba, 0xb893, 0x4544, { 0x96, 0xe2, 0xb7, 0xa3, 0x18, 0x09, 0x1c, 0x33, } } /*d70b1bba-b893-4544-96e2-b7a318091c33*/, "Office Powerpoint 2016",                         EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
-		{ { 0xd450596f, 0x894d, 0x49e0, { 0x96, 0x6a, 0xfd, 0x39, 0xed, 0x4c, 0x4c, 0x64, } } /*d450596f-894d-49e0-966a-fd39ed4c4c64*/, "Office Professional Plus 2016",                  EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
-		{ { 0x4f414197, 0x0fc2, 0x4c01, { 0xb6, 0x8a, 0x86, 0xcb, 0xb9, 0xac, 0x25, 0x4c, } } /*4f414197-0fc2-4c01-b68a-86cbb9ac254c*/, "Office Project Pro 2016",                        EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
-		{ { 0x829b8110, 0x0e6f, 0x4349, { 0xbc, 0xa4, 0x42, 0x80, 0x35, 0x77, 0x78, 0x8d, } } /*829b8110-0e6f-4349-bca4-42803577788d*/, "Office Project Pro 2016 XC2R",                   EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
-		{ { 0xda7ddabc, 0x3fbe, 0x4447, { 0x9e, 0x01, 0x6a, 0xb7, 0x44, 0x0b, 0x4c, 0xd4, } } /*da7ddabc-3fbe-4447-9e01-6ab7440b4cd4*/, "Office Project Standard 2016",                   EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
-		{ { 0xcbbaca45, 0x556a, 0x4416, { 0xad, 0x03, 0xbd, 0xa5, 0x98, 0xea, 0xa7, 0xc8, } } /*cbbaca45-556a-4416-ad03-bda598eaa7c8*/, "Office Project Standard 2016 XC2R",              EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
-		{ { 0x041a06cb, 0xc5b8, 0x4772, { 0x80, 0x9f, 0x41, 0x6d, 0x03, 0xd1, 0x66, 0x54, } } /*041a06cb-c5b8-4772-809f-416d03d16654*/, "Office Publisher 2016",                          EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
-		{ { 0x83e04ee1, 0xfa8d, 0x436d, { 0x89, 0x94, 0xd3, 0x1a, 0x86, 0x2c, 0xab, 0x77, } } /*83e04ee1-fa8d-436d-8994-d31a862cab77*/, "Office Skype for Business 2016",                 EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
-		{ { 0xdedfa23d, 0x6ed1, 0x45a6, { 0x85, 0xdc, 0x63, 0xca, 0xe0, 0x54, 0x6d, 0xe6, } } /*dedfa23d-6ed1-45a6-85dc-63cae0546de6*/, "Office Standard 2016",                           EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
-		{ { 0x6bf301c1, 0xb94a, 0x43e9, { 0xba, 0x31, 0xd4, 0x94, 0x59, 0x8c, 0x47, 0xfb, } } /*6bf301c1-b94a-43e9-ba31-d494598c47fb*/, "Office Visio Pro 2016",                          EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
-		{ { 0xb234abe3, 0x0857, 0x4f9c, { 0xb0, 0x5a, 0x4d, 0xc3, 0x14, 0xf8, 0x55, 0x57, } } /*b234abe3-0857-4f9c-b05a-4dc314f85557*/, "Office Visio Pro 2016 XC2R",                     EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
-		{ { 0xaa2a7821, 0x1827, 0x4c2c, { 0x8f, 0x1d, 0x45, 0x13, 0xa3, 0x4d, 0xda, 0x97, } } /*aa2a7821-1827-4c2c-8f1d-4513a34dda97*/, "Office Visio Standard 2016",                     EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
-		{ { 0x361fe620, 0x64f4, 0x41b5, { 0xba, 0x77, 0x84, 0xf8, 0xe0, 0x79, 0xb1, 0xf7, } } /*361fe620-64f4-41b5-ba77-84f8e079b1f7*/, "Office Visio Standard 2016 XC2R",                EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
-		{ { 0xbb11badf, 0xd8aa, 0x470e, { 0x93, 0x11, 0x20, 0xea, 0xf8, 0x0f, 0xe5, 0xcc, } } /*bb11badf-d8aa-470e-9311-20eaf80fe5cc*/, "Office Word 2016",                               EPID_OFFICE2013, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
+		{ { 0x67c0fc0c, 0xdeba, 0x401b, { 0xbf, 0x8b, 0x9c, 0x8a, 0xd8, 0x39, 0x58, 0x04, } } /*67c0fc0c-deba-401b-bf8b-9c8ad8395804*/, "Office Access 2016",                             EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
+		{ { 0xc3e65d36, 0x141f, 0x4d2f, { 0xa3, 0x03, 0xa8, 0x42, 0xee, 0x75, 0x6a, 0x29, } } /*c3e65d36-141f-4d2f-a303-a842ee756a29*/, "Office Excel 2016",                              EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
+		{ { 0x9caabccb, 0x61b1, 0x4b4b, { 0x8b, 0xec, 0xd1, 0x0a, 0x3c, 0x3a, 0xc2, 0xce, } } /*9caabccb-61b1-4b4b-8bec-d10a3c3ac2ce*/, "Office Mondo 2016",                              EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
+		{ { 0xe914ea6e, 0xa5fa, 0x4439, { 0xa3, 0x94, 0xa9, 0xbb, 0x32, 0x93, 0xca, 0x09, } } /*e914ea6e-a5fa-4439-a394-a9bb3293ca09*/, "Office Mondo R 2016",                            EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
+		{ { 0xd8cace59, 0x33d2, 0x4ac7, { 0x9b, 0x1b, 0x9b, 0x72, 0x33, 0x9c, 0x51, 0xc8, } } /*d8cace59-33d2-4ac7-9b1b-9b72339c51c8*/, "Office OneNote 2016",                            EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
+		{ { 0xec9d9265, 0x9d1e, 0x4ed0, { 0x83, 0x8a, 0xcd, 0xc2, 0x0f, 0x25, 0x51, 0xa1, } } /*ec9d9265-9d1e-4ed0-838a-cdc20f2551a1*/, "Office Outlook 2016",                            EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
+		{ { 0xd70b1bba, 0xb893, 0x4544, { 0x96, 0xe2, 0xb7, 0xa3, 0x18, 0x09, 0x1c, 0x33, } } /*d70b1bba-b893-4544-96e2-b7a318091c33*/, "Office Powerpoint 2016",                         EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
+		{ { 0xd450596f, 0x894d, 0x49e0, { 0x96, 0x6a, 0xfd, 0x39, 0xed, 0x4c, 0x4c, 0x64, } } /*d450596f-894d-49e0-966a-fd39ed4c4c64*/, "Office Professional Plus 2016",                  EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
+		{ { 0x4f414197, 0x0fc2, 0x4c01, { 0xb6, 0x8a, 0x86, 0xcb, 0xb9, 0xac, 0x25, 0x4c, } } /*4f414197-0fc2-4c01-b68a-86cbb9ac254c*/, "Office Project Pro 2016",                        EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
+		{ { 0x829b8110, 0x0e6f, 0x4349, { 0xbc, 0xa4, 0x42, 0x80, 0x35, 0x77, 0x78, 0x8d, } } /*829b8110-0e6f-4349-bca4-42803577788d*/, "Office Project Pro 2016 XC2R",                   EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
+		{ { 0xda7ddabc, 0x3fbe, 0x4447, { 0x9e, 0x01, 0x6a, 0xb7, 0x44, 0x0b, 0x4c, 0xd4, } } /*da7ddabc-3fbe-4447-9e01-6ab7440b4cd4*/, "Office Project Standard 2016",                   EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
+		{ { 0xcbbaca45, 0x556a, 0x4416, { 0xad, 0x03, 0xbd, 0xa5, 0x98, 0xea, 0xa7, 0xc8, } } /*cbbaca45-556a-4416-ad03-bda598eaa7c8*/, "Office Project Standard 2016 XC2R",              EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
+		{ { 0x041a06cb, 0xc5b8, 0x4772, { 0x80, 0x9f, 0x41, 0x6d, 0x03, 0xd1, 0x66, 0x54, } } /*041a06cb-c5b8-4772-809f-416d03d16654*/, "Office Publisher 2016",                          EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
+		{ { 0x83e04ee1, 0xfa8d, 0x436d, { 0x89, 0x94, 0xd3, 0x1a, 0x86, 0x2c, 0xab, 0x77, } } /*83e04ee1-fa8d-436d-8994-d31a862cab77*/, "Office Skype for Business 2016",                 EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
+		{ { 0xdedfa23d, 0x6ed1, 0x45a6, { 0x85, 0xdc, 0x63, 0xca, 0xe0, 0x54, 0x6d, 0xe6, } } /*dedfa23d-6ed1-45a6-85dc-63cae0546de6*/, "Office Standard 2016",                           EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
+		{ { 0x6bf301c1, 0xb94a, 0x43e9, { 0xba, 0x31, 0xd4, 0x94, 0x59, 0x8c, 0x47, 0xfb, } } /*6bf301c1-b94a-43e9-ba31-d494598c47fb*/, "Office Visio Pro 2016",                          EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
+		{ { 0xb234abe3, 0x0857, 0x4f9c, { 0xb0, 0x5a, 0x4d, 0xc3, 0x14, 0xf8, 0x55, 0x57, } } /*b234abe3-0857-4f9c-b05a-4dc314f85557*/, "Office Visio Pro 2016 XC2R",                     EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
+		{ { 0xaa2a7821, 0x1827, 0x4c2c, { 0x8f, 0x1d, 0x45, 0x13, 0xa3, 0x4d, 0xda, 0x97, } } /*aa2a7821-1827-4c2c-8f1d-4513a34dda97*/, "Office Visio Standard 2016",                     EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
+		{ { 0x361fe620, 0x64f4, 0x41b5, { 0xba, 0x77, 0x84, 0xf8, 0xe0, 0x79, 0xb1, 0xf7, } } /*361fe620-64f4-41b5-ba77-84f8e079b1f7*/, "Office Visio Standard 2016 XC2R",                EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
+		{ { 0xbb11badf, 0xd8aa, 0x470e, { 0x93, 0x11, 0x20, 0xea, 0xf8, 0x0f, 0xe5, 0xcc, } } /*bb11badf-d8aa-470e-9311-20eaf80fe5cc*/, "Office Word 2016",                               EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
 
 	// End marker (necessity should be removed when time permits)
 
@@ -305,7 +304,9 @@ __pure ProdListIndex_t getAppListSize(void)
 	return _countof(AppList);
 }
 
-#endif
+#endif // NO_EXTENDED_PRODUCT_LIST
+#endif // IS_LIBRARY
+
 
 #ifndef NO_RANDOM_EPID
 // HostType and OSBuild
@@ -322,6 +323,7 @@ static const struct KMSHostOS { uint16_t Type; uint16_t Build; } HostOS[] =
 static const struct PKEYCONFIG { uint16_t GroupID; uint32_t RangeMin; uint32_t RangeMax; } pkeyconfig[] = {
     { 206, 471000000, 530999999 }, // Windows Server 2016
     {  96, 199000000, 217999999 }, // Office2010
+    { 206, 234000000, 255999999 }, // Office2013
     { 206, 437000000, 458999999 }, // Office2016
 };
 
@@ -457,7 +459,7 @@ static void generateRandomPid(int index, char *const szPid, int serverType, int1
 	strcpy(szPid, itoc(numberBuffer, HostOS[serverType].Type, 5));
 	strcat(szPid, "-");
 
-	if (index > 2) index=0;
+	if (index > 3) index=0;
 
 	strcat(szPid, itoc(numberBuffer, pkeyconfig[index].GroupID, 5));
 	strcat(szPid, "-");
@@ -504,7 +506,7 @@ void randomPidInit()
 	int serverType = getRandomServerType();
 	int16_t lang   = Lcid ? Lcid : LcidList[rand() % _countof(LcidList)];
 
-	for (i = 0; i < _countof(AppList) - 1; i++)
+	for (i = 0; i < MAX_KMSAPPS; i++)
 	{
 		if (KmsResponseParameters[i].Epid) continue;
 
@@ -599,7 +601,10 @@ static void getEpid(RESPONSE *const baseResponse, const char** EpidSource, const
 		else
 		#endif // NO_RANDOM_EPID
 		{
-			pid = AppList[index].pid;
+			if (index > 2)
+				pid = EPID_OFFICE2016;
+			else
+				pid = AppList[index].pid;
 			#ifndef NO_LOG
 			*EpidSource = "vlmcsd default";
 			#endif // NO_LOG
@@ -692,9 +697,37 @@ static BOOL __stdcall CreateResponseBaseCallback(const REQUEST *const baseReques
 
 	ProdListIndex_t index;
 
-	getProductNameLE(&baseRequest->AppID, AppList, &index);
 
+	#ifdef NO_BASIC_PRODUCT_LIST
+
+	getProductNameLE(&baseRequest->AppID, AppList, &index);
 	if (index >= _countof(AppList) - 1) index = 0; //default to Windows
+
+	#else
+
+	getProductNameLE(&baseRequest->KMSID, ProductList, &index);
+
+	switch(index)
+	{
+		case KMS_ID_OFFICE2016:
+			index = 3;
+			break;
+
+		case KMS_ID_OFFICE2013:
+		case KMS_ID_OFFICE2013_BETA:
+			index = 2;
+			break;
+
+		case KMS_ID_OFFICE2010:
+			index = 1;
+			break;
+
+		default:
+			index = 0;
+			break;
+	}
+
+	#endif
 
 	getEpid(baseResponse, &EpidSource, index, hwId);
 
