@@ -15,14 +15,14 @@ CFCLANG="-pipe -fno-common -fno-exceptions -fno-stack-protector -fno-unwind-tabl
 LF="-Wl,-z,norelro -Wl,--hash-style=gnu -Wl,--build-id=none"
 LFCLANG="-Wl,-z,norelro -Wl,--hash-style=gnu"
 
-gmake $MAKEFLAGS allmulti CAT=2 MULTI_NAME=vlmcsdmulti-FreeBSD-10.3-x64-gcc CLIENT_NAME=vlmcs-FreeBSD-10.3-x64-gcc PROGRAM_NAME=vlmcsd-FreeBSD-10.3-x64-gcc CC=gcc5 CFLAGS="$CF" LDFLAGS="$LF"
+gmake $MAKEFLAGS allmulti CAT=2 MULTI_NAME=vlmcsdmulti-FreeBSD-10.3-x64-gcc CLIENT_NAME=vlmcs-FreeBSD-10.3-x64-gcc PROGRAM_NAME=vlmcsd-FreeBSD-10.3-x64-gcc CC=gcc6 CFLAGS="$CF" LDFLAGS="$LF"
 gmake $MAKEFLAGS MULTI_NAME=vlmcsdmulti-FreeBSD-10.3-x64 CLIENT_NAME=vlmcs-FreeBSD-10.3-x64 PROGRAM_NAME=vlmcsd-FreeBSD-10.3-x64 CC=clang38 CFLAGS="$CFCLANG" LDFLAGS="$LF" allmulti
 gmake $MAKEFLAGS MULTI_NAME=vlmcsdmulti-FreeBSD-10.3-x86 CLIENT_NAME=vlmcs-FreeBSD-10.3-x86 PROGRAM_NAME=vlmcsd-FreeBSD-10.3-x86 CC=clang38 CFLAGS="$CFCLANG -m32" LDFLAGS="$LF"
-gmake $MAKEFLAGS allmulti CAT=2 MULTI_NAME=vlmcsdmulti-FreeBSD-10.3-x86-gcc CLIENT_NAME=vlmcs-FreeBSD-10.3-x86-gcc PROGRAM_NAME=vlmcsd-FreeBSD-10.3-x86-gcc CC=gcc5 CFLAGS="$CF -m32 -DCOMPAT_32BIT" LDFLAGS="-L/usr/lib32 -B/usr/lib32 $LF"
-gmake $MAKEFLAGS CAT=2 vlmcsd-FreeBSD-10.3-x64-threads-gcc PROGRAM_NAME=vlmcsd-FreeBSD-10.3-x64-threads-gcc THREADS=1 CC=gcc5 CFLAGS="$CF" LDFLAGS="-lpthread $LF"
+gmake $MAKEFLAGS allmulti CAT=2 MULTI_NAME=vlmcsdmulti-FreeBSD-10.3-x86-gcc CLIENT_NAME=vlmcs-FreeBSD-10.3-x86-gcc PROGRAM_NAME=vlmcsd-FreeBSD-10.3-x86-gcc CC=gcc6 CFLAGS="$CF -m32 -DCOMPAT_32BIT" LDFLAGS="-L/usr/lib32 -B/usr/lib32 $LF"
+gmake $MAKEFLAGS CAT=2 vlmcsd-FreeBSD-10.3-x64-threads-gcc PROGRAM_NAME=vlmcsd-FreeBSD-10.3-x64-threads-gcc THREADS=1 CC=gcc6 CFLAGS="$CF" LDFLAGS="-lpthread $LF"
 gmake $MAKEFLAGS vlmcsd-FreeBSD-10.3-x64-threads PROGRAM_NAME=vlmcsd-FreeBSD-10.3-x64-threads THREADS=1 CC=clang38 CFLAGS="$CFCLANG" LDFLAGS="-lpthread $LF"
 gmake $MAKEFLAGS vlmcsd-FreeBSD-10.3-x86-threads PROGRAM_NAME=vlmcsd-FreeBSD-10.3-x86-threads THREADS=1 CC=clang38 CFLAGS="$CFCLANG -m32" LDFLAGS="-lpthread $LF"
-gmake $MAKEFLAGS CAT=2 vlmcsd-FreeBSD-10.3-x86-threads-gcc PROGRAM_NAME=vlmcsd-FreeBSD-10.3-x86-threads-gcc THREADS=1 CC=gcc5 CFLAGS="$CF -m32 -DCOMPAT_32BIT" LDFLAGS="-lpthread -L/usr/lib32 -B/usr/lib32 $LF"
+gmake $MAKEFLAGS CAT=2 vlmcsd-FreeBSD-10.3-x86-threads-gcc PROGRAM_NAME=vlmcsd-FreeBSD-10.3-x86-threads-gcc THREADS=1 CC=gcc6 CFLAGS="$CF -m32 -DCOMPAT_32BIT" LDFLAGS="-lpthread -L/usr/lib32 -B/usr/lib32 $LF"
 gmake $MAKEFLAGS CRYPTO=openssl_with_aes CLIENT_NAME=vlmcs-FreeBSD-10.3-x64-openssl1.0.1-EXPERIMENTAL PROGRAM_NAME=vlmcsd-FreeBSD-10.3-x64-openssl1.0.1-EXPERIMENTAL CC=clang38 CFLAGS="$CFCLANG" LDFLAGS="$LF"
 gmake $MAKEFLAGS CRYPTO=openssl_with_aes CLIENT_NAME=vlmcs-FreeBSD-10.3-x86-openssl1.0.1-EXPERIMENTAL PROGRAM_NAME=vlmcsd-FreeBSD-10.3-x86-openssl1.0.1-EXPERIMENTAL CC=clang38 CFLAGS="$CFCLANG -m32" LDFLAGS="$LF"
 

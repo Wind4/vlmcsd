@@ -168,7 +168,7 @@ void uuid2StringLE(const GUID *const guid, char *const string)
 				);
 }
 
-#ifndef NO_VERBOSE_LOG
+#if !defined(NO_VERBOSE_LOG) && !defined(NO_LOG)
 void logRequestVerbose(const REQUEST *const Request, const PRINTFUNC p)
 {
 	char guidBuffer[GUID_STRING_LENGTH + 1];
@@ -196,13 +196,7 @@ void logRequestVerbose(const REQUEST *const Request, const PRINTFUNC p)
 	p("SKU ID (aka Activation ID)      : %s (%s)\n", guidBuffer, productName);
 
 	uuid2StringLE(&Request->KMSID, guidBuffer);
-
-	#ifndef NO_BASIC_PRODUCT_LIST
 	productName = getProductNameLE(&Request->KMSID, ProductList, &index);
-	#else
-	productName = "Unknown";
-	#endif
-
 	p("KMS ID (aka KMS counted ID)     : %s (%s)\n", guidBuffer, productName);
 
 	uuid2StringLE(&Request->CMID, guidBuffer);
@@ -252,7 +246,7 @@ void logResponseVerbose(const char *const ePID, const BYTE *const hwid, const RE
 	p("Renewal interval policy         : %u\n", (uint32_t)LE32(response->VLRenewalInterval));
 	p("Activation interval policy      : %u\n", (uint32_t)LE32(response->VLActivationInterval));
 }
-#endif // NO_VERBOSE_LOG
+#endif // !defined(NO_VERBOSE_LOG) && !defined(NO_LOG)
 
 
 #ifndef NO_VERSION_INFORMATION

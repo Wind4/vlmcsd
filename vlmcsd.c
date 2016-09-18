@@ -103,12 +103,10 @@ char* IniFileErrorBuffer = NULL;
 
 static IniFileParameter_t IniFileParameterList[] =
 {
-#	ifndef NO_BASIC_PRODUCT_LIST
 		{ "Windows", INI_PARAM_WINDOWS },
 		{ "Office2010", INI_PARAM_OFFICE2010 },
 		{ "Office2013", INI_PARAM_OFFICE2013 },
 		{ "Office2016", INI_PARAM_OFFICE2016 },
-#	endif // NO_BASIC_PRODUCT_LIST
 #	ifndef NO_RANDOM_EPID
 		{ "RandomizationLevel", INI_PARAM_RANDOMIZATION_LEVEL },
 		{ "LCID", INI_PARAM_LCID },
@@ -268,12 +266,10 @@ static __noreturn void usage()
 			"   %s [ options ]\n\n"
 			"Where:\n"
 			#ifndef NO_CL_PIDS
-			#ifndef NO_BASIC_PRODUCT_LIST
 			"  -w <ePID>		always use <ePID> for Windows\n"
 			"  -0 <ePID>		always use <ePID> for Office2010\n"
 			"  -3 <ePID>		always use <ePID> for Office2013\n"
 			"  -6 <ePID>		always use <ePID> for Office2016\n"
-			#endif // NO_BASIC_PRODUCT_LIST
 			"  -H <HwId>		always use hardware Id <HwId>\n"
 			#endif // NO_CL_PIDS
 			#if !defined(_WIN32) && !defined(NO_USER_SWITCH)
@@ -517,28 +513,6 @@ static BOOL setHwIdFromIniFileLine(const char **s, const ProdListIndex_t index)
 }
 
 
-//static BOOL checkGuidInIniFileLine(const char **s, ProdListIndex_t *const index)
-//{
-//	GUID AppGuid;
-//
-//	if (!string2Uuid(*s, &AppGuid)) return FALSE;
-//
-//	(*s) += GUID_STRING_LENGTH;
-//	getProductNameHE(&AppGuid, AppList, index);
-//
-//	if (*index > getAppListSize() - 2)
-//	{
-//		IniFileErrorMessage = "Unknown App Guid.";
-//		return FALSE;
-//	}
-//
-//	iniFileLineNextWord(s);
-//	if ( *(*s)++ != '=' ) return FALSE;
-//
-//	return TRUE;
-//}
-
-
 static BOOL setEpidFromIniFileLine(const char **s, const ProdListIndex_t index)
 {
 	iniFileLineNextWord(s);
@@ -580,30 +554,25 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 
 	switch(id)
 	{
-
-#	ifndef NO_BASIC_PRODUCT_LIST
-
 		case INI_PARAM_WINDOWS:
-			setEpidFromIniFileLine(&s, 0);
-			setHwIdFromIniFileLine(&s, 0);
+			setEpidFromIniFileLine(&s, EPID_INDEX_WINDOWS);
+			setHwIdFromIniFileLine(&s, EPID_INDEX_WINDOWS);
 			break;
 
 		case INI_PARAM_OFFICE2010:
-			setEpidFromIniFileLine(&s, 1);
-			setHwIdFromIniFileLine(&s, 1);
+			setEpidFromIniFileLine(&s, EPID_INDEX_OFFICE2010);
+			setHwIdFromIniFileLine(&s, EPID_INDEX_OFFICE2010);
 			break;
 
 		case INI_PARAM_OFFICE2013:
-			setEpidFromIniFileLine(&s, 2);
-			setHwIdFromIniFileLine(&s, 2);
+			setEpidFromIniFileLine(&s, EPID_INDEX_OFFICE2013);
+			setHwIdFromIniFileLine(&s, EPID_INDEX_OFFICE2013);
 			break;
 
 		case INI_PARAM_OFFICE2016:
-			setEpidFromIniFileLine(&s, 3);
-			setHwIdFromIniFileLine(&s, 3);
+			setEpidFromIniFileLine(&s, EPID_INDEX_OFFICE2016);
+			setHwIdFromIniFileLine(&s, EPID_INDEX_OFFICE2016);
 			break;
-
-#	endif
 
 #	if !defined(NO_USER_SWITCH) && !defined(_WIN32)
 
@@ -1114,47 +1083,44 @@ static void parseGeneralArguments() {
 		#endif // !defined(NO_SOCKETS) && !defined(NO_SIGHUP) && !defined(_WIN32)
 
 		#ifndef NO_CL_PIDS
-		#ifndef NO_BASIC_PRODUCT_LIST
 
 		case 'w':
-			KmsResponseParameters[APP_ID_WINDOWS].Epid          = getCommandLineArg(optarg);
+			KmsResponseParameters[EPID_INDEX_WINDOWS].Epid          = getCommandLineArg(optarg);
 			#ifndef NO_LOG
-			KmsResponseParameters[APP_ID_WINDOWS].EpidSource    = "command line";
+			KmsResponseParameters[EPID_INDEX_WINDOWS].EpidSource    = "command line";
 			#endif // NO_LOG
 			break;
 
 		case '0':
-			KmsResponseParameters[APP_ID_OFFICE2010].Epid       = getCommandLineArg(optarg);
+			KmsResponseParameters[EPID_INDEX_OFFICE2010].Epid       = getCommandLineArg(optarg);
 			#ifndef NO_LOG
-			KmsResponseParameters[APP_ID_OFFICE2010].EpidSource = "command line";
+			KmsResponseParameters[EPID_INDEX_OFFICE2010].EpidSource = "command line";
 			#endif // NO_LOG
 			break;
 
 		case '3':
-			KmsResponseParameters[APP_ID_OFFICE2013].Epid       = getCommandLineArg(optarg);
+			KmsResponseParameters[EPID_INDEX_OFFICE2013].Epid       = getCommandLineArg(optarg);
 			#ifndef NO_LOG
-			KmsResponseParameters[APP_ID_OFFICE2013].EpidSource = "command line";
+			KmsResponseParameters[EPID_INDEX_OFFICE2013].EpidSource = "command line";
 			#endif // NO_LOG
 			break;
 
 		case '6':
-			KmsResponseParameters[3].Epid       = getCommandLineArg(optarg);
+			KmsResponseParameters[EPID_INDEX_OFFICE2016].Epid       = getCommandLineArg(optarg);
 			#ifndef NO_LOG
-			KmsResponseParameters[3].EpidSource = "command line";
+			KmsResponseParameters[EPID_INDEX_OFFICE2016].EpidSource = "command line";
 			#endif // NO_LOG
 			break;
-
-		#endif // NO_BASIC_PRODUCT_LIST
 
 		case 'H':
 			HwId = (BYTE*)vlmcsd_malloc(sizeof(((RESPONSE_V6 *)0)->HwId));
 
 			hex2bin(HwId, optarg, sizeof(((RESPONSE_V6 *)0)->HwId));
 
-			KmsResponseParameters[APP_ID_WINDOWS].HwId = HwId;
-			KmsResponseParameters[APP_ID_OFFICE2010].HwId = HwId;
-			KmsResponseParameters[APP_ID_OFFICE2013].HwId = HwId;
-			KmsResponseParameters[3].HwId = HwId;
+			KmsResponseParameters[EPID_INDEX_WINDOWS].HwId =
+			KmsResponseParameters[EPID_INDEX_OFFICE2010].HwId =
+			KmsResponseParameters[EPID_INDEX_OFFICE2013].HwId =
+			KmsResponseParameters[EPID_INDEX_OFFICE2016].HwId = HwId;
 			break;
 
 		#endif // NO_CL_PIDS

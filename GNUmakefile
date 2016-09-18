@@ -211,7 +211,7 @@ ifeq ($(FEATURES), embedded)
 else ifeq ($(FEATURES), autostart)
   BASECFLAGS += -DNO_HELP -DNO_VERSION_INFORMATION
 else ifeq ($(FEATURES), minimum)
-  BASECFLAGS += -DSIMPLE_SOCKETS -DNO_TIMEOUT -DNO_SIGHUP -DNO_CL_PIDS -DNO_EXTENDED_PRODUCT_LIST -DNO_LOG -DNO_RANDOM_EPID -DNO_INI_FILE -DNO_HELP -DNO_CUSTOM_INTERVALS -DNO_PID_FILE -DNO_USER_SWITCH -DNO_VERBOSE_LOG -DNO_LIMIT -DNO_VERSION_INFORMATION -DNO_PRIVATE_IP_DETECT
+  BASECFLAGS += -DSIMPLE_SOCKETS -DNO_TIMEOUT -DNO_SIGHUP -DNO_CL_PIDS -DNO_EXTENDED_PRODUCT_LIST -DNO_BASIC_PRODUCT_LIST -DNO_LOG -DNO_RANDOM_EPID -DNO_INI_FILE -DNO_HELP -DNO_CUSTOM_INTERVALS -DNO_PID_FILE -DNO_USER_SWITCH -DNO_VERBOSE_LOG -DNO_LIMIT -DNO_VERSION_INFORMATION -DNO_PRIVATE_IP_DETECT -DSMALL_AES
 else ifeq ($(FEATURES), most)
   BASECFLAGS += -DNO_SIGHUP -DNO_PID_FILE -DNO_LIMIT
 else ifeq ($(FEATURES), inetd)
@@ -658,13 +658,14 @@ help:
 	@echo "    -DNO_HELP                    Don't support command line help."
 	@echo "    -DNO_CUSTOM_INTERVALS        Don't support custom intervals for retry and refresh activation. Removes -A and -R options."
 	@echo "    -DNO_FREEBIND                Don't support binding to foreign IP addresses. Removes -F0 and -F1 options. Only affects FreeBSD and Linux."
-	@echo "    -DSIMPLE_SOCKETS             Compile $(PROGRAM_NAME) with basic socket support only. Removes -L option."
 	@echo "    -DNO_SOCKETS                 Don't support standalone operation. Requires an internet superserver to start $(PROGRAM_NAME)."
 	@echo "    -DNO_CL_PIDS                 Don't support specifying ePIDs and HwId from the command line in $(PROGRAM_NAME)."
 	@echo "    -DNO_LIMIT                   Don't support limiting concurrent clients in $(PROGRAM_NAME)."
 	@echo "    -DNO_SIGHUP                  Don't support SIGHUP handling in $(PROGRAM_NAME)."
 	@echo "    -DNO_VERSION_INFORMATION     Don't support displaying version information in $(PROGRAM_NAME) and $(CLIENT_NAME). Removes -V option."
 	@echo "    -DNO_PRIVATE_IP_DETECT       Don't support protection against clients with public IP addresses in $(PROGRAM_NAME)"	
+	@echo "    -DSIMPLE_SOCKETS             Compile $(PROGRAM_NAME) with basic socket support only. Removes -L option."
+	@echo "    -DSMALL_AES                  Use a smaller (saves about 200 bytes) but slower implementation of AES."
 	@echo ""
 	@echo "Troubleshooting options"
 	@echo "    CAT=1                        Combine all sources in a single in-memory file and compile directly to target."
