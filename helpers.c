@@ -2,6 +2,10 @@
  * Helper functions used by other modules
  */
 
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #ifndef CONFIG
 #define CONFIG "config.h"
 #endif // CONFIG
@@ -10,7 +14,11 @@
 #ifndef _WIN32
 #include <errno.h>
 #endif // _WIN32
+#ifndef _MSC_VER
 #include <getopt.h>
+#else
+#include "wingetopt.h"
+#endif
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -18,6 +26,7 @@
 #include "output.h"
 #include "endian.h"
 #include "shared_globals.h"
+
 
 
 /*
@@ -72,7 +81,7 @@ int ucs2_to_utf8_char (const WCHAR ucs2_le, char *utf8)
     const WCHAR ucs2 = LE16(ucs2_le);
 
     if (ucs2 < 0x80) {
-        utf8[0] = ucs2;
+        utf8[0] = (char)ucs2;
         utf8[1] = '\0';
         return 1;
     }
@@ -153,7 +162,7 @@ BOOL stringToInt(const char *const szValue, const unsigned int min, const unsign
 	char *nextchar;
 
 	errno = 0;
-	long long result = strtoll(szValue, &nextchar, 10);
+	long long result = vlmcsd_strtoll(szValue, &nextchar, 10);
 
 	if (errno || result < (long long)min || result > (long long)max || *nextchar)
 	{
@@ -177,7 +186,7 @@ int_fast8_t string2Uuid(const char *const restrict input, GUID *const restrict g
 	{
 		if (i == 8 || i == 13 || i == 18 || i == 23) continue;
 
-		const char c = toupper((int)input[i]);
+		const char c = (char)toupper((int)input[i]);
 
 		if (c < '0' || c > 'F' || (c > '9' && c < 'A')) return FALSE;
 	}
@@ -211,7 +220,7 @@ void LEGUID(GUID *const restrict out, const GUID* const restrict in)
 	#endif
 }
 
-
+#if !IS_LIBRARY
 //Checks a command line argument if it is numeric and between min and max. Returns the numeric value or exits on error
 __pure unsigned int getOptionArgumentInt(const char o, const unsigned int min, const unsigned int max)
 {
@@ -225,7 +234,6 @@ __pure unsigned int getOptionArgumentInt(const char o, const unsigned int min, c
 
 	return result;
 }
-
 
 // Resets getopt() to start parsing from the beginning
 void optReset(void)
@@ -241,7 +249,7 @@ void optReset(void)
 	optind = 1;
 	#endif
 }
-
+#endif // !IS_LIBRARY
 
 #if defined(_WIN32) || defined(USE_MSRPC)
 
@@ -295,9 +303,13 @@ void parseAddress(char *const addr, char** szHost, char** szPort)
 // Initialize random generator (needs to be done in each thread)
 void randomNumberInit()
 {
+#	if _MSC_VER
+	srand(GetTickCount());
+#	else
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 	srand((unsigned int)(tv.tv_sec ^ tv.tv_usec));
+#	endif
 }
 
 

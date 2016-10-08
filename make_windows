@@ -1,7 +1,16 @@
 #!/bin/bash
 
 export VLMCSD_VERSION="svn`svnversion`"
+
+msbuild='/cygdrive/c/Program Files (x86)/MSBuild/14.0/bin/MSBuild.exe'
+version="$VLMCSD_VERSION, built $(date -u '+%Y-%m-%d %H:%M:%S') UTC"
+
 rm -f cygkms*.dll libkms*.dll vlmcs-* vlmcsd-win* vlmcsd-cyg* vlmcsdmulti-* *_all.* vlmcsd.exe vlmcs.exe vlmcsdmulti.exe 2> /dev/null
+
+export ExternalCompilerOptions="/D VERSION=\"\\\"$version\\\"\" /D BUILD_TIME=$(date '+%s')"
+
+"$msbuild" VisualStudio/vlmcsd-2015-with-2013-c++-build-tools.sln /t:Rebuild /p:Configuration=Release /p:Platform=x86 /m /v:m
+"$msbuild" VisualStudio/vlmcsd-2015-with-2013-c++-build-tools.sln /t:Rebuild /p:Configuration=Release /p:Platform=x64 /m /v:m
 
 export CAT=2
 export VERBOSE=3
@@ -35,10 +44,10 @@ make $MAKEFLAGS THREADS=1 MSRPC=1 DNS_PARSER=internal CLIENT_NAME=vlmcs-cygwin-m
 
 export CAT=2
 #unset CAT
-make $MAKEFLAGS libkms32.dll CRYPTO=windows FEATURES=minimum THREADS=1 DLL_NAME=libkms32.dll CC=i686-w64-MingW32-gcc.exe CFLAGS="$CF -flto=jobserver -fvisibility=hidden" PLATFORMFLAGS="$PF32" LDFLAGS="-static-libgcc $LFWIN32"
-make $MAKEFLAGS libkms64.dll CRYPTO=windows FEATURES=minimum THREADS=1 DLL_NAME=libkms64.dll CC=x86_64-w64-MingW32-gcc.exe CFLAGS="$CF -flto=jobserver -fvisibility=hidden" PLATFORMFLAGS="$PF64" LDFLAGS="-static-libgcc $LFWIN64"
-make $MAKEFLAGS allmulti THREADS=1 CRYPTO=windows CLIENT_NAME=vlmcs-Windows-x86 PROGRAM_NAME=vlmcsd-Windows-x86 MULTI_NAME=vlmcsdmulti-Windows-x86 CC=i686-w64-MingW32-gcc.exe CFLAGS="$CF -fno-lto" PLATFORMFLAGS="$PF32" LDFLAGS="$LFWIN32"
-make $MAKEFLAGS allmulti THREADS=1 CRYPTO=windows CLIENT_NAME=vlmcs-Windows-x64 PROGRAM_NAME=vlmcsd-Windows-x64 MULTI_NAME=vlmcsdmulti-Windows-x64 CC=x86_64-w64-MingW32-gcc.exe CFLAGS="$CF -fno-lto" PLATFORMFLAGS="$PF64" LDFLAGS="$LFWIN64"
+make $MAKEFLAGS libkms32-gcc.dll CRYPTO=windows FEATURES=minimum THREADS=1 DLL_NAME=libkms32-gcc.dll CC=i686-w64-MingW32-gcc.exe CFLAGS="$CF -flto=jobserver -fvisibility=hidden" PLATFORMFLAGS="$PF32" LDFLAGS="-static-libgcc $LFWIN32"
+make $MAKEFLAGS libkms64-gcc.dll CRYPTO=windows FEATURES=minimum THREADS=1 DLL_NAME=libkms64-gcc.dll CC=x86_64-w64-MingW32-gcc.exe CFLAGS="$CF -flto=jobserver -fvisibility=hidden" PLATFORMFLAGS="$PF64" LDFLAGS="-static-libgcc $LFWIN64"
+make $MAKEFLAGS allmulti THREADS=1 CRYPTO=windows CLIENT_NAME=vlmcs-Windows-x86-gcc PROGRAM_NAME=vlmcsd-Windows-x86-gcc MULTI_NAME=vlmcsdmulti-Windows-x86-gcc CC=i686-w64-MingW32-gcc.exe CFLAGS="$CF -fno-lto" PLATFORMFLAGS="$PF32" LDFLAGS="$LFWIN32"
+make $MAKEFLAGS allmulti THREADS=1 CRYPTO=windows CLIENT_NAME=vlmcs-Windows-x64-gcc PROGRAM_NAME=vlmcsd-Windows-x64-gcc MULTI_NAME=vlmcsdmulti-Windows-x64-gcc CC=x86_64-w64-MingW32-gcc.exe CFLAGS="$CF -fno-lto" PLATFORMFLAGS="$PF64" LDFLAGS="$LFWIN64"
 unset CAT
 make -Bj allmulti MSRPC=1 CRYPTO=windows CLIENT_NAME=vlmcs-Windows-msrpc-x86 PROGRAM_NAME=vlmcsd-Windows-msrpc-x86 MULTI_NAME=vlmcsdmulti-Windows-msrpc-x86 CC=i686-w64-MingW32-gcc.exe CFLAGS="$CFMSRPC -fno-lto"  PLATFORMFLAGS="$PF32" LDFLAGS="$LFWIN32"
 make $MAKEFLAGS allmulti THREADS=1 MSRPC=1 CRYPTO=windows CLIENT_NAME=vlmcs-Windows-msrpc-x64 PROGRAM_NAME=vlmcsd-Windows-msrpc-x64 MULTI_NAME=vlmcsdmulti-Windows-msrpc-x64 CC=x86_64-w64-MingW32-gcc.exe CFLAGS="$CFMSRPC -fno-lto" PLATFORMFLAGS="$PF64" LDFLAGS="$LFWIN64"
@@ -63,10 +72,11 @@ cp -p cygkms64.dll /usr/local/bin/cygkms.dll &
 
 cp -p libkms32.dll /cygdrive/c/nttools/x86 &
 cp -p libkms64.dll /cygdrive/c/nttools/x64 &
-cp -p vlmcsdmulti-Windows-x86.exe /cygdrive/c/nttools/x86/vlmcsdmulti.exe 
+cp -p vlmcsd-Windows-x86.exe /cygdrive/c/nttools/x86/vlmcsd.exe 
+cp -p vlmcs-Windows-x86.exe /cygdrive/c/nttools/x86/vlmcs.exe 
 
-cmd /C mklink c:\\nttools\\x86\\vlmcsd.exe vlmcsdmulti.exe 2> /dev/null &
-cmd /C mklink c:\\nttools\\x86\\vlmcs.exe vlmcsdmulti.exe 2> /dev/null &
+#cmd /C mklink c:\\nttools\\x86\\vlmcsd.exe vlmcsdmulti.exe 2> /dev/null &
+#cmd /C mklink c:\\nttools\\x86\\vlmcs.exe vlmcsdmulti.exe 2> /dev/null &
 
 echo "Installing man pages"
 

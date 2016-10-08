@@ -95,9 +95,9 @@ static void CheckRpcRequest(const RPC_REQUEST64 *const Request, const unsigned i
 	}
 
 	if (Ctx != *Ndr64Ctx)
-		kmsMajorVersion = LE16(((WORD*)Request->Ndr.Data)[1]);
+		kmsMajorVersion = (uint_fast8_t)LE16(((WORD*)Request->Ndr.Data)[1]);
 	else
-		kmsMajorVersion = LE16(((WORD*)Request->Ndr64.Data)[1]);
+		kmsMajorVersion = (uint_fast8_t)LE16(((WORD*)Request->Ndr64.Data)[1]);
 
 	if (kmsMajorVersion > 6)
 	{
@@ -394,11 +394,12 @@ static int rpcBind(const RPC_BIND_REQUEST *const Request, RPC_BIND_RESPONSE* Res
 		getsockname(sock, (struct sockaddr*)&addr, &socklen) ||
 		getnameinfo((struct sockaddr*)&addr, socklen, NULL, 0, (char*)Response->SecondaryAddress, sizeof(Response->SecondaryAddress), NI_NUMERICSERV))
 	{
-		portNumberSize = Response->SecondaryAddressLength = 0;
+		portNumberSize = 0;
+		Response->SecondaryAddressLength = 0;
 	}
 	else
 	{
-		portNumberSize = strlen((char*)Response->SecondaryAddress) + 1;
+		portNumberSize = (uint_fast8_t)strlen((char*)Response->SecondaryAddress) + 1;
 		Response->SecondaryAddressLength = LE16(portNumberSize);
 	}
 
@@ -542,7 +543,7 @@ void rpcServer(const SOCKET sock, const DWORD RpcAssocGroup, const char* const i
 		if (!_recv(sock, requestBuffer, request_len)) return;
 
 		// Request is invalid
-		BYTE isValid = _Actions[_a].CheckRequestSize(requestBuffer, request_len, &NdrCtx, &Ndr64Ctx);
+		BYTE isValid = (BYTE)_Actions[_a].CheckRequestSize(requestBuffer, request_len, &NdrCtx, &Ndr64Ctx);
 		if (rpcRequestHeader.PacketType != RPC_PT_REQUEST && !isValid) return;
 
 		// Unable to create a valid response from request
@@ -552,7 +553,7 @@ void rpcServer(const SOCKET sock, const DWORD RpcAssocGroup, const char* const i
 
 		memcpy(rpcResponseHeader, &rpcRequestHeader, sizeof(RPC_HEADER));
 
-		rpcResponseHeader->FragLength = LE16(response_len);
+		rpcResponseHeader->FragLength = LE16((WORD)response_len);
 		rpcResponseHeader->PacketType = _Actions[_a].ResponsePacketType;
 
 		if (rpcResponseHeader->PacketType == RPC_PT_ALTERCONTEXT_ACK)
@@ -710,7 +711,7 @@ RpcStatus rpcSendRequest(const RpcCtx sock, const BYTE *const KmsRequest, const 
 	RequestHeader = (RPC_HEADER*)_Request;
 	RpcRequest = (RPC_REQUEST64*)(_Request + sizeof(RPC_HEADER));
 
-	createRpcRequestHeader(RequestHeader, RPC_PT_REQUEST, size);
+	createRpcRequestHeader(RequestHeader, RPC_PT_REQUEST, (WORD)size);
 
 	// Increment CallId for next Request
 	CallId++;
@@ -720,7 +721,7 @@ RpcStatus rpcSendRequest(const RpcCtx sock, const BYTE *const KmsRequest, const 
 	if (useNdr64)
 	{
 		RpcRequest->ContextId = LE16(1); // We negotiate NDR64 always as context 1
-		RpcRequest->AllocHint = LE32(requestSize + sizeof(RpcRequest->Ndr64));
+		RpcRequest->AllocHint = LE32((DWORD)(requestSize + sizeof(RpcRequest->Ndr64)));
 		RpcRequest->Ndr64.DataLength = LE64((uint64_t)requestSize);
 		RpcRequest->Ndr64.DataSizeIs = LE64((uint64_t)requestSize);
 		memcpy(RpcRequest->Ndr64.Data, KmsRequest, requestSize);
@@ -728,9 +729,9 @@ RpcStatus rpcSendRequest(const RpcCtx sock, const BYTE *const KmsRequest, const 
 	else
 	{
 		RpcRequest->ContextId = 0; // We negotiate NDR32 always as context 0
-		RpcRequest->AllocHint = LE32(requestSize + sizeof(RpcRequest->Ndr));
-		RpcRequest->Ndr.DataLength = LE32(requestSize);
-		RpcRequest->Ndr.DataSizeIs = LE32(requestSize);
+		RpcRequest->AllocHint = LE32((DWORD)(requestSize + sizeof(RpcRequest->Ndr)));
+		RpcRequest->Ndr.DataLength = LE32((DWORD)requestSize);
+		RpcRequest->Ndr.DataSizeIs = LE32((DWORD)requestSize);
 		memcpy(RpcRequest->Ndr.Data, KmsRequest, requestSize);
 	}
 
@@ -738,7 +739,7 @@ RpcStatus rpcSendRequest(const RpcCtx sock, const BYTE *const KmsRequest, const 
 	{
 		int bytesread;
 
-		if (!_send(sock, _Request, size))
+		if (!_send(sock, _Request, (int)size))
 		{
 			printerrorf("\nFatal: Could not send RPC request\n");
 			status = RPC_S_COMM_FAILURE;
@@ -759,7 +760,7 @@ RpcStatus rpcSendRequest(const RpcCtx sock, const BYTE *const KmsRequest, const 
 		if (size > LE16(ResponseHeader.FragLength) - sizeof(ResponseHeader))
 			size = LE16(ResponseHeader.FragLength) - sizeof(ResponseHeader);
 
-		if (!_recv(sock, &_Response, size))
+		if (!_recv(sock, &_Response, (int)size))
 		{
 			printerrorf("\nFatal: RPC response is incomplete\n");
 			status = RPC_S_COMM_FAILURE;
@@ -823,7 +824,7 @@ RpcStatus rpcSendRequest(const RpcCtx sock, const BYTE *const KmsRequest, const 
 		memset(*KmsResponse, 0, *responseSize + MAX_EXCESS_BYTES);
 
 		// Read up to 16 bytes more than bytes expected to detect faulty KMS emulators
-		if ((bytesread = recv(sock, (char*)*KmsResponse, *responseSize + MAX_EXCESS_BYTES, 0)) < (int)*responseSize)
+		if ((bytesread = recv(sock, (char*)*KmsResponse, (int)(*responseSize) + MAX_EXCESS_BYTES, 0)) < (int)*responseSize)
 		{
 			printerrorf("\nFatal: No or incomplete KMS response received. Required %u bytes but only got %i\n",
 					(uint32_t)*responseSize,
@@ -897,12 +898,12 @@ RpcStatus rpcBindOrAlterClientContext(const RpcCtx sock, BYTE packetType, const 
 	WORD ctxIndex = 0;
 	WORD i;
 	WORD CtxBTFN = (WORD)~0, CtxNDR64 = (WORD)~0;
-	BYTE _Request[rpcBindSize];
+	BYTE* _Request = (BYTE*)alloca(rpcBindSize);
 
 	RequestHeader = (RPC_HEADER*)_Request;
 	bindRequest = (RPC_BIND_REQUEST* )(_Request + sizeof(RPC_HEADER));
 
-	createRpcRequestHeader(RequestHeader, packetType, rpcBindSize);
+	createRpcRequestHeader(RequestHeader, packetType, (WORD)rpcBindSize);
 	RequestHeader->PacketFlags |=  UseMultiplexedRpc ? RPC_PF_MULTIPLEX : 0;
 
 	bindRequest->AssocGroup		= 0;
@@ -935,7 +936,7 @@ RpcStatus rpcBindOrAlterClientContext(const RpcCtx sock, BYTE packetType, const 
 		CtxBTFN = ctxIndex;
 	}
 
-	if (!_send(sock, _Request, rpcBindSize))
+	if (!_send(sock, _Request, (int)rpcBindSize))
 	{
 		printerrorf("\nFatal: Sending RPC bind request failed\n");
 		return RPC_S_COMM_FAILURE;

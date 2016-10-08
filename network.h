@@ -13,6 +13,13 @@
 #include "types.h"
 #include "output.h"
 
+#if _MSC_VER
+//typedef signed char int_fast8_t;
+//typedef unsigned char BYTE;
+//typedef UINT_PTR size_t;
+//typedef unsigned long DWORD;
+#define STDIN_FILENO 0
+#endif
 
 int_fast8_t sendrecv(SOCKET sock, BYTE *data, int len, int_fast8_t do_send);
 

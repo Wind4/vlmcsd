@@ -117,7 +117,7 @@ void AesInitKey(AesCtx *Ctx, const BYTE *Key, int_fast8_t IsV6, int RijndaelKeyB
 
 	memcpy(Ctx->Key, Key, RijndaelKeyBytes);
 
-	for ( i = RijndaelKeyDwords; i < ( Ctx->rounds + 1 ) << 2; i++ )
+	for ( i = (uint_fast8_t)RijndaelKeyDwords; i < ( Ctx->rounds + 1 ) << 2; i++ )
 	{
 		temp = Ctx->Key[ i - 1 ];
 

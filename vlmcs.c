@@ -8,15 +8,24 @@
 #endif
 
 #include "vlmcs.h"
+#if _MSC_VER
+#include <Shlwapi.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <stdint.h>
+#if _MSC_VER
+#include "wingetopt.h"
+#else
 #include <getopt.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 #ifndef _WIN32
 #include <sys/ioctl.h>
 #include <termios.h>
@@ -301,7 +310,7 @@ __noreturn static void showProducts(PRINTFUNC p)
 
 	for (currentProduct = ExtendedProductList; currentProduct->name; currentProduct++)
 	{
-		uint_fast8_t len = strlen(currentProduct->name);
+		uint_fast8_t len = (uint_fast8_t)strlen(currentProduct->name);
 
 		if (len > longestString)
 			longestString = len;
@@ -538,7 +547,7 @@ static void parseCommandLinePass2(const char *const programName, const int argc,
 
 			case 'i':
 
-				switch(getOptionArgumentInt(o, 4, 6))
+				switch(getOptionArgumentInt((char)o, 4, 6))
 				{
 					case 4:
 						AddressFamily = AF_INET;
@@ -564,13 +573,13 @@ static void parseCommandLinePass2(const char *const programName, const int argc,
 			case 'n': // Fixed number of Requests (regardless, whether they are required)
 
 				incompatibleOptions |= VLMCS_OPTION_NO_GRAB_INI;
-				FixedRequests = getOptionArgumentInt(o, 1, INT_MAX);
+				FixedRequests = getOptionArgumentInt((char)o, 1, INT_MAX);
 				break;
 
 			case 'r': // Fake minimum required client count
 
 				incompatibleOptions |= VLMCS_OPTION_NO_GRAB_INI;
-				ActiveLicensePack.N_Policy = getOptionArgumentInt(o, 0, INT_MAX);
+				ActiveLicensePack.N_Policy = getOptionArgumentInt((char)o, 0, INT_MAX);
 				break;
 
 			case 'c': // use a specific client GUID
@@ -596,7 +605,7 @@ static void parseCommandLinePass2(const char *const programName, const int argc,
 
 			case 'g': // Set custom "grace" time in minutes (default 30 days)
 
-				BindingExpiration = getOptionArgumentInt(o, 0, INT_MAX);
+				BindingExpiration = getOptionArgumentInt((char)o, 0, INT_MAX);
 				break;
 
 			case 's': // Set specfic SKU ID
@@ -657,7 +666,7 @@ static void parseCommandLinePass2(const char *const programName, const int argc,
 
 			case 't':
 
-				LicenseStatus = getOptionArgumentInt(o, 0, 0x7fffffff);
+				LicenseStatus = getOptionArgumentInt((char)o, 0, 0x7fffffff);
 				if ((unsigned int)LicenseStatus > 6) errorout("Warning: Correct license status is 0 <= license status <= 6.\n");
 				break;
 
@@ -913,13 +922,13 @@ int SendActivationRequest(const RpcCtx sock, RESPONSE *baseResponse, REQUEST *ba
 		if (LE16(((RESPONSE*)(response))->MajorVer) == 4)
 		{
 			RESPONSE_V4 response_v4;
-			*result = DecryptResponseV4(&response_v4, responseSize, response, request);
+			*result = DecryptResponseV4(&response_v4, (const int)responseSize, response, request);
 			memcpy(baseResponse, &response_v4.ResponseBase, sizeof(RESPONSE));
 		}
 		else
 		{
 			RESPONSE_V6 response_v6;
-			*result = DecryptResponseV6(&response_v6, responseSize, response, request, hwid);
+			*result = DecryptResponseV6(&response_v6, (int)responseSize, response, request, hwid);
 			memcpy(baseResponse, &response_v6.ResponseBase, sizeof(RESPONSE));
 		}
 
@@ -1000,7 +1009,7 @@ static void newIniBackupFile(const char* const restrict fname)
 	if (fclose(f))
 	{
 		errorout("Fatal: Cannot write to %s: %s\n", fname, strerror(errno));
-		unlink(fname);
+		vlmcsd_unlink(fname);
 		exit(!0);
 	}
 }
@@ -1009,7 +1018,9 @@ static void newIniBackupFile(const char* const restrict fname)
 static void updateIniFile(iniFileEpidLines* const restrict lines)
 {
 	int_fast8_t lineWritten[_countof(*lines)];
+#	if !_MSC_VER
 	struct stat statbuf;
+#	endif
 	uint_fast8_t i;
 	int_fast8_t iniFileExistedBefore = TRUE;
 	unsigned int lineNumber;
@@ -1021,6 +1032,13 @@ static void updateIniFile(iniFileEpidLines* const restrict lines)
 	strcpy(fn_bak, fn_ini_client);
 	strcat(fn_bak, "~");
 
+#	if _MSC_VER
+	if (!PathFileExists(fn_ini_client))
+	{
+		iniFileExistedBefore = FALSE;
+		newIniBackupFile(fn_bak);
+	}
+#	else
 	if (stat(fn_ini_client, &statbuf))
 	{
 		if (errno != ENOENT)
@@ -1034,9 +1052,10 @@ static void updateIniFile(iniFileEpidLines* const restrict lines)
 			newIniBackupFile(fn_bak);
 		}
 	}
+#	endif
 	else
 	{
-		unlink(fn_bak); // Required for Windows. Most Unix systems don't need it.
+		vlmcsd_unlink(fn_bak); // Required for Windows. Most Unix systems don't need it.
 		if (rename(fn_ini_client, fn_bak))
 		{
 			errorout("Fatal: Cannot create %s: %s\n", fn_bak, strerror(errno));
@@ -1110,10 +1129,11 @@ static void updateIniFile(iniFileEpidLines* const restrict lines)
 		exit(!0);
 	}
 
-	if (!iniFileExistedBefore) unlink(fn_bak);
+	if (!iniFileExistedBefore) vlmcsd_unlink(fn_bak);
 
 	free(fn_bak);
 }
+
 
 static void grabServerData()
 {
@@ -1163,16 +1183,16 @@ static void grabServerData()
     		memset(ePID + 3 * PID_BUFFER_SIZE - 3, 0, 3);
     	}
 
-    	snprintf(lines[i], sizeof(lines[0]), "%s = %s", ePidGroup[i], ePID);
+    	vlmcsd_snprintf(lines[i], sizeof(lines[0]), "%s = %s", ePidGroup[i], ePID);
 
     	if (response.MajorVer > 5)
     	{
     		len = strlen(lines[i]);
-    		snprintf (lines[i] + len, sizeof(lines[0]) - len, " / %02X %02X %02X %02X %02X %02X %02X %02X", hwid[0], hwid[1], hwid[2], hwid[3], hwid[4], hwid[5], hwid[6], hwid[7]);
+    		vlmcsd_snprintf (lines[i] + len, sizeof(lines[0]) - len, " / %02X %02X %02X %02X %02X %02X %02X %02X", hwid[0], hwid[1], hwid[2], hwid[3], hwid[4], hwid[5], hwid[6], hwid[7]);
     	}
 
 		len = strlen(lines[i]);
-    	snprintf(lines[i] + len, sizeof(lines[0]) - len, "\n");
+    	vlmcsd_snprintf(lines[i] + len, sizeof(lines[0]) - len, "\n");
 
     }
 
@@ -1188,7 +1208,7 @@ static void grabServerData()
 }
 
 
-int client_main(const int argc, CARGV argv)
+int client_main(int argc, CARGV argv)
 {
 	#if defined(_WIN32) && !defined(USE_MSRPC)
 
@@ -1354,10 +1374,10 @@ static void CreateRequestBase(REQUEST *Request)
 	{
 		int len, len2;
 		unsigned int index = rand() % _countof(ClientDnsNames.first);
-		len = utf8_to_ucs2(Request->WorkstationName, ClientDnsNames.first[index], WORKSTATION_NAME_BUFFER, WORKSTATION_NAME_BUFFER * 3);
+		len = (int)utf8_to_ucs2(Request->WorkstationName, ClientDnsNames.first[index], WORKSTATION_NAME_BUFFER, WORKSTATION_NAME_BUFFER * 3);
 
 		index = rand() % _countof(ClientDnsNames.second);
-		len2 = utf8_to_ucs2(Request->WorkstationName + len, ClientDnsNames.second[index], WORKSTATION_NAME_BUFFER, WORKSTATION_NAME_BUFFER * 3);
+		len2 = (int)utf8_to_ucs2(Request->WorkstationName + len, ClientDnsNames.second[index], WORKSTATION_NAME_BUFFER, WORKSTATION_NAME_BUFFER * 3);
 
 		index = rand() % _countof(ClientDnsNames.tld);
 		utf8_to_ucs2(Request->WorkstationName + len + len2, ClientDnsNames.tld[index], WORKSTATION_NAME_BUFFER, WORKSTATION_NAME_BUFFER * 3);

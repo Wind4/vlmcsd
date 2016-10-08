@@ -1,6 +1,10 @@
 #ifndef __types_h
 #define __types_h
 
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #ifndef CONFIG
 #define CONFIG "config.h"
 #endif // CONFIG
@@ -57,11 +61,6 @@
 #endif // __GNUC__
 #endif // alloca
 
-#ifndef alloca
-#if _MSC_VER
-#define alloca _malloca
-#endif // _MSC_VER
-#endif // alloca
 
 #ifndef alloca
 #ifdef __has_builtin // clang feature test
@@ -72,8 +71,15 @@
 #endif // alloca
 
 #ifndef alloca
+#if !_MSC_VER
 #include <alloca.h>
+#else
+#include <malloc.h>
+//#define alloca _malloca
 #endif
+//#define alloca _malloca
+//#endif // _MSC_VER
+#endif // alloca
 
 #ifndef __packed
 #if _MSC_VER
@@ -84,11 +90,19 @@
 #endif
 
 #ifndef __pure
+#if _MSC_VER
+#define __pure
+#else
 #define __pure	  __attribute__((pure))
+#endif
 #endif
 
 #ifndef __noreturn
+#if _MSC_VER
+#define __noreturn __declspec(noreturn)
+#else
 #define __noreturn	__attribute__((noreturn))
+#endif
 #endif
 
 #define restrict	__restrict
@@ -157,7 +171,7 @@ typedef uint8_t ProdListIndex_t;
 
 // Stupid MingW just uses rand() from msvcrt.dll which uses RAND_MAX of 0x7fff
 #if RAND_MAX < 0x7fffffff
-#define rand32(x) ((uint32_t)((rand(x) << 17) | (rand(x) << 2) | (rand(x) & 3)))
+#define rand32() ((uint32_t)((rand() << 17) | (rand() << 2) | (rand() & 3)))
 #elif RAND_MAX < 0xffffffff
 #define rand32(x) ((uint32_t)((rand(x) << 1) | (rand(x) & 1)))
 #else
@@ -285,11 +299,11 @@ typedef void* sockopt_t;
 #undef IsEqualGUID
 #define IsEqualGUID(a, b)  ( !memcmp(a, b, sizeof(GUID)) )
 
-#ifndef __stdcall
+#if !defined(__stdcall) && !_MSC_VER
 #define __stdcall
 #endif
 
-#ifndef __cdecl
+#if !defined(__cdecl) && !_MSC_VER
 #define __cdecl
 #endif
 
@@ -300,5 +314,19 @@ typedef struct {
 	DWORD RpcAssocGroup;
 } CLDATA, *const PCLDATA;
 
+
+#ifdef _MSC_VER
+#define strcasecmp _stricmp
+#define strncasecmp _strnicmp
+#define vlmcsd_snprintf _snprintf
+#define vlmcsd_vsnprintf _vsnprintf
+#define vlmcsd_unlink DeleteFile
+#define vlmcsd_strtoll strtol // TODO: Get some 64-bit strtoll
+#else // !_MSC_VER
+#define vlmcsd_snprintf snprintf
+#define vlmcsd_vsnprintf vsnprintf
+#define vlmcsd_strtoll strtoll
+#define vlmcsd_unlink unlink
+#endif  // !_MSC_VER
 
 #endif // __types_h

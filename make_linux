@@ -70,10 +70,10 @@ export STAGING_DIR=.
 
 
 # Windows 32-bit using MingW32-w64 toolchain on Ubuntu Linux
-export CLIENT_NAME=binaries/Windows/intel/vlmcs-Windows-x86.exe
-export PROGRAM_NAME=binaries/Windows/intel/vlmcsd-Windows-x86.exe
-export MULTI_NAME=binaries/Windows/intel/vlmcsdmulti-Windows-x86.exe
-export DLL_NAME=binaries/Windows/intel/libkms32.dll
+export CLIENT_NAME=binaries/Windows/intel/vlmcs-Windows-x86-gcc.exe
+export PROGRAM_NAME=binaries/Windows/intel/vlmcsd-Windows-x86-gcc.exe
+export MULTI_NAME=binaries/Windows/intel/vlmcsdmulti-Windows-x86-gcc.exe
+export DLL_NAME=binaries/Windows/intel/libkms32-gcc.dll
 export THREADS=1
 export CFLAGS="$SMALLCC"
 export CC=i686-w64-mingw32-gcc
@@ -131,10 +131,10 @@ fi
 
 
 # Windows 64-bit using MingW32-w64 toolchain on Ubuntu Linux
-export CLIENT_NAME=binaries/Windows/intel/vlmcs-Windows-x64.exe
-export PROGRAM_NAME=binaries/Windows/intel/vlmcsd-Windows-x64.exe
-export MULTI_NAME=binaries/Windows/intel/vlmcsdmulti-Windows-x64.exe
-export DLL_NAME=binaries/Windows/intel/libkms64.dll
+export CLIENT_NAME=binaries/Windows/intel/vlmcs-Windows-x64-gcc.exe
+export PROGRAM_NAME=binaries/Windows/intel/vlmcsd-Windows-x64-gcc.exe
+export MULTI_NAME=binaries/Windows/intel/vlmcsdmulti-Windows-x64-gcc.exe
+export DLL_NAME=binaries/Windows/intel/libkms64-gcc.dll
 export THREADS=1
 export CFLAGS="$SMALLCC"
 export CC=x86_64-w64-mingw32-gcc

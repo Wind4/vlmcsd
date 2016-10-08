@@ -16,9 +16,7 @@ extern char *fn_log;
 //int main(int argc, CARGV);
 extern void cleanup();
 
-#ifdef _NTSERVICE
 int newmain();
-#endif
 
 #if MULTI_CALL_BINARY < 1
 #define server_main main

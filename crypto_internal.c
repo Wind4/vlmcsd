@@ -95,7 +95,7 @@ static void Sha256Update(Sha256Ctx *Ctx, BYTE *data, size_t len)
 	unsigned int  b_len = Ctx->Len & 63,
 								r_len = (b_len ^ 63) + 1;
 
-	Ctx->Len += len;
+	Ctx->Len += (unsigned int)len;
 
 	if ( len < r_len )
 	{

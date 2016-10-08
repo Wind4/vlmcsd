@@ -6,7 +6,11 @@
 #endif // CONFIG
 #include CONFIG
 
+#if _MSC_VER
+#include <time.h>
+#else
 #include <sys/time.h>
+#endif // _MSC_VER
 #include <stdlib.h>
 #include "types.h"
 //

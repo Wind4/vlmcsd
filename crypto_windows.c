@@ -39,7 +39,7 @@ static int_fast8_t AcquireCryptContext()
 {
 	if (!hRsaAesProvider)
 	{
-		return CryptAcquireContextW
+		return (int_fast8_t)CryptAcquireContextW
 		(
 			&hRsaAesProvider,		// Provider handle
 			NULL,					// No key container name
@@ -163,7 +163,7 @@ int_fast8_t Sha256Hmac(const BYTE* key, BYTE* restrict data, DWORD len, BYTE* re
 	if (hKey) CryptDestroyKey(hKey);
 	if (hHmacHash) CryptDestroyHash(hHmacHash);
 
-	return success;
+	return (int_fast8_t)success;
 }
 
 #endif // _WIN32 || __CYGWIN__

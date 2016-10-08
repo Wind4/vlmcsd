@@ -96,7 +96,7 @@ typedef enum __ns_class {
 
 #endif
 
-int getKmsServerList(kms_server_dns_ptr** serverlist, const char *restrict query);
+int getKmsServerList(kms_server_dns_ptr** serverlist, const char *const restrict query);
 void sortSrvRecords(kms_server_dns_ptr* serverlist, const int answers);
 
 #endif // NO_DNS

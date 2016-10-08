@@ -3,6 +3,10 @@
 #endif // CONFIG
 #include CONFIG
 
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
@@ -200,8 +204,8 @@ const KmsIdList ExtendedProductList [] = {
 		{ { 0xb3ca044e, 0xa358, 0x4d68, { 0x98, 0x83, 0xaa, 0xa2, 0x94, 0x1a, 0xca, 0x99, } } /*b3ca044e-a358-4d68-9883-aaa2941aca99*/, LOGTEXT("Windows Server 2012 R2 Standard"),                EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2012R2 },
 
 		// Windows Server 2016
-		{ { 0x7b4433f4, 0xb1e7, 0x4788, { 0x89, 0x5a, 0xc4, 0x53, 0x78, 0xd3, 0x82, 0x53, } } /*7b4433f4-b1e7-4788-895a-c45378d38253*/, LOGTEXT("Windows Server 2016 Azure Core"),                 EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2016 },
-		{ { 0x3dbf341b, 0x5f6c, 0x4fa7, { 0xb9, 0x36, 0x69, 0x9d, 0xce, 0x9e, 0x26, 0x3f, } } /*3dbf341b-5f6c-4fa7-b936-699dce9e263f*/, LOGTEXT("Windows Server 2016 Cloud Storage"),              EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2016 },
+		{ { 0x3dbf341b, 0x5f6c, 0x4fa7, { 0xb9, 0x36, 0x69, 0x9d, 0xce, 0x9e, 0x26, 0x3f, } } /*3dbf341b-5f6c-4fa7-b936-699dce9e263f*/, LOGTEXT("Windows Server 2016 Azure Core"),                 EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2016 },
+		{ { 0x7b4433f4, 0xb1e7, 0x4788, { 0x89, 0x5a, 0xc4, 0x53, 0x78, 0xd3, 0x82, 0x53, } } /*7b4433f4-b1e7-4788-895a-c45378d38253*/, LOGTEXT("Windows Server 2016 Cloud Storage"),              EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2016 },
 		{ { 0x21c56779, 0xb449, 0x4d20, { 0xad, 0xfc, 0xee, 0xce, 0x0e, 0x1a, 0xd7, 0x4b, } } /*21c56779-b449-4d20-adfc-eece0e1ad74b*/, LOGTEXT("Windows Server 2016 Datacenter"),                 EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2016 },
 		{ { 0x2b5a1b0f, 0xa5ab, 0x4c54, { 0xac, 0x2f, 0xa6, 0xd9, 0x48, 0x24, 0xa2, 0x83, } } /*2b5a1b0f-a5ab-4c54-ac2f-a6d94824a283*/, LOGTEXT("Windows Server 2016 Essentials"),                 EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2016 },
 		{ { 0x8c1c5410, 0x9f39, 0x4805, { 0x8c, 0x9d, 0x63, 0xa0, 0x77, 0x06, 0x35, 0x8f, } } /*8c1c5410-9f39-4805-8c9d-63a07706358f*/, LOGTEXT("Windows Server 2016 Standard"),                   EPID_WINDOWS,    APP_ID_WINDOWS,    KMS_ID_WIN2016 },
@@ -495,6 +499,10 @@ static void generateRandomPid(int index, char *const szPid, int serverType, int1
 	time_t maxTime, kmsTime;
 	time(&maxTime);
 
+#	ifndef BUILD_TIME
+#	define BUILD_TIME 1474752907
+#   endif
+
 	if (maxTime < (time_t)BUILD_TIME) // Just in case the system time is < 10/17/2013 1:00 pm
 		maxTime = (time_t)BUILD_TIME;
 
@@ -748,7 +756,7 @@ static BOOL __stdcall CreateResponseBaseCallback(const REQUEST *const baseReques
 	memcpy(&baseResponse->CMID, &baseRequest->CMID, sizeof(GUID));
 	memcpy(&baseResponse->ClientTime, &baseRequest->ClientTime, sizeof(FILETIME));
 
-	baseResponse->Count  				= index == 1 || index == 2 ? LE32(10) : LE32(50);
+	baseResponse->Count  				= index > 0 && index < 4 ? LE32(10) : LE32(50);
 	baseResponse->VLActivationInterval	= LE32(VLActivationInterval);
 	baseResponse->VLRenewalInterval   	= LE32(VLRenewalInterval);
 
@@ -833,10 +841,10 @@ static int_fast8_t CreateV6Hmac(BYTE *const encrypt_start, const size_t encryptS
 	// The last 16 bytes of the hashed time slot are the actual HMAC key
 	if (!Sha256Hmac
 	(
-		hash + halfHashSize,								// Use last 16 bytes of SHA256 as HMAC key
-		encrypt_start,										// hash only the encrypted part of the v6 response
-		encryptSize - sizeof(((RESPONSE_V6*)0)->HMAC),		// encryptSize minus the HMAC itself
-		hash												// use same buffer for resulting hash where the key came from
+		hash + halfHashSize,									// Use last 16 bytes of SHA256 as HMAC key
+		encrypt_start,											// hash only the encrypted part of the v6 response
+		(DWORD)(encryptSize - sizeof(((RESPONSE_V6*)0)->HMAC)),	// encryptSize minus the HMAC itself
+		hash													// use same buffer for resulting hash where the key came from
 	))
 	{
 		return FALSE;

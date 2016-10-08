@@ -14,7 +14,7 @@
 SERVICE_STATUS          gSvcStatus;
 SERVICE_STATUS_HANDLE   gSvcStatusHandle;
 
-static VOID WINAPI ServiceCtrlHandler(const DWORD dwCtrl)
+VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl)
 {
    // Handle the requested control code.
 

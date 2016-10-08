@@ -309,7 +309,7 @@ int getKmsServerList(kms_server_dns_ptr** serverlist, const char *const restrict
 
 		memset(kms_server, 0, sizeof(kms_server_dns_t));
 
-		snprintf(kms_server->serverName, sizeof(kms_server->serverName), "%s:%hu", dns_iterator->Data.SRV.pNameTarget, dns_iterator->Data.SRV.wPort);
+		vlmcsd_snprintf(kms_server->serverName, sizeof(kms_server->serverName), "%s:%hu", dns_iterator->Data.SRV.pNameTarget, dns_iterator->Data.SRV.wPort);
 		kms_server->priority = dns_iterator->Data.SRV.wPriority;
 		kms_server->weight = dns_iterator->Data.SRV.wWeight;
 

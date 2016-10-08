@@ -2,6 +2,10 @@
 #define _DEFAULT_SOURCE
 #endif // _DEFAULT_SOURCE
 
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #ifndef CONFIG
 #define CONFIG "config.h"
 #endif // CONFIG
@@ -66,8 +70,12 @@ static void vlogger(const char *message, va_list args)
 
 	// We write everything to a string before we really log inside the critical section
 	// so formatting the output can be concurrent
-	int len = strlen(mbstr);
-	vsnprintf(mbstr + len, sizeof(mbstr) - len, message, args);
+	int len = (int)strlen(mbstr);
+//#	if !_MSC_VER
+	vlmcsd_vsnprintf(mbstr + len, sizeof(mbstr) - len, message, args);
+//#	else
+//	wvsprintf(mbstr + len, message, args);
+//#	endif
 
 	lock_mutex(&logmutex);
 	fprintf(log, "%s", mbstr);
@@ -104,7 +112,7 @@ int printerrorf(const char *const fmt, ...)
 #	ifdef IS_LIBRARY
 
 	size_t len = strlen(ErrorMessage);
-	vsnprintf(ErrorMessage + len, MESSAGE_BUFFER_SIZE - len - 1, fmt, arglist);
+	vlmcsd_vsnprintf(ErrorMessage + len, MESSAGE_BUFFER_SIZE - len - 1, fmt, arglist);
 
 #	else // !IS_LIBRARY
 

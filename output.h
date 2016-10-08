@@ -7,6 +7,7 @@
 #include CONFIG
 
 #include <errno.h>
+#include "types.h"
 #include "kms.h"
 
 typedef int (*PRINTFUNC)(const char *const fmt, ...);

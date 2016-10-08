@@ -62,7 +62,7 @@ EXTERNC __declspec(EXTERNAL) SOCKET __cdecl ConnectToServer(const char* host, co
 
 	size_t adrlen = strlen(host) + 16;
 	char* RemoteAddr = (char*)alloca(adrlen);
-	snprintf(RemoteAddr, adrlen, "[%s]:%s", host, port);
+	vlmcsd_snprintf(RemoteAddr, adrlen, "[%s]:%s", host, port);
 	sock = connectToAddress(RemoteAddr, addressFamily, FALSE);
 
 	if (sock == INVALID_RPCCTX)
@@ -161,7 +161,7 @@ EXTERNC __declspec(EXTERNAL) DWORD __cdecl StartKmsServer(const int port, Reques
 #	endif // _WIN32
 
 	defaultport = vlmcsd_malloc(16);
-	snprintf((char*)defaultport, (size_t)16, "%i", port);
+	vlmcsd_snprintf((char*)defaultport, (size_t)16, "%i", port);
 
 	CreateResponseBase = requestCallback;
 	error = listenOnAllAddresses();

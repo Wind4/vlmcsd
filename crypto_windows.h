@@ -11,6 +11,9 @@
 #else // _WIN32 || __CYGWIN__
 
 #include "types.h"
+#if _MSC_VER
+#include "Wincrypt.h"
+#endif
 
 typedef struct _Sha2356HmacCtx
 {
@@ -18,7 +21,7 @@ typedef struct _Sha2356HmacCtx
 	HCRYPTKEY hKey;
 } Sha256HmacCtx;
 
-int_fast8_t Sha256(BYTE *data, DWORD len, BYTE *hash);
+int_fast8_t Sha256(BYTE* restrict data, DWORD DataSize, BYTE* restrict hash);
 int_fast8_t Sha256Hmac(const BYTE* key, BYTE* restrict data, DWORD len, BYTE* restrict hmac);
 
 /*int_fast8_t Sha256HmacInit(Sha256HmacCtx *Ctx, BYTE *key, uint8_t keySize);

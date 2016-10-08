@@ -33,7 +33,9 @@
 #endif
 
 #include <signal.h>
+#if !_MSC_VER
 #include <unistd.h>
+#endif
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>

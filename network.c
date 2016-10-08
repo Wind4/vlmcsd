@@ -40,11 +40,10 @@
 
 #include "network.h"
 #include "endian.h"
-#include "output.h"
+//#include "output.h"
 #include "helpers.h"
 #include "shared_globals.h"
 #include "rpc.h"
-
 
 #ifndef _WIN32
 typedef ssize_t (*sendrecv_t)(int, void*, size_t, int);
@@ -92,7 +91,7 @@ static int_fast8_t ip2str(char *restrict result, const size_t resultLength, cons
 		return FALSE;
 	}
 
-	if ((unsigned int)snprintf(result, resultLength, socketAddress->sa_family == AF_INET6 ? fIPv6 : fIPv4, ipAddress, portNumber) > resultLength) return FALSE;
+	if ((unsigned int)vlmcsd_snprintf(result, resultLength, socketAddress->sa_family == AF_INET6 ? fIPv6 : fIPv4, ipAddress, portNumber) > resultLength) return FALSE;
 	return TRUE;
 }
 
@@ -245,7 +244,7 @@ SOCKET connectToAddress(const char *const addr, const int AddressFamily, int_fas
 		// struct sockaddr_in* addr4 = (struct sockaddr_in*)sa->ai_addr;
 		// struct sockaddr_in6* addr6 = (struct sockaddr_in6*)sa->ai_addr;
 
-		if (ip2str(szAddr, sizeof(szAddr), sa->ai_addr, sa->ai_addrlen))
+		if (ip2str(szAddr, sizeof(szAddr), sa->ai_addr, (socklen_t)sa->ai_addrlen))
 		{
 			if (showHostName)
 				printf("Connecting to %s (%s) ... ", addr, szAddr);
@@ -274,7 +273,7 @@ SOCKET connectToAddress(const char *const addr, const int AddressFamily, int_fas
 		setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, (sockopt_t)&to, sizeof(to));
 #		endif // !defined(NO_TIMEOUT) && !__minix__
 
-		if (!connect(s, sa->ai_addr, sa->ai_addrlen))
+		if (!connect(s, sa->ai_addr, (int)sa->ai_addrlen))
 		{
 			printf("successful\n");
 			break;
@@ -310,7 +309,7 @@ static int_fast8_t allowSocketReuse(SOCKET s)
 	if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (sockopt_t)&socketOption, sizeof(socketOption)))
 	{
 #		ifdef _PEDANTIC
-		printerrorf("Warning: %s does not support socket option SO_REUSEADDR: %s\n", ipstr, vlmcsd_strerror(socket_errno));
+		printerrorf("Warning: Socket option SO_REUSEADDR unsupported: %s\n", vlmcsd_strerror(socket_errno));
 #		endif // _PEDANTIC
 	}
 
@@ -403,7 +402,7 @@ void getPrivateIPAddresses(int* numAddresses, char*** ipAddresses)
 
 	for (currentAdapter = firstAdapter, *numAddresses = 0; currentAdapter != NULL; currentAdapter = currentAdapter->Next)
 	{
-		PIP_ADAPTER_UNICAST_ADDRESS_XP currentAddress;
+		PIP_ADAPTER_UNICAST_ADDRESS currentAddress;
 		int length;
 
 		if (currentAdapter->OperStatus != IfOperStatusUp) continue;
@@ -418,7 +417,7 @@ void getPrivateIPAddresses(int* numAddresses, char*** ipAddresses)
 
 	for (currentAdapter = firstAdapter, *numAddresses = 0; currentAdapter != NULL; currentAdapter = currentAdapter->Next)
 	{
-		PIP_ADAPTER_UNICAST_ADDRESS_XP currentAddress;
+		PIP_ADAPTER_UNICAST_ADDRESS currentAddress;
 		int length;
 
 		if (currentAdapter->OperStatus != IfOperStatusUp) continue;
@@ -521,7 +520,7 @@ static int listenOnAddress(const struct addrinfo *const ai, SOCKET *s)
 	int error;
 	char ipstr[64];
 
-	ip2str(ipstr, sizeof(ipstr), ai->ai_addr, ai->ai_addrlen);
+	ip2str(ipstr, sizeof(ipstr), ai->ai_addr, (socklen_t)ai->ai_addrlen);
 
 	//*s = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
 	*s = socket(ai->ai_family, SOCK_STREAM, IPPROTO_TCP);
@@ -615,7 +614,7 @@ static int listenOnAddress(const struct addrinfo *const ai, SOCKET *s)
 
 #	endif // HAVE_FREEBIND
 
-	if (bind(*s, ai->ai_addr, ai->ai_addrlen) || listen(*s, SOMAXCONN))
+	if (bind(*s, ai->ai_addr, (int)ai->ai_addrlen) || listen(*s, SOMAXCONN))
 	{
 		error = socket_errno;
 		printerrorf("Warning: %s: %s\n", ipstr, vlmcsd_strerror(error));
@@ -696,7 +695,7 @@ static SOCKET network_accept_any()
         if (SocketList[i] > maxSocket) maxSocket = SocketList[i];
     }
 
-    status = select(maxSocket + 1, &ListeningSocketsList, NULL, NULL, NULL);
+    status = select((int)maxSocket + 1, &ListeningSocketsList, NULL, NULL, NULL);
 
     if (status < 0) return INVALID_SOCKET;
 
@@ -871,7 +870,7 @@ static void *serveClientThreadProc (PCLDATA clData)
 #ifndef NO_SOCKETS
 
 #if defined(USE_THREADS) && (defined(_WIN32) || defined(__CYGWIN__)) // Windows Threads
-static int serveClientAsyncWinThreads(const PCLDATA thr_CLData)
+static int serveClientAsyncWinThreads(PCLDATA thr_CLData)
 {
 	wait_sem();
 

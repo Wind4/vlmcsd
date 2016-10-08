@@ -14,12 +14,10 @@
 #include "endian.h"
 #include <stdint.h>
 
-//#define AES_ROUNDS      (10)
 #define AES_KEY_BYTES   (16) // 128 Bits
 #define AES_BLOCK_BYTES (16)
 #define AES_BLOCK_WORDS (AES_BLOCK_BYTES / sizeof(DWORD))
 #define AES_KEY_DWORDS  (AES_KEY_BYTES / sizeof(DWORD))
-//#define V4_ROUNDS		(11)
 #define V4_KEY_BYTES	(20) // 160 Bits
 
 #define ROR32(v, n)  ( (v) << (32 - n) | (v) >> n )
@@ -39,7 +37,7 @@ typedef struct {
 void AesInitKey(AesCtx *Ctx, const BYTE *Key, int_fast8_t IsV6, int AesKeyBytes);
 void AesEncryptBlock(const AesCtx *const Ctx, BYTE *block);
 void AesDecryptBlock(const AesCtx *const Ctx, BYTE *block);
-void AesEncryptCbc(const AesCtx *const Ctx, BYTE *iv, BYTE *data, size_t *len);
+void AesEncryptCbc(const AesCtx *const Ctx, BYTE *restrict iv, BYTE *restrict data, size_t *restrict len);
 void AesDecryptCbc(const AesCtx *const Ctx, BYTE *iv, BYTE *data, size_t len);
 void MixColumnsR(BYTE *restrict state);
 

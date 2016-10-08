@@ -1,3 +1,7 @@
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #ifndef CONFIG
 #define CONFIG "config.h"
 #endif // CONFIG
@@ -24,6 +28,10 @@
 #include <string.h>
 #include <errno.h>
 #include <stdint.h>
+
+#if _MSC_VER
+#include "wingetopt.h"
+#endif
 
 #ifndef _WIN32
 #include <pwd.h>
@@ -73,6 +81,7 @@
 #include "helpers.h"
 
 static const char* const optstring = "N:B:m:t:w:0:3:6:H:A:R:u:g:L:p:i:P:l:r:U:W:C:F:o:T:SseDdVvqkZ";
+
 
 #if !defined(NO_SOCKETS) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 static uint_fast8_t maxsockets = 0;
@@ -170,28 +179,28 @@ static int shmid = -1;
 #ifdef __NR_shmget
 static int shmget(key_t key, size_t size, int shmflg)
 {
-       return syscall(__NR_shmget, key, size, shmflg);
+	return syscall(__NR_shmget, key, size, shmflg);
 }
 #endif // __NR_shmget
 
 #ifdef __NR_shmat
 static void *shmat(int shmid, const void *shmaddr, int shmflg)
 {
-       return (void *)syscall(__NR_shmat, shmid, shmaddr, shmflg);
+	return (void *)syscall(__NR_shmat, shmid, shmaddr, shmflg);
 }
 #endif // __NR_shmat
 
 #ifdef __NR_shmdt
 static int shmdt(const void *shmaddr)
 {
-  return syscall(__NR_shmdt, shmaddr);
+	return syscall(__NR_shmdt, shmaddr);
 }
 #endif // __NR_shmdt
 
 #ifdef __NR_shmctl
 static int shmctl(int shmid, int cmd, /*struct shmid_ds*/void *buf)
 {
-  return syscall(__NR_shmctl, shmid, cmd, buf);
+	return syscall(__NR_shmctl, shmid, cmd, buf);
 }
 #endif // __NR_shmctl
 
@@ -262,102 +271,102 @@ static __noreturn void usage()
 static __noreturn void usage()
 {
 	printerrorf("vlmcsd %s\n"
-			"\nUsage:\n"
-			"   %s [ options ]\n\n"
-			"Where:\n"
-			#ifndef NO_CL_PIDS
-			"  -w <ePID>		always use <ePID> for Windows\n"
-			"  -0 <ePID>		always use <ePID> for Office2010\n"
-			"  -3 <ePID>		always use <ePID> for Office2013\n"
-			"  -6 <ePID>		always use <ePID> for Office2016\n"
-			"  -H <HwId>		always use hardware Id <HwId>\n"
-			#endif // NO_CL_PIDS
-			#if !defined(_WIN32) && !defined(NO_USER_SWITCH)
-			"  -u <user>		set uid to <user>\n"
-			"  -g <group>		set gid to <group>\n"
-			#endif // !defined(_WIN32) && !defined(NO_USER_SWITCH)
-			#ifndef NO_RANDOM_EPID
-			"  -r 0|1|2\t\tset ePID randomization level (default 1)\n"
-			"  -C <LCID>\t\tuse fixed <LCID> in random ePIDs\n"
-			#endif // NO_RANDOM_EPID
-			#if !defined(NO_PRIVATE_IP_DETECT)
-			#if HAVE_GETIFADDR
-			"  -o 0|1|2|3\t\tset protection level against clients with public IP addresses (default 0)\n"
-			#else // !HAVE_GETIFADDR
-			#ifndef USE_MSRPC
-			"  -o 0|2\t\tset protection level against clients with public IP addresses (default 0)\n"
-			#else // USE_MSRPC
-			"  -o 0|2\t\tset protection level against clients with public IP addresses (default 0). Limited use with MS RPC\n"
-			#endif // USE_MSRPC
-			#endif // !HAVE_GETIFADDR
-			#endif // !defined(NO_PRIVATE_IP_DETECT)
-			#ifndef NO_SOCKETS
-			#if !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
-			"  -L <address>[:<port>]\tlisten on IP address <address> with optional <port>\n"
-			"  -P <port>\t\tset TCP port <port> for subsequent -L statements (default 1688)\n"
-			#if HAVE_FREEBIND
-			"  -F0, -F1\t\tdisable/enable binding to foreign IP addresses\n"
-			#endif // HAVE_FREEBIND
-			#else // defined(USE_MSRPC) || defined(SIMPLE_SOCKETS)
-			"  -P <port>\t\tuse TCP port <port> (default 1688)\n"
-			#endif // defined(USE_MSRPC) || defined(SIMPLE_SOCKETS)
-			#if !defined(NO_LIMIT) && !__minix__
-			"  -m <clients>\t\tHandle max. <clients> simultaneously (default no limit)\n"
-			#endif // !defined(NO_LIMIT) && !__minix__
-			#ifdef _NTSERVICE
-			"  -s			install vlmcsd as an NT service. Ignores -e"
-			#ifndef _WIN32
-			", -f and -D"
-			#endif // _WIN32
-			"\n"
-			"  -S			remove vlmcsd service. Ignores all other options\n"
-			"  -U <username>		run NT service as <username>. Must be used with -s\n"
-			"  -W <password>		optional <password> for -U. Must be used with -s\n"
-			#endif // _NTSERVICE
-			#ifndef NO_LOG
-			"  -e			log to stdout\n"
-			#endif // NO_LOG
-			#ifndef _WIN32 //
-			"  -D			run in foreground\n"
-			#else // _WIN32
-			"  -D			does nothing. Provided for compatibility with POSIX versions only\n"
-			#endif // _WIN32
-			#endif // NO_SOCKETS
-			#ifndef USE_MSRPC
-			#if !defined(NO_TIMEOUT) && !__minix__
-			"  -t <seconds>\t\tdisconnect clients after <seconds> of inactivity (default 30)\n"
-			#endif // !defined(NO_TIMEOUT) && !__minix__
-			"  -d\t\t\tdisconnect clients after each request\n"
-			"  -k\t\t\tdon't disconnect clients after each request (default)\n"
-			"  -N0, -N1\t\tdisable/enable NDR64\n"
-			"  -B0, -B1\t\tdisable/enable bind time feature negotiation\n"
-			#endif // USE_MSRPC
-			#ifndef NO_PID_FILE
-			"  -p <file>		write pid to <file>\n"
-			#endif // NO_PID_FILE
-			#ifndef NO_INI_FILE
-			"  -i <file>\t\tuse config file <file>\n"
-			#endif // NO_INI_FILE
-			#ifndef NO_CUSTOM_INTERVALS
-			"  -R <interval>		renew activation every <interval> (default 1w)\n"
-			"  -A <interval>		retry activation every <interval> (default 2h)\n"
-			#endif // NO_CUSTOM_INTERVALS
-			#ifndef NO_LOG
-			#ifndef _WIN32
-			"  -l syslog		log to syslog\n"
-			#endif // _WIN32
-			"  -l <file>		log to <file>\n"
-			"  -T0, -T1\t\tdisable/enable logging with time and date (default -T1)\n"
-			#ifndef NO_VERBOSE_LOG
-			"  -v\t\t\tlog verbose\n"
-			"  -q\t\t\tdon't log verbose (default)\n"
-			#endif // NO_VERBOSE_LOG
-			#endif // NO_LOG
-			#ifndef NO_VERSION_INFORMATION
-			"  -V			display version information and exit\n"
-			#endif // NO_VERSION_INFORMATION
-			,
-			Version, global_argv[0]);
+		"\nUsage:\n"
+		"   %s [ options ]\n\n"
+		"Where:\n"
+#ifndef NO_CL_PIDS
+		"  -w <ePID>		always use <ePID> for Windows\n"
+		"  -0 <ePID>		always use <ePID> for Office2010\n"
+		"  -3 <ePID>		always use <ePID> for Office2013\n"
+		"  -6 <ePID>		always use <ePID> for Office2016\n"
+		"  -H <HwId>		always use hardware Id <HwId>\n"
+#endif // NO_CL_PIDS
+#if !defined(_WIN32) && !defined(NO_USER_SWITCH)
+		"  -u <user>		set uid to <user>\n"
+		"  -g <group>		set gid to <group>\n"
+#endif // !defined(_WIN32) && !defined(NO_USER_SWITCH)
+#ifndef NO_RANDOM_EPID
+		"  -r 0|1|2\t\tset ePID randomization level (default 1)\n"
+		"  -C <LCID>\t\tuse fixed <LCID> in random ePIDs\n"
+#endif // NO_RANDOM_EPID
+#if !defined(NO_PRIVATE_IP_DETECT)
+#if HAVE_GETIFADDR
+		"  -o 0|1|2|3\t\tset protection level against clients with public IP addresses (default 0)\n"
+#else // !HAVE_GETIFADDR
+#ifndef USE_MSRPC
+		"  -o 0|2\t\tset protection level against clients with public IP addresses (default 0)\n"
+#else // USE_MSRPC
+		"  -o 0|2\t\tset protection level against clients with public IP addresses (default 0). Limited use with MS RPC\n"
+#endif // USE_MSRPC
+#endif // !HAVE_GETIFADDR
+#endif // !defined(NO_PRIVATE_IP_DETECT)
+#ifndef NO_SOCKETS
+#if !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
+		"  -L <address>[:<port>]\tlisten on IP address <address> with optional <port>\n"
+		"  -P <port>\t\tset TCP port <port> for subsequent -L statements (default 1688)\n"
+#if HAVE_FREEBIND
+		"  -F0, -F1\t\tdisable/enable binding to foreign IP addresses\n"
+#endif // HAVE_FREEBIND
+#else // defined(USE_MSRPC) || defined(SIMPLE_SOCKETS)
+		"  -P <port>\t\tuse TCP port <port> (default 1688)\n"
+#endif // defined(USE_MSRPC) || defined(SIMPLE_SOCKETS)
+#if !defined(NO_LIMIT) && !__minix__
+		"  -m <clients>\t\tHandle max. <clients> simultaneously (default no limit)\n"
+#endif // !defined(NO_LIMIT) && !__minix__
+#ifdef _NTSERVICE
+		"  -s			install vlmcsd as an NT service. Ignores -e"
+#ifndef _WIN32
+		", -f and -D"
+#endif // _WIN32
+		"\n"
+		"  -S			remove vlmcsd service. Ignores all other options\n"
+		"  -U <username>		run NT service as <username>. Must be used with -s\n"
+		"  -W <password>		optional <password> for -U. Must be used with -s\n"
+#endif // _NTSERVICE
+#ifndef NO_LOG
+		"  -e			log to stdout\n"
+#endif // NO_LOG
+#ifndef _WIN32 //
+		"  -D			run in foreground\n"
+#else // _WIN32
+		"  -D			does nothing. Provided for compatibility with POSIX versions only\n"
+#endif // _WIN32
+#endif // NO_SOCKETS
+#ifndef USE_MSRPC
+#if !defined(NO_TIMEOUT) && !__minix__
+		"  -t <seconds>\t\tdisconnect clients after <seconds> of inactivity (default 30)\n"
+#endif // !defined(NO_TIMEOUT) && !__minix__
+		"  -d\t\t\tdisconnect clients after each request\n"
+		"  -k\t\t\tdon't disconnect clients after each request (default)\n"
+		"  -N0, -N1\t\tdisable/enable NDR64\n"
+		"  -B0, -B1\t\tdisable/enable bind time feature negotiation\n"
+#endif // USE_MSRPC
+#ifndef NO_PID_FILE
+		"  -p <file>		write pid to <file>\n"
+#endif // NO_PID_FILE
+#ifndef NO_INI_FILE
+		"  -i <file>\t\tuse config file <file>\n"
+#endif // NO_INI_FILE
+#ifndef NO_CUSTOM_INTERVALS
+		"  -R <interval>		renew activation every <interval> (default 1w)\n"
+		"  -A <interval>		retry activation every <interval> (default 2h)\n"
+#endif // NO_CUSTOM_INTERVALS
+#ifndef NO_LOG
+#ifndef _WIN32
+		"  -l syslog		log to syslog\n"
+#endif // _WIN32
+		"  -l <file>		log to <file>\n"
+		"  -T0, -T1\t\tdisable/enable logging with time and date (default -T1)\n"
+#ifndef NO_VERBOSE_LOG
+		"  -v\t\t\tlog verbose\n"
+		"  -q\t\t\tdon't log verbose (default)\n"
+#endif // NO_VERBOSE_LOG
+#endif // NO_LOG
+#ifndef NO_VERSION_INFORMATION
+		"  -V			display version information and exit\n"
+#endif // NO_VERSION_INFORMATION
+		,
+		Version, global_argv[0]);
 
 	exit(!0);
 }
@@ -371,27 +380,27 @@ __pure static DWORD timeSpanString2Minutes(const char *const restrict argument)
 {
 	char *unitId;
 
-	long long val = strtoll(argument, &unitId, 10);
+	long long val = vlmcsd_strtoll(argument, &unitId, 10);
 
-	switch(toupper((int)*unitId))
+	switch (toupper((int)*unitId))
 	{
-		case 0:
-		case 'M':
-			break;
-		case 'H':
-			val *= 60;
-			break;
-		case 'D':
-			val *= 60 * 24;
-			break;
-		case 'W':
-			val *= 60 * 24 * 7;
-			break;
-		case 'S':
-			val /= 60;
-			break;
-		default:
-			return 0;
+	case 0:
+	case 'M':
+		break;
+	case 'H':
+		val *= 60;
+		break;
+	case 'D':
+		val *= 60 * 24;
+		break;
+	case 'W':
+		val *= 60 * 24 * 7;
+		break;
+	case 'S':
+		val /= 60;
+		break;
+	default:
+		return 0;
 	}
 
 	if (val < 1) val = 1;
@@ -424,7 +433,7 @@ __pure static DWORD getTimeSpanFromCommandLine(const char *const restrict optarg
 	if (!val)
 	{
 		printerrorf("Fatal: No valid time span specified in option -%c.\n", optchar);
-		exit (!0);
+		exit(!0);
 	}
 
 	return (DWORD)val;
@@ -464,7 +473,7 @@ static BOOL getIniFileArgumentInt(unsigned int *result, const char *const argume
 
 	if (!stringToInt(argument, min, max, &tempResult))
 	{
-		snprintf(IniFileErrorBuffer, INIFILE_ERROR_BUFFERSIZE, "Must be integer between %u and %u", min, max);
+		vlmcsd_snprintf(IniFileErrorBuffer, INIFILE_ERROR_BUFFERSIZE, "Must be integer between %u and %u", min, max);
 		IniFileErrorMessage = IniFileErrorBuffer;
 		return FALSE;
 	}
@@ -492,7 +501,7 @@ static __pure int isControlCharOrSlash(const char c)
 
 static void iniFileLineNextWord(const char **s)
 {
-	while ( **s && isspace((int)**s) ) (*s)++;
+	while (**s && isspace((int)**s)) (*s)++;
 }
 
 
@@ -538,9 +547,9 @@ static BOOL setEpidFromIniFileLine(const char **s, const ProdListIndex_t index)
 
 	KmsResponseParameters[index].Epid = epidbuffer;
 
-	#ifndef NO_LOG
+#ifndef NO_LOG
 	KmsResponseParameters[index].EpidSource = fn_ini;
-	#endif //NO_LOG
+#endif //NO_LOG
 
 	return TRUE;
 }
@@ -552,134 +561,134 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 	BOOL success = TRUE;
 	const char *s = (const char*)iniarg;
 
-	switch(id)
+	switch (id)
 	{
-		case INI_PARAM_WINDOWS:
-			setEpidFromIniFileLine(&s, EPID_INDEX_WINDOWS);
-			setHwIdFromIniFileLine(&s, EPID_INDEX_WINDOWS);
-			break;
+	case INI_PARAM_WINDOWS:
+		setEpidFromIniFileLine(&s, EPID_INDEX_WINDOWS);
+		setHwIdFromIniFileLine(&s, EPID_INDEX_WINDOWS);
+		break;
 
-		case INI_PARAM_OFFICE2010:
-			setEpidFromIniFileLine(&s, EPID_INDEX_OFFICE2010);
-			setHwIdFromIniFileLine(&s, EPID_INDEX_OFFICE2010);
-			break;
+	case INI_PARAM_OFFICE2010:
+		setEpidFromIniFileLine(&s, EPID_INDEX_OFFICE2010);
+		setHwIdFromIniFileLine(&s, EPID_INDEX_OFFICE2010);
+		break;
 
-		case INI_PARAM_OFFICE2013:
-			setEpidFromIniFileLine(&s, EPID_INDEX_OFFICE2013);
-			setHwIdFromIniFileLine(&s, EPID_INDEX_OFFICE2013);
-			break;
+	case INI_PARAM_OFFICE2013:
+		setEpidFromIniFileLine(&s, EPID_INDEX_OFFICE2013);
+		setHwIdFromIniFileLine(&s, EPID_INDEX_OFFICE2013);
+		break;
 
-		case INI_PARAM_OFFICE2016:
-			setEpidFromIniFileLine(&s, EPID_INDEX_OFFICE2016);
-			setHwIdFromIniFileLine(&s, EPID_INDEX_OFFICE2016);
-			break;
+	case INI_PARAM_OFFICE2016:
+		setEpidFromIniFileLine(&s, EPID_INDEX_OFFICE2016);
+		setHwIdFromIniFileLine(&s, EPID_INDEX_OFFICE2016);
+		break;
 
 #	if !defined(NO_USER_SWITCH) && !defined(_WIN32)
 
-		case INI_PARAM_GID:
-		{
-			struct group *g;
-			IniFileErrorMessage = "Invalid group id or name";
-			if (!(gname = allocateStringArgument(iniarg))) return FALSE;
+	case INI_PARAM_GID:
+	{
+		struct group *g;
+		IniFileErrorMessage = "Invalid group id or name";
+		if (!(gname = allocateStringArgument(iniarg))) return FALSE;
 
-			if ((g = getgrnam(iniarg)))
-				gid = g->gr_gid;
-			else
-				success = !GetNumericId(&gid, iniarg);
-			break;
-		}
+		if ((g = getgrnam(iniarg)))
+			gid = g->gr_gid;
+		else
+			success = !GetNumericId(&gid, iniarg);
+		break;
+	}
 
-		case INI_PARAM_UID:
-		{
-			struct passwd *p;
-			IniFileErrorMessage = "Invalid user id or name";
-			if (!(uname = allocateStringArgument(iniarg))) return FALSE;
+	case INI_PARAM_UID:
+	{
+		struct passwd *p;
+		IniFileErrorMessage = "Invalid user id or name";
+		if (!(uname = allocateStringArgument(iniarg))) return FALSE;
 
-			if ((p = getpwnam(iniarg)))
-				uid = p->pw_uid;
-			else
-				success = !GetNumericId(&uid, iniarg);
-			break;
-		}
+		if ((p = getpwnam(iniarg)))
+			uid = p->pw_uid;
+		else
+			success = !GetNumericId(&uid, iniarg);
+		break;
+	}
 
 #	endif // !defined(NO_USER_SWITCH) && !defined(_WIN32)
 
 #	ifndef NO_RANDOM_EPID
 
-		case INI_PARAM_LCID:
-			success = getIniFileArgumentInt(&result, iniarg, 0, 32767);
-			if (success) Lcid = (uint16_t)result;
-			break;
+	case INI_PARAM_LCID:
+		success = getIniFileArgumentInt(&result, iniarg, 0, 32767);
+		if (success) Lcid = (uint16_t)result;
+		break;
 
-		case INI_PARAM_RANDOMIZATION_LEVEL:
-			success = getIniFileArgumentInt(&result, iniarg, 0, 2);
-			if (success) RandomizationLevel = (int_fast8_t)result;
-			break;
+	case INI_PARAM_RANDOMIZATION_LEVEL:
+		success = getIniFileArgumentInt(&result, iniarg, 0, 2);
+		if (success) RandomizationLevel = (int_fast8_t)result;
+		break;
 
 #	endif // NO_RANDOM_EPID
 
 #	if (defined(USE_MSRPC) || defined(SIMPLE_SOCKETS) || defined(HAVE_GETIFADDR)) && !defined(NO_SOCKETS)
 
-		case INI_PARAM_PORT:
-			defaultport = allocateStringArgument(iniarg);
-			break;
+	case INI_PARAM_PORT:
+		defaultport = allocateStringArgument(iniarg);
+		break;
 
 #	endif // (defined(USE_MSRPC) || defined(SIMPLE_SOCKETS) || defined(HAVE_GETIFADDR)) && !defined(NO_SOCKETS)
 
 #	if !defined(NO_SOCKETS) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 
-		case INI_PARAM_LISTEN:
-			maxsockets++;
-			return TRUE;
+	case INI_PARAM_LISTEN:
+		maxsockets++;
+		return TRUE;
 
 #	endif // !defined(NO_SOCKETS) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 #	if !defined(NO_LIMIT) && !defined(NO_SOCKETS) && !__minix__
 
-		case INI_PARAM_MAX_WORKERS:
+	case INI_PARAM_MAX_WORKERS:
 #			ifdef USE_MSRPC
-			success = getIniFileArgumentInt(&MaxTasks, iniarg, 1, RPC_C_LISTEN_MAX_CALLS_DEFAULT);
+		success = getIniFileArgumentInt(&MaxTasks, iniarg, 1, RPC_C_LISTEN_MAX_CALLS_DEFAULT);
 #			else // !USE_MSRPC
-			success = getIniFileArgumentInt(&MaxTasks, iniarg, 1, SEM_VALUE_MAX);
+		success = getIniFileArgumentInt(&MaxTasks, iniarg, 1, SEM_VALUE_MAX);
 #			endif // !USE_MSRPC
-			break;
+		break;
 
 #	endif // !defined(NO_LIMIT) && !defined(NO_SOCKETS) && !__minix__
 
 #	ifndef NO_PID_FILE
 
-		case INI_PARAM_PID_FILE:
-			fn_pid = allocateStringArgument(iniarg);
-			break;
+	case INI_PARAM_PID_FILE:
+		fn_pid = allocateStringArgument(iniarg);
+		break;
 
 #	endif // NO_PID_FILE
 
 #	ifndef  NO_LOG
 
-		case INI_PARAM_LOG_FILE:
-			fn_log = allocateStringArgument(iniarg);
-			break;
+	case INI_PARAM_LOG_FILE:
+		fn_log = allocateStringArgument(iniarg);
+		break;
 
-		case INI_PARAM_LOG_DATE_AND_TIME:
-			success = getIniFileArgumentBool(&LogDateAndTime, iniarg);
-			break;
+	case INI_PARAM_LOG_DATE_AND_TIME:
+		success = getIniFileArgumentBool(&LogDateAndTime, iniarg);
+		break;
 
 #	ifndef NO_VERBOSE_LOG
-		case INI_PARAM_LOG_VERBOSE:
-			success = getIniFileArgumentBool(&logverbose, iniarg);
-			break;
+	case INI_PARAM_LOG_VERBOSE:
+		success = getIniFileArgumentBool(&logverbose, iniarg);
+		break;
 
 #	endif // NO_VERBOSE_LOG
 #	endif // NO_LOG
 
 #	ifndef NO_CUSTOM_INTERVALS
 
-		case INI_PARAM_ACTIVATION_INTERVAL:
-			success = getTimeSpanFromIniFile(&VLActivationInterval, iniarg);
-			break;
+	case INI_PARAM_ACTIVATION_INTERVAL:
+		success = getTimeSpanFromIniFile(&VLActivationInterval, iniarg);
+		break;
 
-		case INI_PARAM_RENEWAL_INTERVAL:
-			success = getTimeSpanFromIniFile(&VLRenewalInterval, iniarg);
-			break;
+	case INI_PARAM_RENEWAL_INTERVAL:
+		success = getTimeSpanFromIniFile(&VLRenewalInterval, iniarg);
+		break;
 
 #	endif // NO_CUSTOM_INTERVALS
 
@@ -687,54 +696,54 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 
 #	if !defined(NO_TIMEOUT) && !__minix__
 
-		case INI_PARAM_CONNECTION_TIMEOUT:
-			success = getIniFileArgumentInt(&result, iniarg, 1, 600);
-			if (success) ServerTimeout = (DWORD)result;
-			break;
+	case INI_PARAM_CONNECTION_TIMEOUT:
+		success = getIniFileArgumentInt(&result, iniarg, 1, 600);
+		if (success) ServerTimeout = (DWORD)result;
+		break;
 
 #	endif // !defined(NO_TIMEOUT) && !__minix__
 
-		case INI_PARAM_DISCONNECT_IMMEDIATELY:
-			success = getIniFileArgumentBool(&DisconnectImmediately, iniarg);
-			break;
+	case INI_PARAM_DISCONNECT_IMMEDIATELY:
+		success = getIniFileArgumentBool(&DisconnectImmediately, iniarg);
+		break;
 
-		case INI_PARAM_RPC_NDR64:
-			success = getIniFileArgumentBool(&UseRpcNDR64, iniarg);
-			break;
+	case INI_PARAM_RPC_NDR64:
+		success = getIniFileArgumentBool(&UseRpcNDR64, iniarg);
+		break;
 
-		case INI_PARAM_RPC_BTFN:
-			success = getIniFileArgumentBool(&UseRpcBTFN, iniarg);
-			break;
+	case INI_PARAM_RPC_BTFN:
+		success = getIniFileArgumentBool(&UseRpcBTFN, iniarg);
+		break;
 
 #	endif // USE_MSRPC
 
 #	if HAVE_FREEBIND
 
-		case INI_PARAM_FREEBIND:
-			success = getIniFileArgumentBool(&freebind, iniarg);
-			break;
+	case INI_PARAM_FREEBIND:
+		success = getIniFileArgumentBool(&freebind, iniarg);
+		break;
 
 #	endif // HAVE_FREEBIND
 
 #	if !defined(NO_PRIVATE_IP_DETECT)
 
-		case INI_PARAM_PUBLIC_IP_PROTECTION_LEVEL:
-			success = getIniFileArgumentInt(&PublicIPProtectionLevel, iniarg, 0, 3);
+	case INI_PARAM_PUBLIC_IP_PROTECTION_LEVEL:
+		success = getIniFileArgumentInt(&PublicIPProtectionLevel, iniarg, 0, 3);
 
 #			if !HAVE_GETIFADDR
-			if (PublicIPProtectionLevel & 1)
-			{
-				IniFileErrorMessage = "Must be 0 or 2";
-				success = FALSE;
-			}
+		if (PublicIPProtectionLevel & 1)
+		{
+			IniFileErrorMessage = "Must be 0 or 2";
+			success = FALSE;
+		}
 #			endif // !HAVE_GETIFADDR
 
-			break;
+		break;
 
 #	endif // !defined(NO_PRIVATE_IP_DETECT)
 
-		default:
-			return FALSE;
+	default:
+		return FALSE;
 	}
 
 	return success;
@@ -790,7 +799,7 @@ static BOOL setupListeningSocketsFromIniFile(const char *s)
 	if (strncasecmp("Listen", s, 6)) return TRUE;
 	if (!getIniFileArgument(&s)) return TRUE;
 
-	snprintf(IniFileErrorBuffer, INIFILE_ERROR_BUFFERSIZE, "Cannot listen on %s.", s);
+	vlmcsd_snprintf(IniFileErrorBuffer, INIFILE_ERROR_BUFFERSIZE, "Cannot listen on %s.", s);
 	IniFileErrorMessage = IniFileErrorBuffer;
 	return addListeningSocket(s);
 }
@@ -809,7 +818,7 @@ static BOOL readIniFile(const uint_fast8_t pass)
 
 	IniFileErrorBuffer = (char*)vlmcsd_malloc(INIFILE_ERROR_BUFFERSIZE);
 
-	if ( !(f = fopen(fn_ini, "r") )) return FALSE;
+	if (!(f = fopen(fn_ini, "r"))) return FALSE;
 
 	for (lineNumber = 1; (s = fgets(line, sizeof(line), f)); lineNumber++)
 	{
@@ -858,7 +867,7 @@ static BOOL readIniFile(const uint_fast8_t pass)
 #		ifdef _NTSERVICE
 		if (!installService)
 #		endif // _NTSERVICE
-		logger("Read ini file %s\n", fn_ini);
+			logger("Read ini file %s\n", fn_ini);
 	}
 
 #	endif // !defined(NO_SOCKETS) && !defined(NO_LOG)
@@ -875,46 +884,46 @@ static void exec_self(char** argv)
 {
 #	if __linux__ && defined(USE_AUXV)
 
-		char *execname_ptr = (char*)getauxval(AT_EXECFN);
-		if (execname_ptr) execv(execname_ptr, argv);
+	char *execname_ptr = (char*)getauxval(AT_EXECFN);
+	if (execname_ptr) execv(execname_ptr, argv);
 
 #	elif (__linux__ || __CYGWIN__) && !defined(NO_PROCFS)
 
-		execv(realpath("/proc/self/exe", NULL), argv);
+	execv(realpath("/proc/self/exe", NULL), argv);
 
 #	elif (__FreeBSD__) && !defined(NO_PROCFS)
 
-		int mib[4];
-		mib[0] = CTL_KERN;
-		mib[1] = KERN_PROC;
-		mib[2] = KERN_PROC_PATHNAME;
-		mib[3] = -1;
-		char path[PATH_MAX + 1];
-		size_t cb = sizeof(path);
-		if (!sysctl(mib, 4, path, &cb, NULL, 0)) execv(path, argv);
+	int mib[4];
+	mib[0] = CTL_KERN;
+	mib[1] = KERN_PROC;
+	mib[2] = KERN_PROC_PATHNAME;
+	mib[3] = -1;
+	char path[PATH_MAX + 1];
+	size_t cb = sizeof(path);
+	if (!sysctl(mib, 4, path, &cb, NULL, 0)) execv(path, argv);
 
 #	elif (__DragonFly__) && !defined(NO_PROCFS)
 
-		execv(realpath("/proc/curproc/file", NULL), argv);
+	execv(realpath("/proc/curproc/file", NULL), argv);
 
 #	elif __NetBSD__ && !defined(NO_PROCFS)
 
-		execv(realpath("/proc/curproc/exe", NULL), argv);
+	execv(realpath("/proc/curproc/exe", NULL), argv);
 
 #	elif __sun__
 
-		const char* exename = getexecname();
-		if (exename) execv(exename, argv);
+	const char* exename = getexecname();
+	if (exename) execv(exename, argv);
 
 #	elif __APPLE__
 
-		char path[PATH_MAX + 1];
-		uint32_t size = sizeof(path);
-		if (_NSGetExecutablePath(path, &size) == 0) execv(path, argv);
+	char path[PATH_MAX + 1];
+	uint32_t size = sizeof(path);
+	if (_NSGetExecutablePath(path, &size) == 0) execv(path, argv);
 
 #	else
 
-		execvp(argv[0], argv);
+	execvp(argv[0], argv);
 
 #	endif
 }
@@ -940,11 +949,11 @@ static void HangupHandler(const int signal_unused)
 	exec_self((char**)argv_out);
 
 #	ifndef NO_LOG
-		logger("Fatal: Unable to restart on SIGHUP: %s\n", strerror(errno));
+	logger("Fatal: Unable to restart on SIGHUP: %s\n", strerror(errno));
 #	endif
 
 #	ifndef NO_PID_FILE
-		if (fn_pid) unlink(fn_pid);
+	if (fn_pid) unlink(fn_pid);
 #	endif // NO_PID_FILE
 	exit(errno);
 }
@@ -972,9 +981,9 @@ static int daemonizeAndSetSignalAction()
 	sigemptyset(&sa.sa_mask);
 
 #	ifndef NO_LOG
-	if ( !nodaemon) if (daemon(!0, logstdout))
+	if (!nodaemon) if (daemon(!0, logstdout))
 #	else // NO_LOG
-	if ( !nodaemon) if (daemon(!0, 0))
+	if (!nodaemon) if (daemon(!0, 0))
 #	endif // NO_LOG
 	{
 		printerrorf("Fatal: Could not daemonize to background.\n");
@@ -990,7 +999,7 @@ static int daemonizeAndSetSignalAction()
 #		else // !(defined(CHILD_HANDLER) || __minix__)
 		sa.sa_handler = SIG_IGN;
 #		endif // !(defined(CHILD_HANDLER) || __minix__)
-		sa.sa_flags   = SA_NOCLDWAIT;
+		sa.sa_flags = SA_NOCLDWAIT;
 
 		if (sigaction(SIGCHLD, &sa, NULL))
 			return(errno);
@@ -998,14 +1007,14 @@ static int daemonizeAndSetSignalAction()
 #		endif // !USE_THREADS
 
 		sa.sa_handler = terminationHandler;
-		sa.sa_flags   = 0;
+		sa.sa_flags = 0;
 
 		sigaction(SIGINT, &sa, NULL);
 		sigaction(SIGTERM, &sa, NULL);
 
 #		ifndef NO_SIGHUP
 		sa.sa_handler = HangupHandler;
-		sa.sa_flags   = SA_NODEFER;
+		sa.sa_flags = SA_NODEFER;
 		sigaction(SIGHUP, &sa, NULL);
 #		endif // NO_SIGHUP
 	}
@@ -1019,29 +1028,29 @@ static int daemonizeAndSetSignalAction()
 static BOOL terminationHandler(const DWORD fdwCtrlType)
 {
 	// What a lame substitute for Unix signal handling
-	switch(fdwCtrlType)
+	switch (fdwCtrlType)
 	{
-		case CTRL_C_EVENT:
-		case CTRL_CLOSE_EVENT:
-		case CTRL_BREAK_EVENT:
-		case CTRL_LOGOFF_EVENT:
-		case CTRL_SHUTDOWN_EVENT:
-			cleanup();
-			exit(0);
-		default:
-			return FALSE;
+	case CTRL_C_EVENT:
+	case CTRL_CLOSE_EVENT:
+	case CTRL_BREAK_EVENT:
+	case CTRL_LOGOFF_EVENT:
+	case CTRL_SHUTDOWN_EVENT:
+		cleanup();
+		exit(0);
+	default:
+		return FALSE;
 	}
 }
 
 
 static DWORD daemonizeAndSetSignalAction()
 {
-	if(!SetConsoleCtrlHandler( (PHANDLER_ROUTINE) terminationHandler, TRUE ))
+	if (!SetConsoleCtrlHandler((PHANDLER_ROUTINE)terminationHandler, TRUE))
 	{
-		#ifndef NO_LOG
+#ifndef NO_LOG
 		DWORD rc = GetLastError();
 		logger("Warning: Could not register Windows signal handler: Error %u\n", rc);
-		#endif // NO_LOG
+#endif // NO_LOG
 	}
 
 	return ERROR_SUCCESS;
@@ -1055,13 +1064,13 @@ static DWORD daemonizeAndSetSignalAction()
 #if !defined(NO_INI_FILE) || !defined(NO_LOG) || !defined(NO_CL_PIDS)
 __pure static char* getCommandLineArg(char *const restrict optarg)
 {
-	#if !defined (__CYGWIN__) || defined(USE_THREADS) || defined(NO_SOCKETS)
-		return optarg;
-	#else
-		if (!IsNTService) return optarg;
+#	if !defined (__CYGWIN__) || defined(USE_THREADS) || defined(NO_SOCKETS)
+	return optarg;
+#	else
+	if (!IsNTService) return optarg;
 
-		return allocateStringArgument(optarg);
-	#endif
+	return allocateStringArgument(optarg);
+#	endif
 }
 #endif // !defined(NO_INI_FILE) || !defined(NO_LOG) || !defined(NO_CL_PIDS)
 
@@ -1069,363 +1078,365 @@ __pure static char* getCommandLineArg(char *const restrict optarg)
 static void parseGeneralArguments() {
 	int o;
 
-	#ifndef NO_CL_PIDS
+#ifndef NO_CL_PIDS
 	BYTE* HwId;
-	#endif // NO_CL_PIDS
+#endif // NO_CL_PIDS
 
-	for (opterr = 0; ( o = getopt(global_argc, (char* const*)global_argv, optstring) ) > 0; ) switch (o)
+	for (opterr = 0; (o = getopt(global_argc, (char* const*)global_argv, (const char*)optstring)) > 0; ) switch (o)
 	{
-		#if !defined(NO_SOCKETS) && !defined(NO_SIGHUP) && !defined(_WIN32)
-		case 'Z':
-			IsRestarted = TRUE;
-			nodaemon = TRUE;
-			break;
-		#endif // !defined(NO_SOCKETS) && !defined(NO_SIGHUP) && !defined(_WIN32)
+#	if !defined(NO_SOCKETS) && !defined(NO_SIGHUP) && !defined(_WIN32)
+	case 'Z':
+		IsRestarted = TRUE;
+		nodaemon = TRUE;
+		break;
+#	endif // !defined(NO_SOCKETS) && !defined(NO_SIGHUP) && !defined(_WIN32)
 
-		#ifndef NO_CL_PIDS
+#	ifndef NO_CL_PIDS
 
-		case 'w':
-			KmsResponseParameters[EPID_INDEX_WINDOWS].Epid          = getCommandLineArg(optarg);
-			#ifndef NO_LOG
-			KmsResponseParameters[EPID_INDEX_WINDOWS].EpidSource    = "command line";
-			#endif // NO_LOG
-			break;
+	case 'w':
+		KmsResponseParameters[EPID_INDEX_WINDOWS].Epid = getCommandLineArg(optarg);
+#		ifndef NO_LOG
+		KmsResponseParameters[EPID_INDEX_WINDOWS].EpidSource = "command line";
+#		endif // NO_LOG
+		break;
 
-		case '0':
-			KmsResponseParameters[EPID_INDEX_OFFICE2010].Epid       = getCommandLineArg(optarg);
-			#ifndef NO_LOG
-			KmsResponseParameters[EPID_INDEX_OFFICE2010].EpidSource = "command line";
-			#endif // NO_LOG
-			break;
+	case '0':
+		KmsResponseParameters[EPID_INDEX_OFFICE2010].Epid = getCommandLineArg(optarg);
+#		ifndef NO_LOG
+		KmsResponseParameters[EPID_INDEX_OFFICE2010].EpidSource = "command line";
+#		endif // NO_LOG
+		break;
 
-		case '3':
-			KmsResponseParameters[EPID_INDEX_OFFICE2013].Epid       = getCommandLineArg(optarg);
-			#ifndef NO_LOG
-			KmsResponseParameters[EPID_INDEX_OFFICE2013].EpidSource = "command line";
-			#endif // NO_LOG
-			break;
+	case '3':
+		KmsResponseParameters[EPID_INDEX_OFFICE2013].Epid = getCommandLineArg(optarg);
+#		ifndef NO_LOG
+		KmsResponseParameters[EPID_INDEX_OFFICE2013].EpidSource = "command line";
+#		endif // NO_LOG
+		break;
 
-		case '6':
-			KmsResponseParameters[EPID_INDEX_OFFICE2016].Epid       = getCommandLineArg(optarg);
-			#ifndef NO_LOG
-			KmsResponseParameters[EPID_INDEX_OFFICE2016].EpidSource = "command line";
-			#endif // NO_LOG
-			break;
+	case '6':
+		KmsResponseParameters[EPID_INDEX_OFFICE2016].Epid = getCommandLineArg(optarg);
+#		ifndef NO_LOG
+		KmsResponseParameters[EPID_INDEX_OFFICE2016].EpidSource = "command line";
+#		endif // NO_LOG
+		break;
 
-		case 'H':
-			HwId = (BYTE*)vlmcsd_malloc(sizeof(((RESPONSE_V6 *)0)->HwId));
+	case 'H':
+		HwId = (BYTE*)vlmcsd_malloc(sizeof(((RESPONSE_V6 *)0)->HwId));
 
-			hex2bin(HwId, optarg, sizeof(((RESPONSE_V6 *)0)->HwId));
+		hex2bin(HwId, optarg, sizeof(((RESPONSE_V6 *)0)->HwId));
 
-			KmsResponseParameters[EPID_INDEX_WINDOWS].HwId =
+		KmsResponseParameters[EPID_INDEX_WINDOWS].HwId =
 			KmsResponseParameters[EPID_INDEX_OFFICE2010].HwId =
 			KmsResponseParameters[EPID_INDEX_OFFICE2013].HwId =
 			KmsResponseParameters[EPID_INDEX_OFFICE2016].HwId = HwId;
-			break;
+		break;
 
-		#endif // NO_CL_PIDS
+#	endif // NO_CL_PIDS
 
-		#ifndef NO_SOCKETS
+#	ifndef NO_SOCKETS
 
-		case 'P':
-			ignoreIniFileParameter(INI_PARAM_PORT);
-			#if !defined(SIMPLE_SOCKETS) && !defined(USE_MSRPC)
-			ignoreIniFileParameter(INI_PARAM_LISTEN);
-			#else
-			defaultport = optarg;
-			#endif // !SIMPLE_SOCKETS
-			break;
+	case 'P':
+		ignoreIniFileParameter(INI_PARAM_PORT);
+#		if !defined(SIMPLE_SOCKETS) && !defined(USE_MSRPC)
+		ignoreIniFileParameter(INI_PARAM_LISTEN);
+#		else
+		defaultport = optarg;
+#		endif // !SIMPLE_SOCKETS
+		break;
 
-		#if !defined(NO_LIMIT) && !__minix__
+#	if !defined(NO_LIMIT) && !__minix__
 
-		case 'm':
-			#ifdef USE_MSRPC
-			MaxTasks = getOptionArgumentInt(o, 1, RPC_C_LISTEN_MAX_CALLS_DEFAULT);
-			#else // !USE_MSRPC
-			MaxTasks = getOptionArgumentInt(o, 1, SEM_VALUE_MAX);
-			#endif // !USE_MSRPC
-			ignoreIniFileParameter(INI_PARAM_MAX_WORKERS);
-			break;
+	case 'm':
+#		ifdef USE_MSRPC
+		MaxTasks = getOptionArgumentInt(o, 1, RPC_C_LISTEN_MAX_CALLS_DEFAULT);
+#		else // !USE_MSRPC
+		MaxTasks = getOptionArgumentInt((char)o, 1, SEM_VALUE_MAX);
+#		endif // !USE_MSRPC
+		ignoreIniFileParameter(INI_PARAM_MAX_WORKERS);
+		break;
 
-		#endif // !defined(NO_LIMIT) && !__minix__
-		#endif // NO_SOCKETS
+#		endif // !defined(NO_LIMIT) && !__minix__
+#		endif // NO_SOCKETS
 
-		#if !defined(NO_TIMEOUT) && !__minix__ && !defined(USE_MSRPC)
-		case 't':
-			ServerTimeout = getOptionArgumentInt(o, 1, 600);
-			ignoreIniFileParameter(INI_PARAM_CONNECTION_TIMEOUT);
-			break;
-		#endif // !defined(NO_TIMEOUT) && !__minix__ && !defined(USE_MSRPC)
+#	if !defined(NO_TIMEOUT) && !__minix__ && !defined(USE_MSRPC)
+	case 't':
+		ServerTimeout = getOptionArgumentInt((char)o, 1, 600);
+		ignoreIniFileParameter(INI_PARAM_CONNECTION_TIMEOUT);
+		break;
+#	endif // !defined(NO_TIMEOUT) && !__minix__ && !defined(USE_MSRPC)
 
-		#ifndef NO_PID_FILE
-		case 'p':
-			fn_pid = getCommandLineArg(optarg);
-			ignoreIniFileParameter(INI_PARAM_PID_FILE);
-			break;
-		#endif
+#	ifndef NO_PID_FILE
+	case 'p':
+		fn_pid = getCommandLineArg(optarg);
+		ignoreIniFileParameter(INI_PARAM_PID_FILE);
+		break;
+#	endif
 
-		#ifndef NO_INI_FILE
-		case 'i':
-			fn_ini = getCommandLineArg(optarg);
-			if (!strcmp(fn_ini, "-")) fn_ini = NULL;
-			break;
-		#endif
+#	ifndef NO_INI_FILE
+	case 'i':
+		fn_ini = getCommandLineArg(optarg);
+		if (!strcmp(fn_ini, "-")) fn_ini = NULL;
+		break;
+#	endif
 
-		#ifndef NO_LOG
+#	ifndef NO_LOG
 
-		case 'T':
-			if (!getArgumentBool(&LogDateAndTime, optarg)) usage();
-			ignoreIniFileParameter(INI_PARAM_LOG_DATE_AND_TIME);
-			break;
+	case 'T':
+		if (!getArgumentBool(&LogDateAndTime, optarg)) usage();
+		ignoreIniFileParameter(INI_PARAM_LOG_DATE_AND_TIME);
+		break;
 
-		case 'l':
-			fn_log = getCommandLineArg(optarg);
-			ignoreIniFileParameter(INI_PARAM_LOG_FILE);
-			break;
+	case 'l':
+		fn_log = getCommandLineArg(optarg);
+		ignoreIniFileParameter(INI_PARAM_LOG_FILE);
+		break;
 
-		#ifndef NO_VERBOSE_LOG
-		case 'v':
-		case 'q':
-			logverbose = o == 'v';
-			ignoreIniFileParameter(INI_PARAM_LOG_VERBOSE);
-			break;
+#	ifndef NO_VERBOSE_LOG
+	case 'v':
+	case 'q':
+		logverbose = o == 'v';
+		ignoreIniFileParameter(INI_PARAM_LOG_VERBOSE);
+		break;
 
-		#endif // NO_VERBOSE_LOG
-		#endif // NO_LOG
+#	endif // NO_VERBOSE_LOG
+#	endif // NO_LOG
 
-		#if !defined(NO_PRIVATE_IP_DETECT)
-		case 'o':
-			ignoreIniFileParameter(INI_PARAM_PUBLIC_IP_PROTECTION_LEVEL);
-			PublicIPProtectionLevel = getOptionArgumentInt(o, 0, 3);
+#	if !defined(NO_PRIVATE_IP_DETECT)
+	case 'o':
+		ignoreIniFileParameter(INI_PARAM_PUBLIC_IP_PROTECTION_LEVEL);
+		PublicIPProtectionLevel = getOptionArgumentInt((char)o, 0, 3);
 
-			#if !HAVE_GETIFADDR
-			if (PublicIPProtectionLevel & 1) usage();
-			#endif // !HAVE_GETIFADDR
+#		if !HAVE_GETIFADDR
+		if (PublicIPProtectionLevel & 1) usage();
+#		endif // !HAVE_GETIFADDR
 
-			break;
-		#endif // !defined(NO_PRIVATE_IP_DETECT)
+		break;
+#	endif // !defined(NO_PRIVATE_IP_DETECT)
 
-		#ifndef NO_SOCKETS
-		#if !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
-		case 'L':
-			maxsockets++;
-			ignoreIniFileParameter(INI_PARAM_LISTEN);
-			break;
-		#if HAVE_FREEBIND
-		case 'F':
-			if (!getArgumentBool(&freebind, optarg)) usage();
-			ignoreIniFileParameter(INI_PARAM_FREEBIND);
-			break;
-		#endif // HAVE_FREEBIND
-		#endif // !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
+#	ifndef NO_SOCKETS
+#	if !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
+	case 'L':
+		maxsockets++;
+		ignoreIniFileParameter(INI_PARAM_LISTEN);
+		break;
+#	if HAVE_FREEBIND
+	case 'F':
+		if (!getArgumentBool(&freebind, optarg)) usage();
+		ignoreIniFileParameter(INI_PARAM_FREEBIND);
+		break;
+#	endif // HAVE_FREEBIND
+#	endif // !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 
-		#ifdef _NTSERVICE
-		case 'U':
-			ServiceUser = optarg;
-			break;
+#	ifdef _NTSERVICE
+	case 'U':
+		ServiceUser = optarg;
+		break;
 
-		case 'W':
-			ServicePassword = optarg;
-			break;
+	case 'W':
+		ServicePassword = optarg;
+		break;
 
-		case 's':
-			#ifndef USE_MSRPC
-        	if (InetdMode) usage();
-			#endif // USE_MSRPC
-            if (!IsNTService) installService = 1; // Install
-            break;
+	case 's':
+#		ifndef USE_MSRPC
+		if (InetdMode) usage();
+#		endif // USE_MSRPC
+		if (!IsNTService) installService = 1; // Install
+		break;
 
-		case 'S':
-        	if (!IsNTService) installService = 2; // Remove
-        	break;
-        #endif // _NTSERVICE
+	case 'S':
+		if (!IsNTService) installService = 2; // Remove
+		break;
+#	endif // _NTSERVICE
 
-		case 'D':
-			#ifndef _WIN32
-			nodaemon = 1;
-			#else // _WIN32
-			#ifdef _PEDANTIC
-			printerrorf("Warning: Option -D has no effect in the Windows version of vlmcsd.\n");
-			#endif // _PEDANTIC
-			#endif // _WIN32
-			break;
+	case 'D':
+#		ifndef _WIN32
+		nodaemon = 1;
+#		else // _WIN32
+#		ifdef _PEDANTIC
+		printerrorf("Warning: Option -D has no effect in the Windows version of vlmcsd.\n");
+#		endif // _PEDANTIC
+#		endif // _WIN32
+		break;
 
-		#ifndef NO_LOG
+#	ifndef NO_LOG
 
-		case 'e':
-			logstdout = 1;
-			break;
+	case 'e':
+		logstdout = 1;
+		break;
 
-		#endif // NO_LOG
-		#endif // NO_SOCKETS
+#	endif // NO_LOG
+#	endif // NO_SOCKETS
 
-		#ifndef NO_RANDOM_EPID
-		case 'r':
-			RandomizationLevel = (int_fast8_t)getOptionArgumentInt(o, 0, 2);
-			ignoreIniFileParameter(INI_PARAM_RANDOMIZATION_LEVEL);
-			break;
+#	ifndef NO_RANDOM_EPID
+	case 'r':
+		RandomizationLevel = (int_fast8_t)getOptionArgumentInt((char)o, 0, 2);
+		ignoreIniFileParameter(INI_PARAM_RANDOMIZATION_LEVEL);
+		break;
 
-		case 'C':
-			Lcid = (uint16_t)getOptionArgumentInt(o, 0, 32767);
+	case 'C':
+		Lcid = (uint16_t)getOptionArgumentInt((char)o, 0, 32767);
 
-			ignoreIniFileParameter(INI_PARAM_LCID);
+		ignoreIniFileParameter(INI_PARAM_LCID);
 
-			#ifdef _PEDANTIC
-			if (!IsValidLcid(Lcid))
-			{
-				printerrorf("Warning: %s is not a valid LCID.\n", optarg);
-			}
-			#endif // _PEDANTIC
+#		ifdef _PEDANTIC
+		if (!IsValidLcid(Lcid))
+		{
+			printerrorf("Warning: %s is not a valid LCID.\n", optarg);
+		}
+#		endif // _PEDANTIC
 
-			break;
-		#endif // NO_RANDOM_PID
+		break;
+#	endif // NO_RANDOM_PID
 
-		#if !defined(NO_USER_SWITCH) && !defined(_WIN32)
-		case 'g':
-			gname = optarg;
-			ignoreIniFileParameter(INI_PARAM_GID);
-			#ifndef NO_SIGHUP
-			if (!IsRestarted)
-			#endif // NO_SIGHUP
+#	if !defined(NO_USER_SWITCH) && !defined(_WIN32)
+	case 'g':
+		gname = optarg;
+		ignoreIniFileParameter(INI_PARAM_GID);
+#		ifndef NO_SIGHUP
+		if (!IsRestarted)
+#		endif // NO_SIGHUP
 			if (GetGid())
 			{
 				printerrorf("Fatal: %s for %s failed: %s\n", "setgid", gname, strerror(errno));
 				exit(errno);
 			}
-			break;
+		break;
 
-		case 'u':
-			uname = optarg;
-			ignoreIniFileParameter(INI_PARAM_UID);
-			#ifndef NO_SIGHUP
-			if (!IsRestarted)
-			#endif // NO_SIGHUP
+	case 'u':
+		uname = optarg;
+		ignoreIniFileParameter(INI_PARAM_UID);
+#		ifndef NO_SIGHUP
+		if (!IsRestarted)
+#		endif // NO_SIGHUP
 			if (GetUid())
 			{
 				printerrorf("Fatal: %s for %s failed: %s\n", "setuid", uname, strerror(errno));
 				exit(errno);
 			}
-			break;
-		#endif // NO_USER_SWITCH && !_WIN32
+		break;
+#	endif // NO_USER_SWITCH && !_WIN32
 
-		#ifndef NO_CUSTOM_INTERVALS
-		case 'R':
-			VLRenewalInterval = getTimeSpanFromCommandLine(optarg, o);
-			ignoreIniFileParameter(INI_PARAM_RENEWAL_INTERVAL);
-			break;
+#	ifndef NO_CUSTOM_INTERVALS
+	case 'R':
+		VLRenewalInterval = getTimeSpanFromCommandLine(optarg, (char)o);
+		ignoreIniFileParameter(INI_PARAM_RENEWAL_INTERVAL);
+		break;
 
-		case 'A':
-			VLActivationInterval = getTimeSpanFromCommandLine(optarg, o);
-			ignoreIniFileParameter(INI_PARAM_ACTIVATION_INTERVAL);
-			break;
-		#endif
+	case 'A':
+		VLActivationInterval = getTimeSpanFromCommandLine(optarg, (char)o);
+		ignoreIniFileParameter(INI_PARAM_ACTIVATION_INTERVAL);
+		break;
+#	endif // NO_CUSTOM_INTERVALS
 
-		#ifndef USE_MSRPC
-		case 'd':
-		case 'k':
-			DisconnectImmediately = o == 'd';
-			ignoreIniFileParameter(INI_PARAM_DISCONNECT_IMMEDIATELY);
-			break;
+#	ifndef USE_MSRPC
+	case 'd':
+	case 'k':
+		DisconnectImmediately = o == 'd';
+		ignoreIniFileParameter(INI_PARAM_DISCONNECT_IMMEDIATELY);
+		break;
 
-		case 'N':
-			if (!getArgumentBool(&UseRpcNDR64, optarg)) usage();
-			ignoreIniFileParameter(INI_PARAM_RPC_NDR64);
-			break;
+	case 'N':
+		if (!getArgumentBool(&UseRpcNDR64, optarg)) usage();
+		ignoreIniFileParameter(INI_PARAM_RPC_NDR64);
+		break;
 
-		case 'B':
-			if (!getArgumentBool(&UseRpcBTFN, optarg)) usage();
-			ignoreIniFileParameter(INI_PARAM_RPC_BTFN);
-			break;
-		#endif // !USE_MSRPC
+	case 'B':
+		if (!getArgumentBool(&UseRpcBTFN, optarg)) usage();
+		ignoreIniFileParameter(INI_PARAM_RPC_BTFN);
+		break;
+#	endif // !USE_MSRPC
 
-		#ifndef NO_VERSION_INFORMATION
-		case 'V':
-			#ifdef _NTSERVICE
-			if (IsNTService) break;
-			#endif
-			#if defined(__s390__) && !defined(__zarch__) && !defined(__s390x__)
-			printf("vlmcsd %s %i-bit\n", Version, sizeof(void*) == 4 ? 31 : (int)sizeof(void*) << 3);
-			#else
-			printf("vlmcsd %s %i-bit\n", Version, (int)sizeof(void*) << 3);
-			#endif // defined(__s390__) && !defined(__zarch__) && !defined(__s390x__)
-			printPlatform();
-			printCommonFlags();
-			printServerFlags();
-			exit(0);
-		#endif // NO_VERSION_INFORMATION
+#	ifndef NO_VERSION_INFORMATION
+	case 'V':
+#		ifdef _NTSERVICE
+		if (IsNTService) break;
+#		endif
+#		if defined(__s390__) && !defined(__zarch__) && !defined(__s390x__)
+		printf("vlmcsd %s %i-bit\n", Version, sizeof(void*) == 4 ? 31 : (int)sizeof(void*) << 3);
+#		else
+		printf("vlmcsd %s %i-bit\n", Version, (int)sizeof(void*) << 3);
+#		endif // defined(__s390__) && !defined(__zarch__) && !defined(__s390x__)
+		printPlatform();
+		printCommonFlags();
+		printServerFlags();
+		exit(0);
+#	endif // NO_VERSION_INFORMATION
 
-		default:
-			usage();
+	default:
+		usage();
 	}
 
 	// Do not allow non-option arguments
 	if (optind != global_argc)
 		usage();
 
-	#ifdef _NTSERVICE
+#	ifdef _NTSERVICE
 	// -U and -W must be used with -s
 	if ((ServiceUser || *ServicePassword) && installService != 1) usage();
-	#endif // _NTSERVICE
+#	endif // _NTSERVICE
 }
 
 
-#ifndef NO_PID_FILE
+#if !defined(NO_PID_FILE)
 static void writePidFile()
 {
 #	ifndef NO_SIGHUP
-		if (IsRestarted) return;
+	if (IsRestarted) return;
 #	endif // NO_SIGHUP
 
 	if (fn_pid && !InetdMode)
 	{
 		FILE *_f = fopen(fn_pid, "w");
 
-		if ( _f )
+		if (_f)
 		{
-			fprintf(_f, "%u", (uint32_t)getpid());
+#			if _MSC_VER
+			fprintf(_f, "%u", (unsigned int)GetCurrentProcessId());
+#			else
+			fprintf(_f, "%u", (unsigned int)getpid());
+#			endif
 			fclose(_f);
 		}
 
-		#ifndef NO_LOG
+#		ifndef NO_LOG
 		else
 		{
 			logger("Warning: Cannot write pid file '%s'. %s.\n", fn_pid, strerror(errno));
 		}
-		#endif // NO_LOG
+#		endif // NO_LOG
 	}
 }
 #else
-#define writePidFile(x)
-#endif // NO_PID_FILE
+#define writePidFile()
+#endif // !defined(NO_PID_FILE)
 
 #if !defined(NO_SOCKETS) && !defined(USE_MSRPC)
 
 void cleanup()
 {
-
 	if (!InetdMode)
 	{
-		#ifndef NO_PID_FILE
-		if (fn_pid) unlink(fn_pid);
-		#endif // NO_PID_FILE
+#		ifndef NO_PID_FILE
+		if (fn_pid) vlmcsd_unlink(fn_pid);
+#		endif // NO_PID_FILE
 		closeAllListeningSockets();
 
-		#if !defined(NO_LIMIT) && !defined(NO_SOCKETS) && !defined(_WIN32) && !__minix__
+#		if !defined(NO_LIMIT) && !defined(NO_SOCKETS) && !defined(_WIN32) && !__minix__
 		sem_unlink("/vlmcsd");
-		#if !defined(USE_THREADS) && !defined(CYGWIN)
+#		if !defined(USE_THREADS) && !defined(CYGWIN)
 		if (shmid >= 0)
 		{
 			if (Semaphore != (sem_t*)-1) shmdt(Semaphore);
 			shmctl(shmid, IPC_RMID, NULL);
 		}
-		#endif // !defined(USE_THREADS) && !defined(CYGWIN)
-		#endif // !defined(NO_LIMIT) && !defined(NO_SOCKETS) && !defined(_WIN32) && !__minix__
+#		endif // !defined(USE_THREADS) && !defined(CYGWIN)
+#		endif // !defined(NO_LIMIT) && !defined(NO_SOCKETS) && !defined(_WIN32) && !__minix__
 
-		#ifndef NO_LOG
+#		ifndef NO_LOG
 		logger("vlmcsd %s was shutdown\n", Version);
-		#endif // NO_LOG
+#		endif // NO_LOG
 	}
-
 }
 
 #elif defined(USE_MSRPC)
@@ -1452,31 +1463,31 @@ __pure void cleanup() {}
 // Get a semaphore for limiting the maximum concurrent tasks
 static void allocateSemaphore(void)
 {
-	#ifdef USE_THREADS
-	#define sharemode 0
-	#else
-	#define sharemode 1
-	#endif
+#	ifdef USE_THREADS
+#	define sharemode 0
+#	else
+#	define sharemode 1
+#	endif
 
-	#ifndef _WIN32
+#	ifndef _WIN32
 	sem_unlink("/vlmcsd");
-	#endif
+#	endif
 
-	if(MaxTasks < SEM_VALUE_MAX && !InetdMode)
+	if (MaxTasks < SEM_VALUE_MAX && !InetdMode)
 	{
-		#ifndef _WIN32
+#		ifndef _WIN32
 
-		#if !defined(USE_THREADS) && !defined(CYGWIN)
+#		if !defined(USE_THREADS) && !defined(CYGWIN)
 
-		if ((Semaphore = sem_open("/vlmcsd",  O_CREAT /*| O_EXCL*/, 0700, MaxTasks)) == SEM_FAILED) // fails on many systems
+		if ((Semaphore = sem_open("/vlmcsd", O_CREAT /*| O_EXCL*/, 0700, MaxTasks)) == SEM_FAILED) // fails on many systems
 		{
 			// We didn't get a named Semaphore (/dev/shm on Linux) so let's try our own shared page
 
 			if (
-                ( shmid = shmget(IPC_PRIVATE, sizeof(sem_t), IPC_CREAT | 0600) ) < 0 ||
-                ( Semaphore = (sem_t*)shmat(shmid, NULL, 0) ) == (sem_t*)-1 ||
-                sem_init(Semaphore, 1, MaxTasks) < 0
-			)
+				(shmid = shmget(IPC_PRIVATE, sizeof(sem_t), IPC_CREAT | 0600)) < 0 ||
+				(Semaphore = (sem_t*)shmat(shmid, NULL, 0)) == (sem_t*)-1 ||
+				sem_init(Semaphore, 1, MaxTasks) < 0
+				)
 			{
 				int errno_save = errno;
 				if (Semaphore != (sem_t*)-1) shmdt(Semaphore);
@@ -1486,7 +1497,7 @@ static void allocateSemaphore(void)
 			}
 		}
 
-		#else // THREADS or CYGWIN
+#		else // THREADS or CYGWIN
 
 		Semaphore = (sem_t*)vlmcsd_malloc(sizeof(sem_t));
 
@@ -1494,16 +1505,16 @@ static void allocateSemaphore(void)
 		{
 			free(Semaphore);
 
-			if ((Semaphore = sem_open("/vlmcsd",  O_CREAT /*| O_EXCL*/, 0700, MaxTasks)) == SEM_FAILED)
+			if ((Semaphore = sem_open("/vlmcsd", O_CREAT /*| O_EXCL*/, 0700, MaxTasks)) == SEM_FAILED)
 			{
 				printerrorf("Warning: Could not create semaphore: %s\n", vlmcsd_strerror(errno));
 				MaxTasks = SEM_VALUE_MAX;
 			}
 		}
 
-        #endif // THREADS or CYGWIN
+#		endif // THREADS or CYGWIN
 
-		#else // _WIN32
+#		else // _WIN32
 
 		if (!(Semaphore = CreateSemaphoreA(NULL, MaxTasks, MaxTasks, NULL)))
 		{
@@ -1511,7 +1522,7 @@ static void allocateSemaphore(void)
 			MaxTasks = SEM_VALUE_MAX;
 		}
 
-		#endif // _WIN32
+#		endif // _WIN32
 	}
 }
 #endif // !defined(NO_LIMIT) && !defined(NO_SOCKETS) && !__minix__
@@ -1522,7 +1533,7 @@ int setupListeningSockets()
 {
 	int o;
 #	if HAVE_GETIFADDR
-	char** privateIPList;
+	char** privateIPList = NULL;
 	int numPrivateIPs = 0;
 	if (PublicIPProtectionLevel & 1) getPrivateIPAddresses(&numPrivateIPs, &privateIPList);
 	uint_fast8_t allocsockets = maxsockets ? (maxsockets + numPrivateIPs) : ((PublicIPProtectionLevel & 1) ? numPrivateIPs : 2);
@@ -1538,18 +1549,18 @@ int setupListeningSockets()
 	// Reset getopt since we've alread used it
 	optReset();
 
-	for (opterr = 0; ( o = getopt(global_argc, (char* const*)global_argv, optstring) ) > 0; ) switch (o)
+	for (opterr = 0; (o = getopt(global_argc, (char* const*)global_argv, (const char*)optstring)) > 0; ) switch (o)
 	{
-		case 'P':
-			defaultport = optarg;
-			break;
+	case 'P':
+		defaultport = optarg;
+		break;
 
-		case 'L':
-			addListeningSocket(optarg);
-			break;
+	case 'L':
+		addListeningSocket(optarg);
+		break;
 
-		default:
-			break;
+	default:
+		break;
 	}
 
 
@@ -1558,10 +1569,10 @@ int setupListeningSockets()
 	{
 		if (fn_ini && !readIniFile(INI_FILE_PASS_2))
 		{
-			#ifdef INI_FILE
+#			ifdef INI_FILE
 			if (strcmp(fn_ini, INI_FILE))
-			#endif // INI_FILE
-			printerrorf("Warning: Can't read %s: %s\n", fn_ini, strerror(errno));
+#			endif // INI_FILE
+				printerrorf("Warning: Can't read %s: %s\n", fn_ini, strerror(errno));
 		}
 	}
 #	endif
@@ -1606,17 +1617,13 @@ int setupListeningSockets()
 
 int server_main(int argc, CARGV argv)
 {
-	#if !defined(_NTSERVICE) && !defined(NO_SOCKETS)
-	int error;
-	#endif // !defined(_NTSERVICE) && !defined(NO_SOCKETS)
-
 	// Initialize ePID / HwId parameters
 	memset(KmsResponseParameters, 0, sizeof(KmsResponseParameters));
 
 	global_argc = argc;
 	global_argv = argv;
 
-	#ifdef _NTSERVICE // #endif is in newmain()
+#	ifdef _NTSERVICE
 	DWORD lasterror = ERROR_SUCCESS;
 
 	if (!StartServiceCtrlDispatcher(NTServiceDispatchTable) && (lasterror = GetLastError()) == ERROR_FAILED_SERVICE_CONTROLLER_CONNECT)
@@ -1626,109 +1633,118 @@ int server_main(int argc, CARGV argv)
 	}
 
 	return lasterror;
+#	else // !_NTSERVICE
+	return newmain();
+#	endif // !_NTSERVICE
 }
 
 
 int newmain()
 {
-	int error;
-
 	// Initialize thread synchronization objects for Windows and Cygwin
-	#ifdef USE_THREADS
+#	ifdef USE_THREADS
 
-	#ifndef NO_LOG
-	// Initialize the Critical Section for proper logging
+#	ifndef NO_LOG
+// Initialize the Critical Section for proper logging
+#	if _WIN32
 	InitializeCriticalSection(&logmutex);
-	#endif // NO_LOG
+#	endif // _WIN32
+#	endif // NO_LOG
 
-	#endif // USE_THREADS
+#	endif // USE_THREADS
 
-	#ifdef _WIN32
+#	ifdef _WIN32
 
-	#ifndef USE_MSRPC
-	// Windows Sockets must be initialized
+#	ifndef USE_MSRPC
 	WSADATA wsadata;
-
-	if ((error = WSAStartup(0x0202, &wsadata)))
 	{
-		printerrorf("Fatal: Could not initialize Windows sockets (Error: %d).\n", error);
-		return error;
+		// Windows Sockets must be initialized
+		int error;
+		if ((error = WSAStartup(0x0202, &wsadata)))
+		{
+			printerrorf("Fatal: Could not initialize Windows sockets (Error: %d).\n", error);
+			return error;
+		}
 	}
-	#endif // USE_MSRPC
+#	endif // USE_MSRPC
 
 	// Windows can never daemonize
 	//nodaemon = 1;
 
-	#else // __CYGWIN__
+#	else // __CYGWIN__
 
 	// Do not daemonize if we are a Windows service
+#	ifdef _NTSERVICE 
 	if (IsNTService) nodaemon = 1;
+#	endif
 
-	#endif // _WIN32 / __CYGWIN__
-	#endif // _NTSERVICE ( #ifdef is main(int argc, CARGV argv) )
+#	endif // _WIN32 / __CYGWIN__
 
 	parseGeneralArguments(); // Does not return if an error occurs
 
-	#if !defined(_WIN32) && !defined(NO_SOCKETS) && !defined(USE_MSRPC)
+#	if !defined(_WIN32) && !defined(NO_SOCKETS) && !defined(USE_MSRPC)
 	struct stat statbuf;
 	fstat(STDIN_FILENO, &statbuf);
 	if (S_ISSOCK(statbuf.st_mode))
 	{
 		InetdMode = 1;
 		nodaemon = 1;
-		#ifndef SIMPLE_SOCKETS
+#		ifndef SIMPLE_SOCKETS
 		maxsockets = 0;
-		#endif // SIMPLE_SOCKETS
-		#ifndef NO_LOG
+#		endif // SIMPLE_SOCKETS
+#		ifndef NO_LOG
 		logstdout = 0;
-		#endif // NO_LOG
+#		endif // NO_LOG
 	}
-	#endif // !defined(_WIN32) && !defined(NO_SOCKETS) && !defined(USE_MSRPC)
+#	endif // !defined(_WIN32) && !defined(NO_SOCKETS) && !defined(USE_MSRPC)
 
-	#ifndef NO_INI_FILE
+#	ifndef NO_INI_FILE
+
 	if (fn_ini && !readIniFile(INI_FILE_PASS_1))
 	{
-		#ifdef INI_FILE
+#		ifdef INI_FILE
 		if (strcmp(fn_ini, INI_FILE))
-		#endif // INI_FILE
-		printerrorf("Warning: Can't read %s: %s\n", fn_ini, strerror(errno));
+#		endif // INI_FILE
+			printerrorf("Warning: Can't read %s: %s\n", fn_ini, strerror(errno));
 	}
-	#endif // NO_INI_FILE
 
-	#if defined(USE_MSRPC) && !defined(NO_PRIVATE_IP_DETECT)
+#	endif // NO_INI_FILE
+
+#	if defined(USE_MSRPC) && !defined(NO_PRIVATE_IP_DETECT)
 	if (PublicIPProtectionLevel)
 	{
 		printerrorf("Warning: Public IP address protection using MS RPC is poor. See vlmcsd.8\n");
 	}
-	#endif // defined(USE_MSRPC) && !defined(NO_PRIVATE_IP_DETECT)
+#	endif // defined(USE_MSRPC) && !defined(NO_PRIVATE_IP_DETECT)
 
-#if !defined(NO_LIMIT) && !defined(NO_SOCKETS) && !__minix__ && !defined(USE_MSRPC)
+#	if !defined(NO_LIMIT) && !defined(NO_SOCKETS) && !__minix__ && !defined(USE_MSRPC)
 	allocateSemaphore();
-	#endif // !defined(NO_LIMIT) && !defined(NO_SOCKETS) && __minix__
+#	endif // !defined(NO_LIMIT) && !defined(NO_SOCKETS) && __minix__
 
-	#ifdef _NTSERVICE
+#	ifdef _NTSERVICE
 	if (installService)
 		return NtServiceInstallation(installService, ServiceUser, ServicePassword);
-	#endif // _NTSERVICE
+#	endif // _NTSERVICE
 
-	#if !defined(NO_SOCKETS) && !defined(USE_MSRPC)
+#	if !defined(NO_SOCKETS) && !defined(USE_MSRPC)
 	if (!InetdMode)
 	{
-		#ifdef SIMPLE_SOCKETS
+		int error;
+#		ifdef SIMPLE_SOCKETS
 		if ((error = listenOnAllAddresses())) return error;
-		#else // !SIMPLE_SOCKETS
+#		else // !SIMPLE_SOCKETS
 		if ((error = setupListeningSockets())) return error;
-		#endif // !SIMPLE_SOCKETS
+#		endif // !SIMPLE_SOCKETS
 	}
-	#endif // !defined(NO_SOCKETS) && !defined(USE_MSRPC)
+#	endif // !defined(NO_SOCKETS) && !defined(USE_MSRPC)
 
 	// After sockets have been set up, we may switch to a lower privileged user
-	#if !defined(_WIN32) && !defined(NO_USER_SWITCH)
+#	if !defined(_WIN32) && !defined(NO_USER_SWITCH)
 
-	#ifndef NO_SIGHUP
+#	ifndef NO_SIGHUP
 	if (!IsRestarted)
 	{
-	#endif // NO_SIGHUP
+#	endif // NO_SIGHUP
 		if (gid != INVALID_GID)
 		{
 			if (setgid(gid))
@@ -1749,50 +1765,55 @@ int newmain()
 			printerrorf("Fatal: %s for %s failed: %s\n", "setuid", uname, strerror(errno));
 			return errno;
 		}
-	#ifndef NO_SIGHUP
+#	ifndef NO_SIGHUP
 	}
-	#endif // NO_SIGHUP
+#	endif // NO_SIGHUP
 
-	#endif // !defined(_WIN32) && !defined(NO_USER_SWITCH)
+#	endif // !defined(_WIN32) && !defined(NO_USER_SWITCH)
 
 	randomNumberInit();
 
 	// Randomization Level 1 means generate ePIDs at startup and use them during
 	// the lifetime of the process. So we generate them now
-	#ifndef NO_RANDOM_EPID
+#	ifndef NO_RANDOM_EPID
 	if (RandomizationLevel == 1) randomPidInit();
-	#endif
+#	endif
 
-	#if !defined(NO_SOCKETS)
-	#ifdef _WIN32
+#	if !defined(NO_SOCKETS)
+#	ifdef _WIN32
 	if (!IsNTService)
-	#endif // _WIN32
-	if ((error = daemonizeAndSetSignalAction())) return error;
-	#endif // !defined(NO_SOCKETS)
+	{
+#	endif // _WIN32
+		int error;
+		if ((error = daemonizeAndSetSignalAction())) return error;
+#	ifdef _WIN32
+	}
+#	endif // _WIN32
+#	endif // !defined(NO_SOCKETS)
 
 	writePidFile();
 
-	#if !defined(NO_LOG) && !defined(NO_SOCKETS) && !defined(USE_MSRPC)
+#	if !defined(NO_LOG) && !defined(NO_SOCKETS) && !defined(USE_MSRPC)
 	if (!InetdMode)
 		logger("vlmcsd %s started successfully\n", Version);
-	#endif // !defined(NO_LOG) && !defined(NO_SOCKETS) && !defined(USE_MSRPC)
+#	endif // !defined(NO_LOG) && !defined(NO_SOCKETS) && !defined(USE_MSRPC)
 
-	#if defined(_NTSERVICE) && !defined(USE_MSRPC)
+#	if defined(_NTSERVICE) && !defined(USE_MSRPC)
 	if (IsNTService) ReportServiceStatus(SERVICE_RUNNING, NO_ERROR, 200);
-	#endif // defined(_NTSERVICE) && !defined(USE_MSRPC)
+#	endif // defined(_NTSERVICE) && !defined(USE_MSRPC)
 
 	int rc;
 	rc = runServer();
 
 	// Clean up things and exit
-	#ifdef _NTSERVICE
+#	ifdef _NTSERVICE
 	if (!ServiceShutdown)
-	#endif
+#	endif
 		cleanup();
-	#ifdef _NTSERVICE
+#	ifdef _NTSERVICE
 	else
 		ReportServiceStatus(SERVICE_STOPPED, NO_ERROR, 0);
-	#endif
+#	endif
 
 	return rc;
 }

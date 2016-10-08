@@ -8,6 +8,15 @@
 
 #include "types.h"
 
+//#if _MSC_VER
+//typedef signed char int_fast8_t;
+//typedef unsigned char BYTE;
+//typedef UINT_PTR size_t;
+//typedef unsigned long DWORD;
+//#define STDIN_FILENO 0
+//#endif
+
+
 #if !defined(_WIN32) && !defined(__CYGWIN__)
 #define RPC_S_OK 0
 #define RPC_S_INVALID_ARG 87
@@ -257,6 +266,7 @@ typedef struct {
 } /*__packed*/ RPC_RESPONSE64;
 
 
+//#define RpcCtx SOCKET
 typedef SOCKET RpcCtx;
 typedef int RpcStatus;
 
@@ -304,7 +314,7 @@ typedef union _RPC_FLAGS
 
 extern RPC_FLAGS RpcFlags;
 
-void rpcServer(const RpcCtx socket, const DWORD RpcAssocGroup, const char* const ipstr);
+void rpcServer(const SOCKET sock, const DWORD RpcAssocGroup, const char* const ipstr);
 RpcStatus rpcBindClient(const RpcCtx sock, const int_fast8_t verbose);
 RpcStatus rpcSendRequest(const RpcCtx socket, const BYTE *const KmsRequest, const size_t requestSize, BYTE **KmsResponse, size_t *const responseSize);
 
