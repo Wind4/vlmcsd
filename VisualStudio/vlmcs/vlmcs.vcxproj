@@ -20,8 +20,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2B3F305D-6351-4F4A-A7F2-1F9B1988CDEE}</ProjectGuid>
-    <RootNamespace>vlmcs</RootNamespace>
+    <RootNamespace>vlmcs-Windows</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <ProjectName>vlmcs-Windows</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -69,12 +70,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)..\</OutDir>
+    <OutDir>$(SolutionDir)..\bin\</OutDir>
     <TargetName>vlmcs-Windows-x86</TargetName>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)..\</OutDir>
+    <OutDir>$(SolutionDir)..\bin\</OutDir>
     <TargetName>vlmcs-Windows-x64</TargetName>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
@@ -188,38 +189,39 @@
       <TerminalServerAware>true</TerminalServerAware>
       <SwapRunFromCD>true</SwapRunFromCD>
       <SwapRunFromNET>true</SwapRunFromNET>
+      <MinimumRequiredVersion>5.02</MinimumRequiredVersion>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\crypto.c" />
-    <ClCompile Include="..\..\crypto_windows.c" />
-    <ClCompile Include="..\..\dns_srv.c" />
-    <ClCompile Include="..\..\endian.c" />
-    <ClCompile Include="..\..\helpers.c" />
-    <ClCompile Include="..\..\kms.c" />
-    <ClCompile Include="..\..\network.c" />
-    <ClCompile Include="..\..\output.c" />
-    <ClCompile Include="..\..\rpc.c" />
-    <ClCompile Include="..\..\shared_globals.c" />
-    <ClCompile Include="..\..\vlmcs.c" />
-    <ClCompile Include="..\..\wingetopt.c" />
+    <ClCompile Include="..\..\src\crypto.c" />
+    <ClCompile Include="..\..\src\crypto_windows.c" />
+    <ClCompile Include="..\..\src\dns_srv.c" />
+    <ClCompile Include="..\..\src\endian.c" />
+    <ClCompile Include="..\..\src\helpers.c" />
+    <ClCompile Include="..\..\src\kms.c" />
+    <ClCompile Include="..\..\src\network.c" />
+    <ClCompile Include="..\..\src\output.c" />
+    <ClCompile Include="..\..\src\rpc.c" />
+    <ClCompile Include="..\..\src\shared_globals.c" />
+    <ClCompile Include="..\..\src\vlmcs.c" />
+    <ClCompile Include="..\..\src\wingetopt.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\config.h" />
-    <ClInclude Include="..\..\crypto.h" />
-    <ClInclude Include="..\..\crypto_internal.h" />
-    <ClInclude Include="..\..\crypto_windows.h" />
-    <ClInclude Include="..\..\dns_srv.h" />
-    <ClInclude Include="..\..\endian.h" />
-    <ClInclude Include="..\..\helpers.h" />
-    <ClInclude Include="..\..\kms.h" />
-    <ClInclude Include="..\..\network.h" />
-    <ClInclude Include="..\..\output.h" />
-    <ClInclude Include="..\..\rpc.h" />
-    <ClInclude Include="..\..\shared_globals.h" />
-    <ClInclude Include="..\..\types.h" />
-    <ClInclude Include="..\..\vlmcs.h" />
-    <ClInclude Include="..\..\wingetopt.h" />
+    <ClInclude Include="..\..\src\config.h" />
+    <ClInclude Include="..\..\src\crypto.h" />
+    <ClInclude Include="..\..\src\crypto_internal.h" />
+    <ClInclude Include="..\..\src\crypto_windows.h" />
+    <ClInclude Include="..\..\src\dns_srv.h" />
+    <ClInclude Include="..\..\src\endian.h" />
+    <ClInclude Include="..\..\src\helpers.h" />
+    <ClInclude Include="..\..\src\kms.h" />
+    <ClInclude Include="..\..\src\network.h" />
+    <ClInclude Include="..\..\src\output.h" />
+    <ClInclude Include="..\..\src\rpc.h" />
+    <ClInclude Include="..\..\src\shared_globals.h" />
+    <ClInclude Include="..\..\src\types.h" />
+    <ClInclude Include="..\..\src\vlmcs.h" />
+    <ClInclude Include="..\..\src\wingetopt.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

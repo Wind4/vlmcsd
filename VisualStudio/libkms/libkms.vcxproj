@@ -20,8 +20,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2A0FC04D-C3C0-43E2-8812-53AE901C5395}</ProjectGuid>
-    <RootNamespace>vlmcsdmulti</RootNamespace>
+    <RootNamespace>vlmcsdmulti-Windows</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <ProjectName>libkms-Windows</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -69,13 +70,13 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)..\</OutDir>
+    <OutDir>$(SolutionDir)..\bin\</OutDir>
     <TargetName>libkms32</TargetName>
     <GenerateManifest>false</GenerateManifest>
     <TargetExt>.dll</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)..\</OutDir>
+    <OutDir>$(SolutionDir)..\bin\</OutDir>
     <TargetName>libkms64</TargetName>
     <GenerateManifest>false</GenerateManifest>
     <TargetExt>.dll</TargetExt>
@@ -161,6 +162,7 @@
       <SwapRunFromCD>true</SwapRunFromCD>
       <SwapRunFromNET>true</SwapRunFromNET>
       <MinimumRequiredVersion />
+      <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -200,35 +202,36 @@
       <SwapRunFromCD>true</SwapRunFromCD>
       <SwapRunFromNET>true</SwapRunFromNET>
       <MinimumRequiredVersion />
+      <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\crypto.c" />
-    <ClCompile Include="..\..\crypto_windows.c" />
-    <ClCompile Include="..\..\endian.c" />
-    <ClCompile Include="..\..\helpers.c" />
-    <ClCompile Include="..\..\kms.c" />
-    <ClCompile Include="..\..\libkms.c" />
-    <ClCompile Include="..\..\network.c" />
-    <ClCompile Include="..\..\output.c" />
-    <ClCompile Include="..\..\rpc.c" />
-    <ClCompile Include="..\..\shared_globals.c" />
-    <ClCompile Include="..\..\vlmcs.c" />
+    <ClCompile Include="..\..\src\crypto.c" />
+    <ClCompile Include="..\..\src\crypto_windows.c" />
+    <ClCompile Include="..\..\src\endian.c" />
+    <ClCompile Include="..\..\src\helpers.c" />
+    <ClCompile Include="..\..\src\kms.c" />
+    <ClCompile Include="..\..\src\libkms.c" />
+    <ClCompile Include="..\..\src\network.c" />
+    <ClCompile Include="..\..\src\output.c" />
+    <ClCompile Include="..\..\src\rpc.c" />
+    <ClCompile Include="..\..\src\shared_globals.c" />
+    <ClCompile Include="..\..\src\vlmcs.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\config.h" />
-    <ClInclude Include="..\..\crypto.h" />
-    <ClInclude Include="..\..\crypto_windows.h" />
-    <ClInclude Include="..\..\endian.h" />
-    <ClInclude Include="..\..\helpers.h" />
-    <ClInclude Include="..\..\kms.h" />
-    <ClInclude Include="..\..\libkms.h" />
-    <ClInclude Include="..\..\network.h" />
-    <ClInclude Include="..\..\output.h" />
-    <ClInclude Include="..\..\rpc.h" />
-    <ClInclude Include="..\..\shared_globals.h" />
-    <ClInclude Include="..\..\types.h" />
-    <ClInclude Include="..\..\vlmcs.h" />
+    <ClInclude Include="..\..\src\config.h" />
+    <ClInclude Include="..\..\src\crypto.h" />
+    <ClInclude Include="..\..\src\crypto_windows.h" />
+    <ClInclude Include="..\..\src\endian.h" />
+    <ClInclude Include="..\..\src\helpers.h" />
+    <ClInclude Include="..\..\src\kms.h" />
+    <ClInclude Include="..\..\src\libkms.h" />
+    <ClInclude Include="..\..\src\network.h" />
+    <ClInclude Include="..\..\src\output.h" />
+    <ClInclude Include="..\..\src\rpc.h" />
+    <ClInclude Include="..\..\src\shared_globals.h" />
+    <ClInclude Include="..\..\src\types.h" />
+    <ClInclude Include="..\..\src\vlmcs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

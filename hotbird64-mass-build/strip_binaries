@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd "$( dirname "${BASH_SOURCE[0]}" )"
+
+find ../binaries/ -xdev -name 'vlmcs*' ! -name '*-NetBSD-*' ! -name '*-Windows-*' ! -name '*-cygwin-*' ! -name '*-MacOSX-*' ! -name '*-iOS-*' -exec sstrip -z {} \;

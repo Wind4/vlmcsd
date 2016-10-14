@@ -1,13 +1,14 @@
 To view the documentation cd to the directory containing the distribution
 files and type
 
-man ./vlmcsd.8
+man man/vlmcsd.8
 	to see documentation for vlmcsd
 
-man ./vlmcs.1
+man man/vlmcs.1
 	to see documentation for vlmcs
 
-man ./vlmcsd.7
+man man/vlmcsd.7
 	to see general documentation for kms
 
 If you don't have man, you may also use the .txt, .html and .pdf files
+in the man directory

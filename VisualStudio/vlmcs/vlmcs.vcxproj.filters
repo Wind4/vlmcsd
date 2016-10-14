@@ -15,87 +15,87 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\crypto.c">
+    <ClCompile Include="..\..\src\crypto.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\crypto_windows.c">
+    <ClCompile Include="..\..\src\crypto_windows.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\dns_srv.c">
+    <ClCompile Include="..\..\src\dns_srv.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\endian.c">
+    <ClCompile Include="..\..\src\endian.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\helpers.c">
+    <ClCompile Include="..\..\src\helpers.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\kms.c">
+    <ClCompile Include="..\..\src\kms.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\network.c">
+    <ClCompile Include="..\..\src\network.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\output.c">
+    <ClCompile Include="..\..\src\output.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\rpc.c">
+    <ClCompile Include="..\..\src\rpc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\shared_globals.c">
+    <ClCompile Include="..\..\src\shared_globals.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\vlmcs.c">
+    <ClCompile Include="..\..\src\vlmcs.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\wingetopt.c">
+    <ClCompile Include="..\..\src\wingetopt.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\config.h">
+    <ClInclude Include="..\..\src\config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\crypto.h">
+    <ClInclude Include="..\..\src\crypto.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\crypto_internal.h">
+    <ClInclude Include="..\..\src\crypto_internal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\crypto_windows.h">
+    <ClInclude Include="..\..\src\crypto_windows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\dns_srv.h">
+    <ClInclude Include="..\..\src\dns_srv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\endian.h">
+    <ClInclude Include="..\..\src\endian.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\helpers.h">
+    <ClInclude Include="..\..\src\helpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\kms.h">
+    <ClInclude Include="..\..\src\kms.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\network.h">
+    <ClInclude Include="..\..\src\network.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\output.h">
+    <ClInclude Include="..\..\src\output.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\rpc.h">
+    <ClInclude Include="..\..\src\rpc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\shared_globals.h">
+    <ClInclude Include="..\..\src\shared_globals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\types.h">
+    <ClInclude Include="..\..\src\types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\vlmcs.h">
+    <ClInclude Include="..\..\src\vlmcs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\wingetopt.h">
+    <ClInclude Include="..\..\src\wingetopt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
