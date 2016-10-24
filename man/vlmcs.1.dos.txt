@@ -90,7 +90,7 @@ OPTIONS
               same. When sending a request with an incorrect protocol  number,
               vlmcs ignores the minor protocol number (e.g. sends a v4 request
               for version 4.1). If the major version number is less then 4, it
-              sends  a  v4 request. If the major version is greater then 6, is
+              sends  a  v4 request. If the major version is greater then 6, it
               sends a v6 request. In any case the protocol-version  as  speci‐
               fied by -K is put in the version fields of the request.
 
@@ -323,4 +323,4 @@ SEE ALSO
 
 
 
-Hotbird64                          May 2016                           VLMCS(1)
+Hotbird64                        October 2016                         VLMCS(1)

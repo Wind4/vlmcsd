@@ -11,9 +11,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vlmcsdmulti-Windows", "vlmc
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libkms-Windows", "libkms\libkms.vcxproj", "{2A0FC04D-C3C0-43E2-8812-53AE901C5395}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vlmcsd-gcc5", "..\vlmcsd-linux-remote.vcxproj", "{CC2FBE0B-B9DF-4306-88A1-20706BBD2B0C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vlmcsd-gcc5", "..\src\vlmcsd-linux-remote.vcxproj", "{CC2FBE0B-B9DF-4306-88A1-20706BBD2B0C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vlmcs-gcc5", "..\vlmcs-linux-remote.vcxproj", "{1ED83566-8AE1-4EE8-9B62-37188A7AC7CA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vlmcs-gcc5", "..\src\vlmcs-linux-remote.vcxproj", "{1ED83566-8AE1-4EE8-9B62-37188A7AC7CA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

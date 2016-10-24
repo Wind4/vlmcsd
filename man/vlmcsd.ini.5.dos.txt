@@ -208,88 +208,123 @@ KEYWORDS
               logging to stdout(3).
 
 
+       WhitelistingLevel
+              Can  be  0,  1,  2 or 3. The default is 0. Sets the whitelisting
+              level to determine which products vlmcsd activates or refuses.
+
+                   0:  activate  all  products  with  an  unknown,  retail  or
+                   beta/preview KMS ID.
+                   1:  activate  products with a retail or beta/preview KMS ID
+                   but refuse to activate products with an unknown KMS ID.
+                   2: activate products with an  unknown  KMS  ID  but  refuse
+                   products with a retail or beta/preview KMS ID.
+                   3:  activate  only products with a known volume license RTM
+                   KMS ID and refuse all others.
+
+
+              The SKU ID is not checked. Like  a  genuine  KMS  server  vlmcsd
+              activates  a product that has a random or unknown SKU ID. If you
+              select 1 or 3, vlmcsd also checks the Application  ID  for  cor‐
+              rectness.  If  Microsoft introduces a new KMS ID for a new prod‐
+              uct, you cannot activate it if you used 1 or 3 until a new  ver‐
+              sion of vlmcsd is available.
+
+
+       CheckClientTime
+              Can  be  TRUE or FALSE. The default is FALSE. If you set this to
+              TRUE vlmcsd(8) checks if the client time differs  no  more  than
+              four  hours from the system time. This is useful to prevent emu‐
+              lator detection. A client that tries to detect an emulator could
+              simply  send  two  subsequent  request with two time stamps that
+              differ more than four hours from each other.  If  both  requests
+              succeed, the server is an emulator. If you set this to TRUE on a
+              system with no reliable time source, activations will  fail.  It
+              is  ok  to  set  the  correct system time after you started vlm‐
+              csd(8).
+
+
        ActivationInterval
-              This  is the same as specifying -A on the command line. See vlm‐
+              This is the same as specifying -A on the command line. See  vlm‐
               csd(8) for details. The default is 2 hours. Example: Activation‐
               Interval = 1h
 
 
        RenewalInterval
-              This  is the same as specifying -R on the command line. See vlm‐
-              csd(8) for details. The default is 7 days.  Example:  RenewalIn‐
+              This is the same as specifying -R on the command line. See  vlm‐
+              csd(8)  for  details. The default is 7 days. Example: RenewalIn‐
               terval = 3d. Please note that the KMS client decides itself when
               to renew activation. Even though vlmcsd sends the renewal inter‐
-              val  you specify, it is no more than some kind of recommendation
-              to the client. Older KMS clients did follow  the  recommendation
+              val you specify, it is no more than some kind of  recommendation
+              to  the  client. Older KMS clients did follow the recommendation
               from a KMS server or emulator. Newer clients do not.
 
 
-       User   Run  vlmcsd  as  another, preferrably less privileged, user. The
-              argument can be a user name or a numeric user id. You must  have
-              the  required  privileges  (capabilities on Linux) to change the
-              security context of a process without providing any  credentials
-              (a  password in most cases). On most unixoid OSses 'root' is the
+       User   Run vlmcsd as another, preferrably less  privileged,  user.  The
+              argument  can be a user name or a numeric user id. You must have
+              the required privileges (capabilities on Linux)  to  change  the
+              security  context of a process without providing any credentials
+              (a password in most cases). On most unixoid OSses 'root' is  the
               only user who has these privileges in the default configuration.
-              This  setting  is not available in the native Windows version of
-              vlmcsd. See -u in vlmcsd(8). This setting cannot be  changed  on
+              This setting is not available in the native Windows  version  of
+              vlmcsd.  See  -u in vlmcsd(8). This setting cannot be changed on
               the fly by sending SIGHUP to vlmcsd.
 
 
-       Group  Run  vlmcsd  as another, preferrably less privileged, group. The
-              argument can be a group name or a numeric  group  id.  You  must
-              have  the  required privileges (capabilities on Linux) to change
-              the security context of a process without providing any  creden‐
-              tials  (a  password in most cases). On most unixoid OSses 'root'
+       Group  Run vlmcsd as another, preferrably less privileged,  group.  The
+              argument  can  be  a  group name or a numeric group id. You must
+              have the required privileges (capabilities on Linux)  to  change
+              the  security context of a process without providing any creden‐
+              tials (a password in most cases). On most unixoid  OSses  'root'
               is the only user who has these privileges in the default config‐
-              uration.  This  setting  is  not available in the native Windows
-              version of vlmcsd. See -g in vlmcsd(8). This setting  cannot  be
+              uration. This setting is not available  in  the  native  Windows
+              version  of  vlmcsd. See -g in vlmcsd(8). This setting cannot be
               changed on the fly by sending SIGHUP to vlmcsd.
 
 
        Windows
-              The  argument  has the form ePID [ / HwId ]. Always use ePID and
-              HwId for Windows activations. If  specified,  RandomizationLevel
+              The argument has the form ePID [ / HwId ]. Always use  ePID  and
+              HwId  for  Windows activations. If specified, RandomizationLevel
               for Windows activitations will be ignored.
 
 
        Office2010
-              The  argument  has the form ePID [ / HwId ]. Always use ePID and
-              HwId for Office 2010 activations. If  specified,  Randomization‐
+              The argument has the form ePID [ / HwId ]. Always use  ePID  and
+              HwId  for  Office 2010 activations. If specified, Randomization‐
               Level for Office 2010 activitations will be ignored.
 
 
        Office2013
-              The  argument  has the form ePID [ / HwId ]. Always use ePID and
-              HwId for Office 2013 activations. If  specified,  Randomization‐
+              The argument has the form ePID [ / HwId ]. Always use  ePID  and
+              HwId  for  Office 2013 activations. If specified, Randomization‐
               Level for Office 2013 activitations will be ignored.
 
 
        Office2016
-              The  argument  has the form ePID [ / HwId ]. Always use ePID and
-              HwId for Office 2016 activations. If  specified,  Randomization‐
+              The argument has the form ePID [ / HwId ]. Always use  ePID  and
+              HwId  for  Office 2016 activations. If specified, Randomization‐
               Level for Office 2016 activitations will be ignored.
 
 
 VALID EPIDS
-       The  ePID is currently a comment only. You can specify any string up to
-       63 bytes. In Windows 7 Microsoft has blacklisted few (  <  10  )  ePIDs
-       that  were  used  in KMSv5 versions of the "Ratiborus Virtual Machine".
-       Microsoft has given up on blacklisting when KMS emulators  appeared  in
+       The ePID is currently a comment only. You can specify any string up  to
+       63  bytes.  In  Windows  7 Microsoft has blacklisted few ( < 10 ) ePIDs
+       that were used in KMSv5 versions of the  "Ratiborus  Virtual  Machine".
+       Microsoft  has  given up on blacklisting when KMS emulators appeared in
        the wild.
 
        Even if you can use "Activated by cool hacker guys" as an ePID, you may
        wish to use ePIDs that cannot be detected as non-MS ePIDs. If you don't
-       know  how  these  "valid"  ePIDs look like exactly, do not use GUIDS in
-       vlmcsd.ini. vlmcsd  provides  internal  mechanisms  to  generate  valid
+       know how these "valid" ePIDs look like exactly, do  not  use  GUIDS  in
+       vlmcsd.ini.  vlmcsd  provides  internal  mechanisms  to  generate valid
        ePIDs.
 
        If you use non-ASCII characters in your ePID (you shouldn't do anyway),
-       these must be in UTF-8 format. This is especially  important  when  you
+       these  must  be  in UTF-8 format. This is especially important when you
        run vlmcsd on Windows or cygwin because UTF-8 is not the default encod‐
        ing for most editors.
 
        If you are specifying an optional HWID it follows the same syntax as in
-       the  -H  option in vlmcsd(8) ecxept that you must not enclose a HWID in
+       the -H option in vlmcsd(8) ecxept that you must not enclose a  HWID  in
        quotes even if it contains spaces.
 
 
@@ -303,7 +338,7 @@ AUTHOR
 
 
 CREDITS
-       Thanks  to  CODYQX4,  deagles,  eIcn, mikmik38, nosferati87, qad, Rati‐
+       Thanks to CODYQX4, deagles, eIcn,  mikmik38,  nosferati87,  qad,  Rati‐
        borus, ...
 
 
@@ -312,4 +347,4 @@ SEE ALSO
 
 
 
-Hotbird64                       September 2016                   VLMCSD.INI(5)
+Hotbird64                        October 2016                    VLMCSD.INI(5)

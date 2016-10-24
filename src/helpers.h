@@ -29,6 +29,7 @@ __noreturn void OutOfMemory(void);
 void* vlmcsd_malloc(size_t len);
 void hex2bin(BYTE *const bin, const char *hex, const size_t maxbin);
 __pure BOOL getArgumentBool(int_fast8_t *result, const char *const argument);
+__pure int IsEqualGuidLE(const GUID *const restrict first, const GUID *const restrict second);
 
 
 #endif // HELPERS_H

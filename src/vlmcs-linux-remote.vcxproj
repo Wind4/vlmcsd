@@ -29,39 +29,39 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\crypto.c" />
-    <ClCompile Include="src\crypto_internal.c" />
-    <ClCompile Include="src\crypto_openssl.c" />
-    <ClCompile Include="src\dns_srv.c" />
-    <ClCompile Include="src\endian.c" />
-    <ClCompile Include="src\helpers.c" />
-    <ClCompile Include="src\kms.c" />
-    <ClCompile Include="src\network.c" />
-    <ClCompile Include="src\ns_name.c" />
-    <ClCompile Include="src\ns_parse.c" />
-    <ClCompile Include="src\output.c" />
-    <ClCompile Include="src\rpc.c" />
-    <ClCompile Include="src\shared_globals.c" />
-    <ClCompile Include="src\vlmcs.c" />
+    <ClCompile Include="crypto.c" />
+    <ClCompile Include="crypto_internal.c" />
+    <ClCompile Include="crypto_openssl.c" />
+    <ClCompile Include="dns_srv.c" />
+    <ClCompile Include="endian.c" />
+    <ClCompile Include="helpers.c" />
+    <ClCompile Include="kms.c" />
+    <ClCompile Include="network.c" />
+    <ClCompile Include="ns_name.c" />
+    <ClCompile Include="ns_parse.c" />
+    <ClCompile Include="output.c" />
+    <ClCompile Include="rpc.c" />
+    <ClCompile Include="shared_globals.c" />
+    <ClCompile Include="vlmcs.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\config.h" />
-    <ClInclude Include="src\crypto.h" />
-    <ClInclude Include="src\crypto_internal.h" />
-    <ClInclude Include="src\crypto_openssl.h" />
-    <ClInclude Include="src\crypto_polarssl.h" />
-    <ClInclude Include="src\dns_srv.h" />
-    <ClInclude Include="src\endian.h" />
-    <ClInclude Include="src\helpers.h" />
-    <ClInclude Include="src\kms.h" />
-    <ClInclude Include="src\network.h" />
-    <ClInclude Include="src\ns_name.h" />
-    <ClInclude Include="src\ns_parse.h" />
-    <ClInclude Include="src\output.h" />
-    <ClInclude Include="src\rpc.h" />
-    <ClInclude Include="src\shared_globals.h" />
-    <ClInclude Include="src\types.h" />
-    <ClInclude Include="src\vlmcs.h" />
+    <ClInclude Include="config.h" />
+    <ClInclude Include="crypto.h" />
+    <ClInclude Include="crypto_internal.h" />
+    <ClInclude Include="crypto_openssl.h" />
+    <ClInclude Include="crypto_polarssl.h" />
+    <ClInclude Include="dns_srv.h" />
+    <ClInclude Include="endian.h" />
+    <ClInclude Include="helpers.h" />
+    <ClInclude Include="kms.h" />
+    <ClInclude Include="network.h" />
+    <ClInclude Include="ns_name.h" />
+    <ClInclude Include="ns_parse.h" />
+    <ClInclude Include="output.h" />
+    <ClInclude Include="rpc.h" />
+    <ClInclude Include="shared_globals.h" />
+    <ClInclude Include="types.h" />
+    <ClInclude Include="vlmcs.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1ED83566-8AE1-4EE8-9B62-37188A7AC7CA}</ProjectGuid>
@@ -104,39 +104,37 @@
     <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
     <SourcePath>
     </SourcePath>
-    <OutDir>$(ProjectDir)VisualStudio-Linux-Remote\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(ProjectDir)VisualStudio-Linux-Remote\vlmcs\obj\$(Platform)\$(Configuration)\</IntDir>
     <RemoteLdToolExe>gcc</RemoteLdToolExe>
-    <IncludePath>$(IncludePath);$(ISenseIncludePath);$(SolutionDir)..\VisualStudio-Linux-Remote\toolchains\gcc5-x86_64-linux-gnu\usr\include</IncludePath>
+    <IncludePath>$(IncludePath);$(ISenseIncludePath);$(ProjectDir)VisualStudio-Linux-Remote\toolchains\gcc5-x86_64-linux-gnu\usr\include</IncludePath>
+    <IntDir>$(ProjectDir)vlmcs\obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>vlmcs-x64-glibc</TargetName>
     <TargetExt />
     <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
-    <IncludePath>$(IncludePath);$(ISenseIncludePath);$(SolutionDir)..\VisualStudio-Linux-Remote\toolchains\gcc5-x86_64-linux-gnu\usr\include</IncludePath>
-    <OutDir>$(ProjectDir)bin\</OutDir>
-    <IntDir>$(ProjectDir)VisualStudio-Linux-Remote\vlmcs\obj\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(IncludePath);$(ISenseIncludePath);$(ProjectDir)VisualStudio-Linux-Remote\toolchains\gcc5-x86_64-linux-gnu\usr\include</IncludePath>
+    <OutDir>$(SolutionDir)bin\</OutDir>
     <RemoteLdToolExe>gcc</RemoteLdToolExe>
+    <IntDir>$(ProjectDir)vlmcs\obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <IncludePath>$(IncludePath);$(ISenseIncludePath);$(SolutionDir)..\VisualStudio-Linux-Remote\toolchains\gcc5-x86_64-linux-gnu\usr\include</IncludePath>
+    <IncludePath>$(IncludePath);$(ISenseIncludePath);$(ProjectDir)VisualStudio-Linux-Remote\toolchains\gcc5-x86_64-linux-gnu\usr\include</IncludePath>
     <TargetName>vlmcs</TargetName>
     <TargetExt />
     <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
     <SourcePath>
     </SourcePath>
-    <OutDir>$(ProjectDir)VisualStudio-Linux-Remote\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(ProjectDir)VisualStudio-Linux-Remote\vlmcs\obj\$(Platform)\$(Configuration)\</IntDir>
     <RemoteLdToolExe>gcc</RemoteLdToolExe>
+    <IntDir>$(ProjectDir)vlmcs\obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <TargetName>vlmcs-x86-glibc</TargetName>
     <TargetExt />
     <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
-    <IncludePath>$(IncludePath);$(ISenseIncludePath);$(SolutionDir)..\VisualStudio-Linux-Remote\toolchains\gcc5-x86_64-linux-gnu\usr\include</IncludePath>
-    <OutDir>$(ProjectDir)bin\</OutDir>
-    <IntDir>$(ProjectDir)VisualStudio-Linux-Remote\vlmcs\obj\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(IncludePath);$(ISenseIncludePath);$(ProjectDir)VisualStudio-Linux-Remote\toolchains\gcc5-x86_64-linux-gnu\usr\include</IncludePath>
+    <OutDir>$(SolutionDir)bin\</OutDir>
     <RemoteLdToolExe>gcc</RemoteLdToolExe>
+    <IntDir>$(ProjectDir)vlmcs\obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -176,6 +174,7 @@
       <CLanguageStandard>c99</CLanguageStandard>
       <CppLanguageStandard>c++98</CppLanguageStandard>
       <AdditionalOptions>-Wno-sign-conversion -Wno-conversion -fno-stack-protector -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants -ffunction-sections -fdata-sections -pipe -std=gnu89 -m64 %(AdditionalOptions)</AdditionalOptions>
+      <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
     <Link>
       <LibraryDependencies>resolv;pthread;%(LibraryDependencies)</LibraryDependencies>
@@ -223,6 +222,7 @@
       <CLanguageStandard>c99</CLanguageStandard>
       <CppLanguageStandard>c++98</CppLanguageStandard>
       <AdditionalOptions>-Wno-sign-conversion -Wno-conversion -fno-stack-protector -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants -ffunction-sections -fdata-sections -pipe -std=gnu89 -m32 %(AdditionalOptions)</AdditionalOptions>
+      <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
     <Link>
       <LibraryDependencies>resolv;pthread;%(LibraryDependencies)</LibraryDependencies>

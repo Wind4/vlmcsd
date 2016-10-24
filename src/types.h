@@ -61,7 +61,11 @@
 
 #if !defined(NO_GETIFADDRS) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS) && !defined(NO_SOCKETS) && !defined(NO_PRIVATE_IP_DETECT) 
 #define HAVE_GETIFADDR 1
-#endif 
+#endif
+
+#if !defined(NO_STRICT_MODES) && defined(NO_BASIC_PRODUCT_LIST)
+#define NO_STRICT_MODES
+#endif // !defined(NO_STRICT_MODES) && defined(NO_BASIC_PRODUCT_LIST)
 
 #ifndef alloca
 #ifdef __GNUC__
@@ -213,17 +217,27 @@ typedef uint8_t ProdListIndex_t;
 //#include <VersionHelpers.h>
 
 typedef char* sockopt_t;
-// Map VLMCSD error codes to WSAGetLastError() codes
+/* Unknown Winsock error codes */
+#define WSAENODEV -1
+
+// Map VLMCSD error codes to WSAGetLastError() and GetLastError() codes
 // Add more if you need them
-#define VLMCSD_EADDRINUSE WSAEADDRINUSE
-#define VLMCSD_ENODEV WSAENODEV
-#define VLMCSD_EADDRNOTAVAIL WSAEADDRNOTAVAIL
-#define VLMCSD_EACCES WSAEACCES
-#define VLMCSD_EINVAL WSAEINVAL
-#define VLMCSD_ENOTSOCK WSAENOTSOCK
-#define VLMCSD_EINTR WSAEINTR
-#define VLMCSD_EINPROGRESS WSAEINPROGRESS
-#define VLMCSD_ECONNABORTED WSAECONNABORTED
+#define SOCKET_EADDRINUSE WSAEADDRINUSE
+#define SOCKET_ENODEV WSAENODEV
+#define SOCKET_EADDRNOTAVAIL WSAEADDRNOTAVAIL
+#define SOCKET_EACCES WSAEACCES
+#define SOCKET_EINVAL WSAEINVAL
+#define SOCKET_ENOTSOCK WSAENOTSOCK
+#define SOCKET_EINTR WSAEINTR
+#define SOCKET_EINPROGRESS WSAEINPROGRESS
+#define SOCKET_ECONNABORTED WSAECONNABORTED
+#define SOCKET_EALREADY WSAEALREADY
+
+#define VLMCSD_EACCES ERROR_ACCESS_DENIED
+#define VLMCSD_EINVAL ERROR_INVALID_PARAMETER
+#define VLMCSD_ENOMEM ERROR_OUTOFMEMORY
+#define VLMCSD_EPERM ERROR_CAN_NOT_COMPLETE
+
 
 #define socket_errno WSAGetLastError()
 #define socketclose(x) (closesocket(x))
@@ -231,9 +245,6 @@ typedef char* sockopt_t;
 #define VLMCSD_SHUT_RD SD_RECEIVE
 #define VLMCSD_SHUT_WR SD_SEND
 #define VLMCSD_SHUT_RDWR SD_BOTH
-
-/* Unknown Winsock error codes */
-#define WSAENODEV -1
 
 #elif defined(__CYGWIN__)
 #include <windows.h>
@@ -250,7 +261,12 @@ typedef uint32_t		DWORD;
 typedef uint16_t		WORD;
 typedef uint8_t			BYTE;
 typedef uint16_t		WCHAR;
-typedef int             BOOL;
+typedef int32_t         BOOL;
+typedef int32_t			HRESULT;
+#define SUCCEEDED(hr) (((HRESULT)(hr)) >= 0)
+#define FAILED(hr) (((HRESULT)(hr)) < 0)
+#define S_OK	((HRESULT)0)
+
 
 #define FALSE  0
 #define TRUE   !0
@@ -272,15 +288,22 @@ typedef struct {
 #ifndef _WIN32
 // Map VLMCSD error codes to POSIX codes
 // Add more if you need them
-#define VLMCSD_EADDRINUSE EADDRINUSE
-#define VLMCSD_ENODEV ENODEV
-#define VLMCSD_EADDRNOTAVAIL EADDRNOTAVAIL
+#define SOCKET_EADDRINUSE EADDRINUSE
+#define SOCKET_ENODEV ENODEV
+#define SOCKET_EADDRNOTAVAIL EADDRNOTAVAIL
+#define SOCKET_EACCES EACCES
+#define SOCKET_EINVAL EINVAL
+#define SOCKET_ENOTSOCK ENOTSOCK
+#define SOCKET_EINTR EINTR
+#define SOCKET_EINPROGRESS EINPROGRESS
+#define SOCKET_ECONNABORTED ECONNABORTED
+#define SOCKET_EALREADY EALREADY
+
 #define VLMCSD_EACCES EACCES
 #define VLMCSD_EINVAL EINVAL
-#define VLMCSD_ENOTSOCK ENOTSOCK
 #define VLMCSD_EINTR EINTR
-#define VLMCSD_EINPROGRESS EINPROGRESS
-#define VLMCSD_ECONNABORTED ECONNABORTED
+#define VLMCSD_ENOMEM ENOMEM
+#define VLMCSD_EPERM EPERM
 
 typedef void* sockopt_t;
 #define _countof(x)        ( sizeof(x) / sizeof(x[0]) )

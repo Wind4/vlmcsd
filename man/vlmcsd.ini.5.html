@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Tue Oct 11 21:34:50 2016 -->
+<!-- CreationDate: Fri Oct 21 03:17:10 2016 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -41,7 +41,7 @@
 
 
 <p style="margin-left:11%; margin-top: 1em"><b>vlmcsd.ini</b>
-&minus; vlmcsd KMS emulator configuration file</p>
+- vlmcsd KMS emulator configuration file</p>
 
 <h2>SYNOPSIS
 <a name="SYNOPSIS"></a>
@@ -267,8 +267,8 @@ randomized. The <i>argument</i> must be a number between 1
 and 32767. While any number in that range is valid, you
 should use an offcial LCID. A list of assigned LCIDs can be
 found at
-http://msdn.microsoft.com/en&minus;us/goglobal/bb964664.aspx.
-On the command line you control this setting with option
+http://msdn.microsoft.com/en-us/goglobal/bb964664.aspx. On
+the command line you control this setting with option
 <b>-C</b>.</p> </td></tr>
 </table>
 
@@ -338,6 +338,53 @@ each activation will be logged. You use <b>-v</b> and
 <b>-q</b> in the command line to control this setting.
 <b>LogVerbose</b> has an effect only if you specify a log
 file or redirect logging to <b>stdout</b>(3).</p>
+
+<p style="margin-left:11%;"><b>WhitelistingLevel</b></p>
+
+<p style="margin-left:22%;">Can be 0, 1, 2 or 3. The
+default is 0. Sets the whitelisting level to determine which
+products vlmcsd activates or refuses.</p>
+
+<p style="margin-left:29%; margin-top: 1em"><b>0</b>:
+activate all products with an unknown, retail or
+beta/preview KMS ID. <b><br>
+1</b>: activate products with a retail or beta/preview KMS
+ID but refuse to activate products with an unknown KMS ID.
+<b><br>
+2</b>: activate products with an unknown KMS ID but refuse
+products with a retail or beta/preview KMS ID. <b><br>
+3</b>: activate only products with a known volume license
+RTM KMS ID and refuse all others.</p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="78%">
+
+
+<p>The SKU ID is not checked. Like a genuine KMS server
+vlmcsd activates a product that has a random or unknown SKU
+ID. If you select <b>1</b> or <b>3</b>, vlmcsd also checks
+the Application ID for correctness. If Microsoft introduces
+a new KMS ID for a new product, you cannot activate it if
+you used <b>1</b> or <b>3</b> until a new version of vlmcsd
+is available.</p></td></tr>
+</table>
+
+<p style="margin-left:11%;"><b>CheckClientTime</b></p>
+
+<p style="margin-left:22%;">Can be TRUE or FALSE. The
+default is FALSE. If you set this to TRUE <b>vlmcsd</b>(8)
+checks if the client time differs no more than four hours
+from the system time. This is useful to prevent emulator
+detection. A client that tries to detect an emulator could
+simply send two subsequent request with two time stamps that
+differ more than four hours from each other. If both
+requests succeed, the server is an emulator. If you set this
+to TRUE on a system with no reliable time source,
+activations will fail. It is ok to set the correct system
+time after you started <b>vlmcsd</b>(8).</p>
 
 <p style="margin-left:11%;"><b>ActivationInterval</b></p>
 
@@ -465,8 +512,8 @@ UTF-8 is not the default encoding for most editors.</p>
 
 <p style="margin-left:11%; margin-top: 1em">If you are
 specifying an optional HWID it follows the same syntax as in
-the <b>&minus;H</b> option in <b>vlmcsd</b>(8) ecxept that
-you must not enclose a HWID in quotes even if it contains
+the <b>-H</b> option in <b>vlmcsd</b>(8) ecxept that you
+must not enclose a HWID in quotes even if it contains
 spaces.</p>
 
 <h2>FILES

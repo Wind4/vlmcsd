@@ -29,85 +29,85 @@
 
 
 
-/*
- *  UCS2 <-> UTF-8 functions
- *  All functions use little endian UCS2 since we only need it to communicate with Windows via RPC
- */
+ /*
+  *  UCS2 <-> UTF-8 functions
+  *  All functions use little endian UCS2 since we only need it to communicate with Windows via RPC
+  */
 
-// Convert one character from UTF-8 to UCS2
-// Returns 0xffff, if utf-8 evaluates to > 0xfffe (outside basic multilingual pane)
-WCHAR utf8_to_ucs2_char (const unsigned char *input, const unsigned char **end_ptr)
+  // Convert one character from UTF-8 to UCS2
+  // Returns 0xffff, if utf-8 evaluates to > 0xfffe (outside basic multilingual pane)
+WCHAR utf8_to_ucs2_char(const unsigned char *input, const unsigned char **end_ptr)
 {
-    *end_ptr = input;
-    if (input[0] == 0)
-        return ~0;
+	*end_ptr = input;
+	if (input[0] == 0)
+		return ~0;
 
-    if (input[0] < 0x80) {
-        *end_ptr = input + 1;
-        return LE16(input[0]);
-    }
+	if (input[0] < 0x80) {
+		*end_ptr = input + 1;
+		return LE16(input[0]);
+	}
 
-    if ((input[0] & 0xE0) == 0xE0) {
+	if ((input[0] & 0xE0) == 0xE0) {
 
-    	if (input[1] == 0 || input[2] == 0)
-            return ~0;
+		if (input[1] == 0 || input[2] == 0)
+			return ~0;
 
-    	*end_ptr = input + 3;
+		*end_ptr = input + 3;
 
-    	return
-            LE16((input[0] & 0x0F)<<12 |
-            (input[1] & 0x3F)<<6  |
-            (input[2] & 0x3F));
-    }
+		return
+			LE16((input[0] & 0x0F) << 12 |
+			(input[1] & 0x3F) << 6 |
+				(input[2] & 0x3F));
+	}
 
-    if ((input[0] & 0xC0) == 0xC0) {
-        if (input[1] == 0)
-            return ~0;
+	if ((input[0] & 0xC0) == 0xC0) {
+		if (input[1] == 0)
+			return ~0;
 
-        *end_ptr = input + 2;
+		*end_ptr = input + 2;
 
-        return
-            LE16((input[0] & 0x1F)<<6  |
-            (input[1] & 0x3F));
-    }
-    return ~0;
+		return
+			LE16((input[0] & 0x1F) << 6 |
+			(input[1] & 0x3F));
+	}
+	return ~0;
 }
 
 // Convert one character from UCS2 to UTF-8
 // Returns length of UTF-8 char (1, 2 or 3) or -1 on error (UTF-16 outside UCS2)
 // char *utf8 must be large enough to hold 3 bytes
-int ucs2_to_utf8_char (const WCHAR ucs2_le, char *utf8)
+int ucs2_to_utf8_char(const WCHAR ucs2_le, char *utf8)
 {
-    const WCHAR ucs2 = LE16(ucs2_le);
+	const WCHAR ucs2 = LE16(ucs2_le);
 
-    if (ucs2 < 0x80) {
-        utf8[0] = (char)ucs2;
-        utf8[1] = '\0';
-        return 1;
-    }
+	if (ucs2 < 0x80) {
+		utf8[0] = (char)ucs2;
+		utf8[1] = '\0';
+		return 1;
+	}
 
-    if (ucs2 >= 0x80  && ucs2 < 0x800) {
-        utf8[0] = (ucs2 >> 6)   | 0xC0;
-        utf8[1] = (ucs2 & 0x3F) | 0x80;
-        utf8[2] = '\0';
-        return 2;
-    }
+	if (ucs2 >= 0x80 && ucs2 < 0x800) {
+		utf8[0] = (ucs2 >> 6) | 0xC0;
+		utf8[1] = (ucs2 & 0x3F) | 0x80;
+		utf8[2] = '\0';
+		return 2;
+	}
 
-    if (ucs2 >= 0x800 && ucs2 < 0xFFFF) {
+	if (ucs2 >= 0x800 && ucs2 < 0xFFFF) {
 
-    	if (ucs2 >= 0xD800 && ucs2 <= 0xDFFF) {
-    		/* Ill-formed (UTF-16 ouside of BMP) */
-    		return -1;
-    	}
+		if (ucs2 >= 0xD800 && ucs2 <= 0xDFFF) {
+			/* Ill-formed (UTF-16 ouside of BMP) */
+			return -1;
+		}
 
-    	utf8[0] = ((ucs2 >> 12)       ) | 0xE0;
-        utf8[1] = ((ucs2 >> 6 ) & 0x3F) | 0x80;
-        utf8[2] = ((ucs2      ) & 0x3F) | 0x80;
-        utf8[3] = '\0';
-        return 3;
-    }
+		utf8[0] = ((ucs2 >> 12)) | 0xE0;
+		utf8[1] = ((ucs2 >> 6) & 0x3F) | 0x80;
+		utf8[2] = ((ucs2) & 0x3F) | 0x80;
+		utf8[3] = '\0';
+		return 3;
+	}
 
-    return -1;
+	return -1;
 }
 
 
@@ -141,13 +141,13 @@ BOOL ucs2_to_utf8(const WCHAR* const ucs2_le, char* utf8, size_t maxucs2, size_t
 	const WCHAR* current_ucs2 = ucs2_le;
 	unsigned int index_utf8 = 0;
 
-	for(*utf8 = 0; *current_ucs2; current_ucs2++)
+	for (*utf8 = 0; *current_ucs2; current_ucs2++)
 	{
 		if (current_ucs2 - ucs2_le > (intptr_t)maxucs2) return FALSE;
 		int len = ucs2_to_utf8_char(*current_ucs2, utf8_char);
 		if (index_utf8 + len > maxutf8) return FALSE;
 		strncat(utf8, utf8_char, len);
-		index_utf8+=len;
+		index_utf8 += len;
 	}
 
 	return TRUE;
@@ -164,7 +164,7 @@ BOOL stringToInt(const char *const szValue, const unsigned int min, const unsign
 	errno = 0;
 	long long result = vlmcsd_strtoll(szValue, &nextchar, 10);
 
-	if (errno || result < (long long)min || result > (long long)max || *nextchar)
+	if (errno || result < (long long)min || result >(long long)max || *nextchar)
 	{
 		return FALSE;
 	}
@@ -200,9 +200,9 @@ int_fast8_t string2Uuid(const char *const restrict input, GUID *const restrict g
 	hex2bin((BYTE*)&guid->Data3, inputCopy + 14, 4);
 	hex2bin(guid->Data4, input + 19, 16);
 
-	guid->Data1 =  BE32(guid->Data1);
-	guid->Data2 =  BE16(guid->Data2);
-	guid->Data3 =  BE16(guid->Data3);
+	guid->Data1 = BE32(guid->Data1);
+	guid->Data2 = BE16(guid->Data2);
+	guid->Data3 = BE16(guid->Data3);
 	return TRUE;
 }
 
@@ -210,14 +210,25 @@ int_fast8_t string2Uuid(const char *const restrict input, GUID *const restrict g
 // convert GUID to little-endian
 void LEGUID(GUID *const restrict out, const GUID* const restrict in)
 {
-	#if __BYTE_ORDER != __LITTLE_ENDIAN
+#	if __BYTE_ORDER != __LITTLE_ENDIAN
 	out->Data1 = LE32(in->Data1);
 	out->Data2 = LE16(in->Data2);
 	out->Data3 = LE16(in->Data3);
 	memcpy(out->Data4, in->Data4, sizeof(out->Data4));
-	#else
+#	else
 	memcpy(out, in, sizeof(GUID));
-	#endif
+#	endif
+}
+
+__pure int IsEqualGuidLE(const GUID *const restrict first, const GUID *const restrict second)
+{
+#	if __BYTE_ORDER != __LITTLE_ENDIAN
+	GUID guid;
+	LEGUID(&guid, first);
+	return IsEqualGUID(&guid, second);
+#	else
+	return IsEqualGUID(first, second);
+#	endif
 }
 
 #if !IS_LIBRARY
@@ -229,7 +240,7 @@ __pure unsigned int getOptionArgumentInt(const char o, const unsigned int min, c
 	if (!stringToInt(optarg, min, max, &result))
 	{
 		printerrorf("Fatal: Option \"-%c\" must be numeric between %u and %u.\n", o, min, max);
-		exit(!0);
+		exit(VLMCSD_EINVAL);
 	}
 
 	return result;
@@ -238,16 +249,16 @@ __pure unsigned int getOptionArgumentInt(const char o, const unsigned int min, c
 // Resets getopt() to start parsing from the beginning
 void optReset(void)
 {
-	#if __minix__ || defined(__BSD__) || defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__DragonFly__) || defined(__OpenBSD__)
+#if __minix__ || defined(__BSD__) || defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__DragonFly__) || defined(__OpenBSD__)
 	optind = 1;
 	optreset = 1; // Makes newer BSD getopt happy
-	#elif defined(__UCLIBC__) // uClibc headers also define __GLIBC__ so be careful here
+#elif defined(__UCLIBC__) // uClibc headers also define __GLIBC__ so be careful here
 	optind = 0; // uClibc seeks compatibility with GLIBC
-	#elif defined(__GLIBC__)
+#elif defined(__GLIBC__)
 	optind = 0; // Makes GLIBC getopt happy
-	#else // Standard for most systems
+#else // Standard for most systems
 	optind = 1;
-	#endif
+#endif
 }
 #endif // !IS_LIBRARY
 
@@ -256,7 +267,7 @@ void optReset(void)
 // Returns a static message buffer containing text for a given Win32 error. Not thread safe (same as strerror)
 char* win_strerror(const int message)
 {
-	#define STRERROR_BUFFER_SIZE 256
+#define STRERROR_BUFFER_SIZE 256
 	static char buffer[STRERROR_BUFFER_SIZE];
 
 	FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK, NULL, message, 0, buffer, STRERROR_BUFFER_SIZE, NULL);
@@ -317,7 +328,7 @@ void randomNumberInit()
 __noreturn void OutOfMemory(void)
 {
 	errorout("Fatal: Out of memory");
-	exit(!0);
+	exit(VLMCSD_ENOMEM);
 }
 
 
@@ -360,17 +371,17 @@ __pure BOOL getArgumentBool(int_fast8_t *result, const char *const argument)
 		!strncasecmp(argument, "on", 2) ||
 		!strncasecmp(argument, "yes", 3) ||
 		!strncasecmp(argument, "1", 1)
-	)
+		)
 	{
 		*result = TRUE;
 		return TRUE;
 	}
 	else if (
-			!strncasecmp(argument, "false", 5) ||
-			!strncasecmp(argument, "off", 3) ||
-			!strncasecmp(argument, "no", 2) ||
-			!strncasecmp(argument, "0", 1)
-	)
+		!strncasecmp(argument, "false", 5) ||
+		!strncasecmp(argument, "off", 3) ||
+		!strncasecmp(argument, "no", 2) ||
+		!strncasecmp(argument, "0", 1)
+		)
 	{
 		*result = FALSE;
 		return TRUE;

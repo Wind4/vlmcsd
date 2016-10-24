@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Tue Oct 11 21:34:50 2016 -->
+<!-- CreationDate: Fri Oct 21 03:17:10 2016 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -43,8 +43,8 @@
 </h2>
 
 
-<p style="margin-left:11%; margin-top: 1em">vlmcsd &minus;
-a fully Microsoft compatible KMS server</p>
+<p style="margin-left:11%; margin-top: 1em">vlmcsd - a
+fully Microsoft compatible KMS server</p>
 
 <h2>SYNOPSIS
 <a name="SYNOPSIS"></a>
@@ -619,6 +619,54 @@ them are not recognized by .NET Framework 4.0.</p>
 emulators use a fixed <i>LCID</i> of 1033 (English - US). To
 achive the same behavior in vlmcsd use <b>-C 1033</b>.</p>
 
+<p style="margin-left:11%;"><b>-K0</b>, <b>-K1</b>,
+<b>-K2</b> and <b>-K3</b></p>
+
+<p style="margin-left:22%;">Sets the whitelisting level to
+determine which products vlmcsd activates or refuses. The
+default is <b>-K0</b>.</p>
+
+<p style="margin-left:29%; margin-top: 1em"><b>-K0</b>:
+activate all products with an unknown, retail or
+beta/preview KMS ID. <b><br>
+-K1</b>: activate products with a retail or beta/preview KMS
+ID but refuse to activate products with an unknown KMS ID.
+<b><br>
+-K2</b>: activate products with an unknown KMS ID but refuse
+products with a retail or beta/preview KMS ID. <b><br>
+-K3</b>: activate only products with a known volume license
+RTM KMS ID and refuse all others.</p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="78%">
+
+
+<p>The SKU ID is not checked. Like a genuine KMS server
+vlmcsd activates a product that has a random or unknown SKU
+ID. If you select <b>-K1</b> or <b>-K3</b>, vlmcsd also
+checks the Application ID for correctness. If Microsoft
+introduces a new KMS ID for a new product, you cannot
+activate it if you used <b>-K1</b> or <b>-K3</b> until a new
+version of vlmcsd is available.</p></td></tr>
+</table>
+
+<p style="margin-left:11%;"><b>-c0</b> and <b>-c1</b></p>
+
+<p style="margin-left:22%;"><b>-c1</b> causes vlmcsd to
+check if the client time differs no more than four hours
+from the system time. <b>-c0</b> (the default) disables this
+check. <b>-c1</b> is useful to prevent emulator detection. A
+client that tries to detect an emulator could simply send
+two subsequent request with two time stamps that differ more
+than four hours from each other. If both requests succeed,
+the server is an emulator. If you specify <b>-c1</b> on a
+system with no reliable time source, activations will fail.
+It is ok to set the correct system time after you started
+vlmcsd.</p>
+
 <p style="margin-left:11%;"><b>-R</b>
 <i>renewal-interval</i></p>
 
@@ -736,8 +784,8 @@ directory.</p>
 convenience you can use the special username &quot;/l&quot;
 as a shortcut for &quot;NT AUTHORITY\LocalService&quot; and
 &quot;/n&quot; for &quot;NT AUTHORITY\NetworkService&quot;.
-&quot;vlmcsd&nbsp;&minus;s&nbsp;&minus;U&nbsp;/n&quot;
-installs the service to run as &quot;NT
+&quot;vlmcsd&nbsp;-s&nbsp;-U&nbsp;/n&quot; installs the
+service to run as &quot;NT
 AUTHORITY\NetworkService&quot;.</p>
 
 <p style="margin-left:11%;"><b>-W</b> <i>password</i></p>
@@ -928,11 +976,9 @@ specified in an ini file must not contain spaces.</p>
 </h2>
 
 
-<p style="margin-left:11%; margin-top: 1em">vlmcsd
-activates non-VL (retail) and beta/preview versions of
-Windows. <br>
-vlmcsd always reports enough active clients to satisfy the N
-count policy of the request.</p>
+<p style="margin-left:11%; margin-top: 1em">vlmcsd always
+reports enough active clients to satisfy the N count policy
+of the request.</p>
 
 <h2>AUTHOR
 <a name="AUTHOR"></a>

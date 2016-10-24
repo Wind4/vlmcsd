@@ -19,7 +19,7 @@ CF45="-static-libgcc -pipe -fno-common -fno-exceptions -fno-stack-protector -fno
 CFCLANG="-pipe -fno-common -fno-exceptions -fno-stack-protector -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants"
 LF="-Wl,-z,norelro -Wl,--hash-style=sysv -Wl,--build-id=none"
 LFCLANG="-Wl,-z,norelro -Wl,--hash-style=sysv"
-export CC=gcc5
+export CC=gcc6
 
 gmake $MAKEFLAGS MULTI_NAME=$BINDIR/vlmcsdmulti-DragonFly-x64 PROGRAM_NAME=$BINDIR/vlmcsd-DragonFly-x64 CLIENT_NAME=$BINDIR/vlmcs-DragonFly-x64 CFLAGS="$CF" LDFLAGS="$LF" allmulti
 

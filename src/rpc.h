@@ -7,6 +7,7 @@
 #include CONFIG
 
 #include "types.h"
+#include "shared_globals.h"
 
 #if !defined(_WIN32) && !defined(__CYGWIN__)
 #define RPC_S_OK 0
@@ -306,7 +307,7 @@ typedef union _RPC_FLAGS
 extern RPC_FLAGS RpcFlags;
 
 void rpcServer(const SOCKET sock, const DWORD RpcAssocGroup, const char* const ipstr);
-RpcStatus rpcBindClient(const RpcCtx sock, const int_fast8_t verbose);
+RpcStatus rpcBindClient(const RpcCtx sock, const int_fast8_t verbose, PRpcDiag_t rpcDiag);
 RpcStatus rpcSendRequest(const RpcCtx socket, const BYTE *const KmsRequest, const size_t requestSize, BYTE **KmsResponse, size_t *const responseSize);
 
 #endif // __rpc_h

@@ -1,5 +1,5 @@
 .mso www.tmac
-.TH VLMCSD 8 "September 2016" "Hotbird64" "KMS Activation Manual"
+.TH VLMCSD 8 "October 2016" "Hotbird64" "KMS Activation Manual"
 .LO 8
 
 .SH NAME
@@ -184,6 +184,25 @@ for a list of valid \fILCID\fRs. Please note that some of them are not recognize
 
 Most other KMS emulators use a fixed \fILCID\fR of 1033 (English - US). To achive the same behavior in vlmcsd use \fB-C 1033\fR.
 
+.IP "\fB-K0\fR, \fB-K1\fR, \fB-K2\fR and \fB-K3\fR"
+Sets the whitelisting level to determine which products vlmcsd activates or refuses. The default is \fB-K0\fR.
+
+.RS 12
+\fB-K0\fR: activate all products with an unknown, retail or beta/preview KMS ID.
+.br
+\fB-K1\fR: activate products with a retail or beta/preview KMS ID but refuse to activate products with an unknown KMS ID.
+.br
+\fB-K2\fR: activate products with an unknown KMS ID but refuse products with a retail or beta/preview KMS ID.
+.br
+\fB-K3\fR: activate only products with a known volume license RTM KMS ID and refuse all others.
+.RE
+
+.IP ""
+The SKU ID is not checked. Like a genuine KMS server vlmcsd activates a product that has a random or unknown SKU ID. If you select \fB-K1\fR or \fB-K3\fR, vlmcsd also checks the Application ID for correctness. If Microsoft introduces a new KMS ID for a new product, you cannot activate it if you used \fB-K1\fR or \fB-K3\fR until a new version of vlmcsd is available.
+
+.IP "\fB-c0\fR and \fB-c1\fR"
+\fB-c1\fR causes vlmcsd to check if the client time differs no more than four hours from the system time. \fB-c0\fR (the default) disables this check. \fB-c1\fR is useful to prevent emulator detection. A client that tries to detect an emulator could simply send two subsequent request with two time stamps that differ more than four hours from each other. If both requests succeed, the server is an emulator. If you specify \fB-c1\fR on a system with no reliable time source, activations will fail. It is ok to set the correct system time after you started vlmcsd.
+
 .IP "\fB-R\fR \fIrenewal-interval\fR"
 Instructs clients to renew activation every \fIrenewal-interval\fR. The \fIrenewal-interval\fR is a number optionally immediately followed by a letter indicating the unit. Valid unit letters are s (seconds), m (minutes), h (hours), d (days) and w (weeks). If you do not specify a letter, minutes is assumed.
 
@@ -274,8 +293,6 @@ Installs \fBvlmcsd\fR as a Windows service with low privileges and logs everythi
 An ePID specified in an ini file must not contain spaces.
 
 .SH INTENTIONAL BUGS
-vlmcsd activates non-VL (retail) and beta/preview versions of Windows.
-.br
 vlmcsd always reports enough active clients to satisfy the N count policy of the request.
 
 .SH AUTHOR

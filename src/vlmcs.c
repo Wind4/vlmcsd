@@ -165,7 +165,7 @@ static void string2UuidOrExit(const char *const restrict input, GUID *const rest
 	if (strlen(input) != GUID_STRING_LENGTH || !string2Uuid(input, guid))
 	{
 		errorout("Fatal: Command line contains an invalid GUID.\n");
-		exit(!0);
+		exit(VLMCSD_EINVAL);
 	}
 }
 
@@ -236,7 +236,7 @@ __noreturn static void clientUsage(const char* const programName)
 		Version, programName, programName
 	);
 
-	exit(!0);
+	exit(VLMCSD_EINVAL);
 }
 
 __pure static int getLineWidth(void)
@@ -316,7 +316,8 @@ __noreturn static void showProducts(PRINTFUNC p)
 
 	p("You may also use these product names or numbers:\n\n");
 
-	for (currentProduct = ExtendedProductList; currentProduct->name; currentProduct++)
+
+	for (currentProduct = ExtendedProductList; currentProduct - ExtendedProductList < getExtendedProductListSize() - 1; currentProduct++)
 	{
 		uint_fast8_t len = (uint_fast8_t)strlen(currentProduct->name);
 
@@ -387,7 +388,7 @@ static void parseProtocolVersion(void)
 	if (!period)
 	{
 		errorout("Fatal: Protocol version must be in the format #.#\n");
-		exit(!0);
+		exit(VLMCSD_EINVAL);
 	}
 
 	long major = strtol(optarg, &endptr_major, 10);
@@ -396,13 +397,13 @@ static void parseProtocolVersion(void)
 	if ((*endptr_major && *endptr_major != '.') || *endptr_minor || *optarg == '.' || !period[1])
 	{
 		errorout("Fatal: Protocol version must be in the format #.#\n");
-		exit(!0);
+		exit(VLMCSD_EINVAL);
 	}
 
 	if (major < 0 || major > 0xffff || minor < 0 || minor > 0xffff)
 	{
 		errorout("Fatal: Major and minor protocol version number must be between 0 and 65535\n");
-		exit(!0);
+		exit(VLMCSD_EINVAL);
 	}
 
 	ActiveLicensePack.kmsVersionMajor = (int)major;
@@ -416,7 +417,7 @@ static void parseProtocolVersion(void)
 __noreturn static void clientUsage(const char* const programName)
 {
 	errorout("Incorrect parameter specified.\n");
-	exit(!0);
+	exit(VLMCSD_EINVAL);
 }
 
 
@@ -546,11 +547,11 @@ static void parseCommandLinePass2(const char *const programName, const int argc,
 #	ifndef USE_MSRPC
 
 	case 'N':
-		if (!getArgumentBool(&UseRpcNDR64, optarg)) clientUsage(programName);
+		if (!getArgumentBool(&UseClientRpcNDR64, optarg)) clientUsage(programName);
 		break;
 
 	case 'B':
-		if (!getArgumentBool(&UseRpcBTFN, optarg)) clientUsage(programName);
+		if (!getArgumentBool(&UseClientRpcBTFN, optarg)) clientUsage(programName);
 		break;
 
 	case 'i':
@@ -565,7 +566,7 @@ static void parseCommandLinePass2(const char *const programName, const int argc,
 			break;
 		default:
 			errorout("IPv5 does not exist.\n");
-			exit(!0);
+			exit(VLMCSD_EINVAL);
 			break;
 		}
 
@@ -731,11 +732,11 @@ static void checkRpcLevel(const REQUEST* request, RESPONSE* response)
 	if (!RpcFlags.HasNDR32)
 		errorout("\nWARNING: Server's RPC protocol does not support NDR32.\n");
 
-	if (UseRpcBTFN && UseRpcNDR64 && RpcFlags.HasNDR64 && !RpcFlags.HasBTFN)
+	if (UseClientRpcBTFN && UseClientRpcNDR64 && RpcFlags.HasNDR64 && !RpcFlags.HasBTFN)
 		errorout("\nWARNING: Server's RPC protocol has NDR64 but no BTFN.\n");
 
 #	ifndef NO_BASIC_PRODUCT_LIST
-	if (!IsEqualGuidLEHE(&request->KMSID, &ProductList[15].guid) && UseRpcBTFN && !RpcFlags.HasBTFN)
+	if (!IsEqualGuidLEHE(&request->KMSID, &ProductList[15].guid) && UseClientRpcBTFN && !RpcFlags.HasBTFN)
 		errorout("\nWARNING: A server with pre-Vista RPC activated a product other than Office 2010.\n");
 #	endif // NO_BASIC_PRODUCT_LIST
 }
@@ -788,10 +789,10 @@ static void displayResponse(const RESPONSE_RESULT result, const REQUEST* request
 #			else // _WIN32
 			printf(" (%016I64X)", (unsigned long long)BE64(*(uint64_t*)hwid));
 #			endif // _WIN32
-		}
+	}
 
 		printf("\n");
-	}
+}
 #	ifndef NO_VERBOSE_LOG
 	else
 	{
@@ -811,20 +812,23 @@ static void connectRpc(RpcCtx *s)
 {
 #	ifdef NO_DNS
 
+	RpcDiag_t rpcDiag;
+
 	*s = connectToAddress(RemoteAddr, AddressFamily, FALSE);
 	if (*s == INVALID_RPCCTX)
 	{
 		errorout("Fatal: Could not connect to %s\n", RemoteAddr);
-		exit(!0);
+		exit(SOCKET_ECONNABORTED);
 	}
 
 	if (verbose)
 		printf("\nPerforming RPC bind ...\n");
 
-	if (rpcBindClient(*s, verbose))
+	RpcStatus status;
+	if ((status = rpcBindClient(*s, verbose, &rpcDiag)))
 	{
 		errorout("Fatal: Could not bind RPC\n");
-		exit(!0);
+		exit(status);
 	}
 
 	if (verbose) printf("... successful\n");
@@ -844,7 +848,7 @@ static void connectRpc(RpcCtx *s)
 		if (numServers < 1)
 		{
 			errorout("Fatal: No KMS servers found\n");
-			exit(!0);
+			exit(SOCKET_ECONNABORTED);
 		}
 
 		if (!NoSrvRecordPriority) sortSrvRecords(serverlist, numServers);
@@ -884,13 +888,14 @@ static void connectRpc(RpcCtx *s)
 		*s = connectToAddress(serverlist[i]->serverName, AddressFamily, (*RemoteAddr == '.' || *RemoteAddr == '-'));
 
 		if (*s == INVALID_RPCCTX) continue;
+		RpcDiag_t rpcDiag;
 
 #		ifndef NO_VERBOSE_LOG
 		if (verbose) printf("\nPerforming RPC bind ...\n");
 
-		if (rpcBindClient(*s, verbose))
+		if (rpcBindClient(*s, verbose, &rpcDiag))
 #		else
-		if (rpcBindClient(*s, FALSE))
+		if (rpcBindClient(*s, FALSE, &rpcDiag))
 #		endif
 		{
 			errorout("Warning: Could not bind RPC\n");
@@ -905,7 +910,7 @@ static void connectRpc(RpcCtx *s)
 	}
 
 	errorout("Fatal: Could not connect to any KMS server\n");
-	exit(!0);
+	exit(SOCKET_ECONNABORTED);
 
 #	endif // DNS
 }
@@ -1010,15 +1015,17 @@ static void newIniBackupFile(const char* const restrict fname)
 
 	if (!f)
 	{
-		errorout("Fatal: Cannot create %s: %s\n", fname, strerror(errno));
-		exit(!0);
+		int error = errno;
+		errorout("Fatal: Cannot create %s: %s\n", fname, strerror(error));
+		exit(error);
 	}
 
 	if (fclose(f))
 	{
-		errorout("Fatal: Cannot write to %s: %s\n", fname, strerror(errno));
+		int error = errno;
+		errorout("Fatal: Cannot write to %s: %s\n", fname, strerror(error));
 		vlmcsd_unlink(fname);
-		exit(!0);
+		exit(error);
 	}
 }
 
@@ -1051,8 +1058,9 @@ static void updateIniFile(iniFileEpidLines* const restrict lines)
 	{
 		if (errno != ENOENT)
 		{
-			errorout("Fatal: %s: %s\n", fn_ini_client, strerror(errno));
-			exit(!0);
+			int error = errno;
+			errorout("Fatal: %s: %s\n", fn_ini_client, strerror(error));
+			exit(error);
 		}
 		else
 		{
@@ -1066,8 +1074,9 @@ static void updateIniFile(iniFileEpidLines* const restrict lines)
 		vlmcsd_unlink(fn_bak); // Required for Windows. Most Unix systems don't need it.
 		if (rename(fn_ini_client, fn_bak))
 		{
-			errorout("Fatal: Cannot create %s: %s\n", fn_bak, strerror(errno));
-			exit(!0);
+			int error = errno;
+			errorout("Fatal: Cannot create %s: %s\n", fn_bak, strerror(error));
+			exit(error);
 		}
 	}
 
@@ -1079,16 +1088,18 @@ static void updateIniFile(iniFileEpidLines* const restrict lines)
 
 	if (!in)
 	{
-		errorout("Fatal: Cannot open %s: %s\n", fn_bak, strerror(errno));
-		exit(!0);
+		int error = errno;
+		errorout("Fatal: Cannot open %s: %s\n", fn_bak, strerror(error));
+		exit(error);
 	}
 
 	out = fopen(fn_ini_client, "wb");
 
 	if (!out)
 	{
-		errorout("Fatal: Cannot create %s: %s\n", fn_ini_client, strerror(errno));
-		exit(!0);
+		int error = errno;
+		errorout("Fatal: Cannot create %s: %s\n", fn_ini_client, strerror(error));
+		exit(error);
 	}
 
 	char sourceLine[256];
@@ -1116,8 +1127,9 @@ static void updateIniFile(iniFileEpidLines* const restrict lines)
 
 	if (ferror(in))
 	{
-		errorout("Fatal: Cannot read from %s: %s\n", fn_bak, strerror(errno));
-		exit(!0);
+		int error = errno;
+		errorout("Fatal: Cannot read from %s: %s\n", fn_bak, strerror(error));
+		exit(error);
 	}
 
 	fclose(in);
@@ -1133,8 +1145,9 @@ static void updateIniFile(iniFileEpidLines* const restrict lines)
 
 	if (fclose(out))
 	{
-		errorout("Fatal: Cannot write to %s: %s\n", fn_ini_client, strerror(errno));
-		exit(!0);
+		int error = errno;
+		errorout("Fatal: Cannot write to %s: %s\n", fn_ini_client, strerror(error));
+		exit(error);
 	}
 
 	if (!iniFileExistedBefore) vlmcsd_unlink(fn_bak);

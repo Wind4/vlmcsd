@@ -57,6 +57,13 @@ typedef struct
 	#endif // NO_LOG
 } KmsResponseParam_t, *PKmsResponseParam_t;
 
+typedef struct
+{
+	int8_t HasRpcDiag;
+	int8_t HasBTFN;
+	int8_t HasNDR64;
+} RpcDiag_t, *PRpcDiag_t;
+
 #if !defined(NO_LIMIT) && !__minix__
 #ifndef SEM_VALUE_MAX // Android does not define this
 #ifdef __ANDROID__
@@ -94,14 +101,24 @@ extern const char *const cIPv4;
 extern const char *const cIPv6;
 extern int_fast8_t InetdMode;
 
+#ifndef NO_STRICT_MODES
+extern uint32_t WhitelistingLevel;
+extern int_fast8_t CheckClientTime;
+#endif // !NO_STRICT_MODES
+
+
 #ifndef USE_MSRPC
 extern int_fast8_t UseMultiplexedRpc;
-extern int_fast8_t UseRpcNDR64;
-extern int_fast8_t UseRpcBTFN;
+#ifndef SIMPLE_RPC
+extern int_fast8_t UseServerRpcNDR64;
+extern int_fast8_t UseServerRpcBTFN;
+#endif // !SIMPLE_RPC
+extern int_fast8_t UseClientRpcNDR64;
+extern int_fast8_t UseClientRpcBTFN;
 #endif // USE_MSRPC
 
 #ifndef NO_SOCKETS
-extern const char *defaultport;
+extern char *defaultport;
 #endif // NO_SOCKETS
 
 #if !defined(NO_PRIVATE_IP_DETECT)

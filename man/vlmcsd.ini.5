@@ -1,4 +1,4 @@
-.TH VLMCSD.INI 5 "September 2016" "Hotbird64" "KMS Activation Manual"
+.TH VLMCSD.INI 5 "October 2016" "Hotbird64" "KMS Activation Manual"
 .LO 8
 
 .SH NAME
@@ -98,6 +98,25 @@ Can be TRUE or FALSE. The default is TRUE. If set to FALSE, logging output does 
 
 .IP "\fBLogVerbose\fR"
 Set this to either TRUE or FALSE. The default is FALSE. If set to TRUE, more details of each activation will be logged. You use \fB-v\fR and \fB-q\fR in the command line to control this setting. \fBLogVerbose\fR has an effect only if you specify a log file or redirect logging to \fBstdout\fR(3).
+
+.IP "\fBWhitelistingLevel\fR"
+Can be 0, 1, 2 or 3. The default is 0. Sets the whitelisting level to determine which products vlmcsd activates or refuses.
+
+.RS 12
+\fB0\fR: activate all products with an unknown, retail or beta/preview KMS ID.
+.br
+\fB1\fR: activate products with a retail or beta/preview KMS ID but refuse to activate products with an unknown KMS ID.
+.br
+\fB2\fR: activate products with an unknown KMS ID but refuse products with a retail or beta/preview KMS ID.
+.br
+\fB3\fR: activate only products with a known volume license RTM KMS ID and refuse all others.
+.RE
+
+.IP ""
+The SKU ID is not checked. Like a genuine KMS server vlmcsd activates a product that has a random or unknown SKU ID. If you select \fB1\fR or \fB3\fR, vlmcsd also checks the Application ID for correctness. If Microsoft introduces a new KMS ID for a new product, you cannot activate it if you used \fB1\fR or \fB3\fR until a new version of vlmcsd is available.
+
+.IP "\fBCheckClientTime\fR"
+Can be TRUE or FALSE. The default is FALSE. If you set this to TRUE \fBvlmcsd\fR(8) checks if the client time differs no more than four hours from the system time. This is useful to prevent emulator detection. A client that tries to detect an emulator could simply send two subsequent request with two time stamps that differ more than four hours from each other. If both requests succeed, the server is an emulator. If you set this to TRUE on a system with no reliable time source, activations will fail. It is ok to set the correct system time after you started \fBvlmcsd\fR(8).
 
 .IP "\fBActivationInterval\fR"
 This is the same as specifying \fB-A\fR on the command line. See \fBvlmcsd\fR(8) for details. The default is 2 hours. Example: ActivationInterval = 1h

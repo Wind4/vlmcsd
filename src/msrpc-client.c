@@ -90,7 +90,7 @@ RpcCtx connectToAddress(char *const addr, const int AddressFamily_unused, int_fa
 /*
  * Does not do RPC binding on the wire. Just initializes the interface
  */
-RpcStatus rpcBindClient(const RpcCtx handle, const int_fast8_t verbose)
+RpcStatus rpcBindClient(const RpcCtx handle, const int_fast8_t verbose, PRpcDiag_t rpcDiag)
 {
 	RPC_STATUS status;
 
@@ -99,6 +99,7 @@ RpcStatus rpcBindClient(const RpcCtx handle, const int_fast8_t verbose)
 		errorout("\n%s\n", win_strerror(status));
 	}
 
+	rpcDiag->HasRpcDiag = FALSE;
 	return status;
 }
 

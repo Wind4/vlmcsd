@@ -43,6 +43,7 @@ static const BYTE InterfaceUuid[] = {
 	0x75, 0x21, 0xc8, 0x51, 0x4e, 0x84, 0x50, 0x47, 0xB0, 0xD8, 0xEC, 0x25, 0x55, 0x55, 0xBC, 0x06
 };
 
+//#ifndef SIMPLE_RPC
 static const BYTE TransferSyntaxNDR64[] = {
 	0x33, 0x05, 0x71, 0x71, 0xba, 0xbe, 0x37, 0x49, 0x83, 0x19, 0xb5, 0xdb, 0xef, 0x9c, 0xcc, 0x36
 };
@@ -50,7 +51,7 @@ static const BYTE TransferSyntaxNDR64[] = {
 static const BYTE BindTimeFeatureNegotiation[] = {
 	0x2c, 0x1c, 0xb7, 0x6c, 0x12, 0x98, 0x40, 0x45, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
-
+//#endif // SIMPLE_RPC
 
 //
 // Dispatch RPC payload to kms.c
@@ -181,6 +182,8 @@ static unsigned int checkRpcRequestSize(const RPC_REQUEST64 *const Request, cons
 	uint16_t majorIndex, minor;
 	DWORD version;
 
+#	ifndef SIMPLE_RPC
+
 	if (Ctx != *Ndr64Ctx)
 	{
 		version = LE32(*(DWORD*)Request->Ndr.Data);
@@ -189,6 +192,12 @@ static unsigned int checkRpcRequestSize(const RPC_REQUEST64 *const Request, cons
 	{
 		version = LE32(*(DWORD*)Request->Ndr64.Data);
 	}
+
+#	else // SIMPLE_RPC
+
+	version = LE32(*(DWORD*)Request->Ndr.Data);
+
+#	endif // SIMPLE_RPC
 
 	majorIndex = (uint16_t)(version >> 16) - 4;
 	minor = (uint16_t)(version & 0xffff);
@@ -218,11 +227,14 @@ static unsigned int checkRpcRequestSize(const RPC_REQUEST64 *const Request, cons
 static int rpcRequest(const RPC_REQUEST64 *const Request, RPC_RESPONSE64 *const Response, const DWORD RpcAssocGroup_unused, const SOCKET sock_unused, WORD* NdrCtx, WORD* Ndr64Ctx, BYTE isValid, const char* const ipstr)
 {
 	int ResponseSize; // <0 = Errorcode (HRESULT)
-	WORD Ctx = LE16(Request->ContextId);
 	BYTE* requestData;
 	BYTE* responseData;
 	BYTE* pRpcReturnCode;
 	int len;
+
+#	ifndef SIMPLE_RPC
+
+	WORD Ctx = LE16(Request->ContextId);
 
 	if (Ctx != *Ndr64Ctx)
 	{
@@ -235,6 +247,13 @@ static int rpcRequest(const RPC_REQUEST64 *const Request, RPC_RESPONSE64 *const 
 		responseData = (BYTE*)&Response->Ndr64.Data;
 	}
 
+#	else // SIMPLE_RPC
+
+	requestData = (BYTE*)&Request->Ndr.Data;
+	responseData = (BYTE*)&Response->Ndr.Data;
+
+#	endif // SIMPLE_RPC
+
 	ResponseSize = 0x8007000D; // Invalid Data
 
 	if (isValid)
@@ -243,8 +262,12 @@ static int rpcRequest(const RPC_REQUEST64 *const Request, RPC_RESPONSE64 *const 
 		if (!((ResponseSize = _Versions[majorIndex].CreateResponse(requestData, responseData, ipstr)))) ResponseSize = 0x8007000D;
 	}
 
+#	ifndef SIMPLE_RPC
+
 	if (Ctx != *Ndr64Ctx)
 	{
+
+#	endif // !SIMPLE_RPC
 		if (ResponseSize < 0)
 		{
 			Response->Ndr.DataSizeMax = Response->Ndr.DataLength = 0;
@@ -256,6 +279,9 @@ static int rpcRequest(const RPC_REQUEST64 *const Request, RPC_RESPONSE64 *const 
 			Response->Ndr.DataLength = Response->Ndr.DataSizeIs = LE32(ResponseSize);
 			len = ResponseSize + sizeof(Response->Ndr);
 		}
+
+#	ifndef SIMPLE_RPC
+
 	}
 	else
 	{
@@ -271,6 +297,8 @@ static int rpcRequest(const RPC_REQUEST64 *const Request, RPC_RESPONSE64 *const 
 			len = ResponseSize + sizeof(Response->Ndr64);
 		}
 	}
+
+#	endif // !SIMPLE_RPC
 
 	pRpcReturnCode = ((BYTE*)&Response->Ndr) + len;
 	UA32(pRpcReturnCode) = ResponseSize < 0 ? LE32(ResponseSize) : 0;
@@ -417,7 +445,9 @@ static int rpcBind(const RPC_BIND_REQUEST *const Request, RPC_BIND_RESPONSE* Res
 
 	Response->NumResults = Request->NumCtxItems;
 
-	if (UseRpcNDR64)
+#	ifndef SIMPLE_RPC
+
+	if (UseServerRpcNDR64)
 	{
 		for (i = 0; i < numCtxItems; i++)
 		{
@@ -437,6 +467,8 @@ static int rpcBind(const RPC_BIND_REQUEST *const Request, RPC_BIND_RESPONSE* Res
 		}
 	}
 
+#	endif // !SIMPLE_RPC
+
 	for (i = 0; i < numCtxItems; i++)
 	{
 		memset(&Response->Results[i].TransferSyntax, 0, sizeof(GUID));
@@ -450,6 +482,9 @@ static int rpcBind(const RPC_BIND_REQUEST *const Request, RPC_BIND_RESPONSE* Res
 
 			_st = TRUE;
 		}
+
+#		ifndef SIMPLE_RPC
+
 		else if (IsNDR64possible && IsEqualGUID((GUID*)TransferSyntaxNDR64, &Request->CtxItems[i].TransferSyntax))
 		{
 			Response->Results[i].SyntaxVersion = LE32(1);
@@ -459,7 +494,7 @@ static int rpcBind(const RPC_BIND_REQUEST *const Request, RPC_BIND_RESPONSE* Res
 
 			_st = TRUE;
 		}
-		else if (UseRpcBTFN && !memcmp(BindTimeFeatureNegotiation, (BYTE*)(&Request->CtxItems[i].TransferSyntax), 8))
+		else if (UseServerRpcBTFN && !memcmp(BindTimeFeatureNegotiation, (BYTE*)(&Request->CtxItems[i].TransferSyntax), 8))
 		{
 			Response->Results[i].SyntaxVersion = 0;
 			Response->Results[i].AckResult = RPC_BIND_ACK;
@@ -469,6 +504,9 @@ static int rpcBind(const RPC_BIND_REQUEST *const Request, RPC_BIND_RESPONSE* Res
 				((WORD*)(&Request->CtxItems[i].TransferSyntax))[4] &
 				(RPC_BTFN_SEC_CONTEXT_MULTIPLEX | RPC_BTFN_KEEP_ORPHAN);
 		}
+
+#		endif // !SIMPLE_RPC
+
 		else
 		{
 			Response->Results[i].SyntaxVersion = 0;
@@ -705,7 +743,7 @@ RpcStatus rpcSendRequest(const RpcCtx sock, const BYTE *const KmsRequest, const 
 	RPC_REQUEST64 *RpcRequest;
 	RPC_RESPONSE64 _Response;
 	int status;
-	int_fast8_t useNdr64 = UseRpcNDR64 && firstPacketSent;
+	int_fast8_t useNdr64 = UseClientRpcNDR64 && firstPacketSent;
 	size_t size = sizeof(RPC_HEADER) + (useNdr64 ? sizeof(RPC_REQUEST64) : sizeof(RPC_REQUEST)) + requestSize;
 	size_t responseSize2;
 
@@ -901,7 +939,7 @@ RpcStatus rpcBindOrAlterClientContext(const RpcCtx sock, BYTE packetType, const 
 	RPC_BIND_REQUEST *bindRequest;
 	RPC_BIND_RESPONSE *bindResponse;
 	int status;
-	WORD ctxItems = 1 + (packetType == RPC_PT_BIND_REQ ? UseRpcNDR64 + UseRpcBTFN : 0);
+	WORD ctxItems = 1 + (packetType == RPC_PT_BIND_REQ ? UseClientRpcNDR64 + UseClientRpcBTFN : 0);
 	size_t rpcBindSize = (sizeof(RPC_HEADER) + sizeof(RPC_BIND_REQUEST) + (ctxItems - 1) * sizeof(bindRequest->CtxItems[0]));
 	WORD ctxIndex = 0;
 	WORD i;
@@ -932,13 +970,13 @@ RpcStatus rpcBindOrAlterClientContext(const RpcCtx sock, BYTE packetType, const 
 
 	memcpy(&bindRequest->CtxItems[0].TransferSyntax, TransferSyntaxNDR32, sizeof(GUID));
 
-	if (UseRpcNDR64 && packetType == RPC_PT_BIND_REQ)
+	if (UseClientRpcNDR64 && packetType == RPC_PT_BIND_REQ)
 	{
 		memcpy(&bindRequest->CtxItems[++ctxIndex].TransferSyntax, TransferSyntaxNDR64, sizeof(GUID));
 		CtxNDR64 = ctxIndex;
 	}
 
-	if (UseRpcBTFN && packetType == RPC_PT_BIND_REQ)
+	if (UseClientRpcBTFN && packetType == RPC_PT_BIND_REQ)
 	{
 		memcpy(&bindRequest->CtxItems[++ctxIndex].TransferSyntax, BindTimeFeatureNegotiation, sizeof(GUID));
 		CtxBTFN = ctxIndex;
@@ -1124,7 +1162,7 @@ RpcStatus rpcBindOrAlterClientContext(const RpcCtx sock, BYTE packetType, const 
 	return status;
 }
 
-RpcStatus rpcBindClient(const RpcCtx sock, const int_fast8_t verbose)
+RpcStatus rpcBindClient(const RpcCtx sock, const int_fast8_t verbose, PRpcDiag_t rpcDiag)
 {
 	firstPacketSent = FALSE;
 	RpcFlags.mask = 0;
@@ -1132,11 +1170,15 @@ RpcStatus rpcBindClient(const RpcCtx sock, const int_fast8_t verbose)
 	RpcStatus status =
 		rpcBindOrAlterClientContext(sock, RPC_PT_BIND_REQ, verbose);
 
-	if (status) return status;
+	if (status) goto end;
 
 	if (!RpcFlags.HasNDR32)
 		status = rpcBindOrAlterClientContext(sock, RPC_PT_ALTERCONTEXT_REQ, verbose);
 
+end:
+	rpcDiag->HasRpcDiag = TRUE;
+	rpcDiag->HasNDR64 = !!RpcFlags.HasNDR64;
+	rpcDiag->HasBTFN = !!RpcFlags.HasBTFN;
 	return status;
 }
 

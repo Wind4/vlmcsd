@@ -415,6 +415,40 @@ OPTIONS
               US). To achive the same behavior in vlmcsd use -C 1033.
 
 
+       -K0, -K1, -K2 and -K3
+              Sets the whitelisting level to determine which  products  vlmcsd
+              activates or refuses. The default is -K0.
+
+                   -K0:  activate  all  products  with  an  unknown, retail or
+                   beta/preview KMS ID.
+                   -K1: activate products with a retail or beta/preview KMS ID
+                   but refuse to activate products with an unknown KMS ID.
+                   -K2:  activate  products  with an unknown KMS ID but refuse
+                   products with a retail or beta/preview KMS ID.
+                   -K3: activate only products with a known volume license RTM
+                   KMS ID and refuse all others.
+
+
+              The  SKU  ID  is  not  checked. Like a genuine KMS server vlmcsd
+              activates a product that has a random or unknown SKU ID. If  you
+              select  -K1  or  -K3,  vlmcsd also checks the Application ID for
+              correctness. If Microsoft introduces a new  KMS  ID  for  a  new
+              product,  you  cannot activate it if you used -K1 or -K3 until a
+              new version of vlmcsd is available.
+
+
+       -c0 and -c1
+              -c1 causes vlmcsd to check if the client time  differs  no  more
+              than four hours from the system time. -c0 (the default) disables
+              this check. -c1 is  useful  to  prevent  emulator  detection.  A
+              client  that  tries  to detect an emulator could simply send two
+              subsequent request with two time stamps that  differ  more  than
+              four hours from each other. If both requests succeed, the server
+              is an emulator. If you specify -c1 on a system with no  reliable
+              time  source, activations will fail. It is ok to set the correct
+              system time after you started vlmcsd.
+
+
        -R renewal-interval
               Instructs clients to renew  activation  every  renewal-interval.
               The renewal-interval is a number optionally immediately followed
@@ -592,7 +626,6 @@ BUGS
 
 
 INTENTIONAL BUGS
-       vlmcsd activates non-VL (retail) and beta/preview versions of Windows.
        vlmcsd always reports enough active clients to satisfy the N count pol‐
        icy of the request.
 
@@ -612,4 +645,4 @@ SEE ALSO
 
 
 
-Hotbird64                       September 2016                       VLMCSD(8)
+Hotbird64                        October 2016                        VLMCSD(8)

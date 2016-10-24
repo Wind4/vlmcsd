@@ -95,5 +95,5 @@ int main(int argc, CARGV argv)
 		Version, *argv, *argv
 	);
 
-	return !0;
+	return VLMCSD_EINVAL;
 }

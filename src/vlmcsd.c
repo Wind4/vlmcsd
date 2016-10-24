@@ -80,7 +80,7 @@
 #include "ntservice.h"
 #include "helpers.h"
 
-static const char* const optstring = "N:B:m:t:w:0:3:6:H:A:R:u:g:L:p:i:P:l:r:U:W:C:F:o:T:SseDdVvqkZ";
+static const char* const optstring = "N:B:m:t:w:0:3:6:H:A:R:u:g:L:p:i:P:l:r:U:W:C:c:F:o:T:K:SseDdVvqkZ";
 
 
 #if !defined(NO_SOCKETS) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
@@ -116,6 +116,10 @@ static IniFileParameter_t IniFileParameterList[] =
 		{ "Office2010", INI_PARAM_OFFICE2010 },
 		{ "Office2013", INI_PARAM_OFFICE2013 },
 		{ "Office2016", INI_PARAM_OFFICE2016 },
+#	ifndef NO_STRICT_MODES
+		{ "WhiteListingLevel", INI_PARAM_WHITELISTING_LEVEL },
+		{ "CheckClientTime", INI_PARAM_CHECK_CLIENT_TIME },
+#	endif // NO_STRICT_MODES
 #	ifndef NO_RANDOM_EPID
 		{ "RandomizationLevel", INI_PARAM_RANDOMIZATION_LEVEL },
 		{ "LCID", INI_PARAM_LCID },
@@ -139,8 +143,10 @@ static IniFileParameter_t IniFileParameterList[] =
 #	endif // !defined(NO_TIMEOUT) && !__minix__ && !defined(USE_MSRPC) & !defined(USE_MSRPC)
 #	ifndef USE_MSRPC
 		{ "DisconnectClientsImmediately", INI_PARAM_DISCONNECT_IMMEDIATELY },
+#	ifndef SIMPLE_RPC
 		{ "UseNDR64", INI_PARAM_RPC_NDR64 },
 		{ "UseBTFN", INI_PARAM_RPC_BTFN },
+#	endif // !SIMPLE_RPC
 #	endif // USE_MSRPC
 #	ifndef NO_PID_FILE
 		{ "PIDFile", INI_PARAM_PID_FILE },
@@ -263,7 +269,7 @@ static char GetUid()
 static __noreturn void usage()
 {
 	printerrorf("Incorrect parameters\n\n");
-	exit(!0);
+	exit(VLMCSD_EINVAL);
 }
 #else // HELP
 
@@ -274,101 +280,107 @@ static __noreturn void usage()
 		"\nUsage:\n"
 		"   %s [ options ]\n\n"
 		"Where:\n"
-#ifndef NO_CL_PIDS
+#		ifndef NO_CL_PIDS
 		"  -w <ePID>		always use <ePID> for Windows\n"
 		"  -0 <ePID>		always use <ePID> for Office2010\n"
 		"  -3 <ePID>		always use <ePID> for Office2013\n"
 		"  -6 <ePID>		always use <ePID> for Office2016\n"
 		"  -H <HwId>		always use hardware Id <HwId>\n"
-#endif // NO_CL_PIDS
-#if !defined(_WIN32) && !defined(NO_USER_SWITCH)
+#		endif // NO_CL_PIDS
+#		if !defined(_WIN32) && !defined(NO_USER_SWITCH)
 		"  -u <user>		set uid to <user>\n"
 		"  -g <group>		set gid to <group>\n"
-#endif // !defined(_WIN32) && !defined(NO_USER_SWITCH)
-#ifndef NO_RANDOM_EPID
+#		endif // !defined(_WIN32) && !defined(NO_USER_SWITCH)
+#		ifndef NO_RANDOM_EPID
 		"  -r 0|1|2\t\tset ePID randomization level (default 1)\n"
 		"  -C <LCID>\t\tuse fixed <LCID> in random ePIDs\n"
-#endif // NO_RANDOM_EPID
-#if !defined(NO_PRIVATE_IP_DETECT)
-#if HAVE_GETIFADDR
+#		endif // NO_RANDOM_EPID
+#		if !defined(NO_PRIVATE_IP_DETECT)
+#		if HAVE_GETIFADDR
 		"  -o 0|1|2|3\t\tset protection level against clients with public IP addresses (default 0)\n"
-#else // !HAVE_GETIFADDR
-#ifndef USE_MSRPC
+#		else // !HAVE_GETIFADDR
+#		ifndef USE_MSRPC
 		"  -o 0|2\t\tset protection level against clients with public IP addresses (default 0)\n"
-#else // USE_MSRPC
+#		else // USE_MSRPC
 		"  -o 0|2\t\tset protection level against clients with public IP addresses (default 0). Limited use with MS RPC\n"
-#endif // USE_MSRPC
-#endif // !HAVE_GETIFADDR
-#endif // !defined(NO_PRIVATE_IP_DETECT)
-#ifndef NO_SOCKETS
-#if !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
+#		endif // USE_MSRPC
+#		endif // !HAVE_GETIFADDR
+#		endif // !defined(NO_PRIVATE_IP_DETECT)
+#		ifndef NO_SOCKETS
+#		if !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 		"  -L <address>[:<port>]\tlisten on IP address <address> with optional <port>\n"
 		"  -P <port>\t\tset TCP port <port> for subsequent -L statements (default 1688)\n"
-#if HAVE_FREEBIND
+#		if HAVE_FREEBIND
 		"  -F0, -F1\t\tdisable/enable binding to foreign IP addresses\n"
-#endif // HAVE_FREEBIND
-#else // defined(USE_MSRPC) || defined(SIMPLE_SOCKETS)
+#		endif // HAVE_FREEBIND
+#		else // defined(USE_MSRPC) || defined(SIMPLE_SOCKETS)
 		"  -P <port>\t\tuse TCP port <port> (default 1688)\n"
-#endif // defined(USE_MSRPC) || defined(SIMPLE_SOCKETS)
-#if !defined(NO_LIMIT) && !__minix__
+#		endif // defined(USE_MSRPC) || defined(SIMPLE_SOCKETS)
+#		if !defined(NO_LIMIT) && !__minix__
 		"  -m <clients>\t\tHandle max. <clients> simultaneously (default no limit)\n"
-#endif // !defined(NO_LIMIT) && !__minix__
-#ifdef _NTSERVICE
+#		endif // !defined(NO_LIMIT) && !__minix__
+#		ifdef _NTSERVICE
 		"  -s			install vlmcsd as an NT service. Ignores -e"
-#ifndef _WIN32
+#		ifndef _WIN32
 		", -f and -D"
-#endif // _WIN32
+#		endif // _WIN32
 		"\n"
 		"  -S			remove vlmcsd service. Ignores all other options\n"
 		"  -U <username>		run NT service as <username>. Must be used with -s\n"
 		"  -W <password>		optional <password> for -U. Must be used with -s\n"
-#endif // _NTSERVICE
-#ifndef NO_LOG
+#		endif // _NTSERVICE
+#		ifndef NO_LOG
 		"  -e			log to stdout\n"
-#endif // NO_LOG
-#ifndef _WIN32 //
+#		endif // NO_LOG
+#		ifndef _WIN32 //
 		"  -D			run in foreground\n"
-#else // _WIN32
+#		else // _WIN32
 		"  -D			does nothing. Provided for compatibility with POSIX versions only\n"
-#endif // _WIN32
-#endif // NO_SOCKETS
-#ifndef USE_MSRPC
-#if !defined(NO_TIMEOUT) && !__minix__
+#		endif // _WIN32
+#		endif // NO_SOCKETS
+#		ifndef NO_STRICT_MODES
+		"  -K 0|1|2|3\t\tset whitelisting level for KMS IDs (default -K0)\n"
+		"  -c0, -c1\t\tdisable/enable client time checking (default -c0)\n"
+#		endif // !NO_STRICT_MODES
+#		ifndef USE_MSRPC
+#		if !defined(NO_TIMEOUT) && !__minix__
 		"  -t <seconds>\t\tdisconnect clients after <seconds> of inactivity (default 30)\n"
-#endif // !defined(NO_TIMEOUT) && !__minix__
+#		endif // !defined(NO_TIMEOUT) && !__minix__
 		"  -d\t\t\tdisconnect clients after each request\n"
 		"  -k\t\t\tdon't disconnect clients after each request (default)\n"
+#		ifndef SIMPLE_RPC
 		"  -N0, -N1\t\tdisable/enable NDR64\n"
 		"  -B0, -B1\t\tdisable/enable bind time feature negotiation\n"
-#endif // USE_MSRPC
-#ifndef NO_PID_FILE
+#		endif // !SIMPLE_RPC
+#		endif // USE_MSRPC
+#		ifndef NO_PID_FILE
 		"  -p <file>		write pid to <file>\n"
-#endif // NO_PID_FILE
-#ifndef NO_INI_FILE
+#		endif // NO_PID_FILE
+#		ifndef NO_INI_FILE
 		"  -i <file>\t\tuse config file <file>\n"
-#endif // NO_INI_FILE
-#ifndef NO_CUSTOM_INTERVALS
+#		endif // NO_INI_FILE
+#		ifndef NO_CUSTOM_INTERVALS
 		"  -R <interval>		renew activation every <interval> (default 1w)\n"
 		"  -A <interval>		retry activation every <interval> (default 2h)\n"
-#endif // NO_CUSTOM_INTERVALS
-#ifndef NO_LOG
-#ifndef _WIN32
+#		endif // NO_CUSTOM_INTERVALS
+#		ifndef NO_LOG
+#		ifndef _WIN32
 		"  -l syslog		log to syslog\n"
-#endif // _WIN32
+#		endif // _WIN32
 		"  -l <file>		log to <file>\n"
 		"  -T0, -T1\t\tdisable/enable logging with time and date (default -T1)\n"
-#ifndef NO_VERBOSE_LOG
+#		ifndef NO_VERBOSE_LOG
 		"  -v\t\t\tlog verbose\n"
 		"  -q\t\t\tdon't log verbose (default)\n"
-#endif // NO_VERBOSE_LOG
-#endif // NO_LOG
-#ifndef NO_VERSION_INFORMATION
+#		endif // NO_VERBOSE_LOG
+#		endif // NO_LOG
+#		ifndef NO_VERSION_INFORMATION
 		"  -V			display version information and exit\n"
-#endif // NO_VERSION_INFORMATION
+#		endif // NO_VERSION_INFORMATION
 		,
 		Version, global_argv[0]);
 
-	exit(!0);
+	exit(VLMCSD_EINVAL);
 }
 #endif // HELP
 
@@ -433,7 +445,7 @@ __pure static DWORD getTimeSpanFromCommandLine(const char *const restrict optarg
 	if (!val)
 	{
 		printerrorf("Fatal: No valid time span specified in option -%c.\n", optchar);
-		exit(!0);
+		exit(VLMCSD_EINVAL);
 	}
 
 	return (DWORD)val;
@@ -493,9 +505,9 @@ static char* allocateStringArgument(const char *const argument)
 
 static __pure int isControlCharOrSlash(const char c)
 {
-	if ((unsigned char)c < '!') return !0;
-	if (c == '/') return !0;
-	return 0;
+	if ((unsigned char)c < '!') return TRUE;
+	if (c == '/') return TRUE;
+	return FALSE;
 }
 
 
@@ -645,11 +657,11 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 #	if !defined(NO_LIMIT) && !defined(NO_SOCKETS) && !__minix__
 
 	case INI_PARAM_MAX_WORKERS:
-#			ifdef USE_MSRPC
+#		ifdef USE_MSRPC
 		success = getIniFileArgumentInt(&MaxTasks, iniarg, 1, RPC_C_LISTEN_MAX_CALLS_DEFAULT);
-#			else // !USE_MSRPC
+#		else // !USE_MSRPC
 		success = getIniFileArgumentInt(&MaxTasks, iniarg, 1, SEM_VALUE_MAX);
-#			endif // !USE_MSRPC
+#		endif // !USE_MSRPC
 		break;
 
 #	endif // !defined(NO_LIMIT) && !defined(NO_SOCKETS) && !__minix__
@@ -661,6 +673,19 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 		break;
 
 #	endif // NO_PID_FILE
+
+#ifndef NO_STRICT_MODES
+
+	case INI_PARAM_WHITELISTING_LEVEL:
+		success = getIniFileArgumentInt(&WhitelistingLevel, iniarg, 0, 3);
+		break;
+
+	case INI_PARAM_CHECK_CLIENT_TIME:
+		success = getIniFileArgumentBool(&CheckClientTime, iniarg);
+		break;
+
+#endif // !NO_STRICT_MODES
+
 
 #	ifndef  NO_LOG
 
@@ -708,11 +733,11 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 		break;
 
 	case INI_PARAM_RPC_NDR64:
-		success = getIniFileArgumentBool(&UseRpcNDR64, iniarg);
+		success = getIniFileArgumentBool(&UseServerRpcNDR64, iniarg);
 		break;
 
 	case INI_PARAM_RPC_BTFN:
-		success = getIniFileArgumentBool(&UseRpcBTFN, iniarg);
+		success = getIniFileArgumentBool(&UseServerRpcBTFN, iniarg);
 		break;
 
 #	endif // USE_MSRPC
@@ -1249,6 +1274,20 @@ static void parseGeneralArguments() {
 		break;
 #	endif // _NTSERVICE
 
+#	ifndef NO_STRICT_MODES
+
+	case 'K':
+		WhitelistingLevel = (int_fast8_t)getOptionArgumentInt((char)o, 0, 3);
+		ignoreIniFileParameter(INI_PARAM_WHITELISTING_LEVEL);
+		break;
+
+	case 'c':
+		if (!getArgumentBool(&CheckClientTime, optarg)) usage();
+		ignoreIniFileParameter(INI_PARAM_CHECK_CLIENT_TIME);
+		break;
+
+#	endif // !NO_STRICT_MODES
+
 	case 'D':
 #		ifndef _WIN32
 		nodaemon = 1;
@@ -1336,15 +1375,17 @@ static void parseGeneralArguments() {
 		ignoreIniFileParameter(INI_PARAM_DISCONNECT_IMMEDIATELY);
 		break;
 
+#	ifndef SIMPLE_RPC
 	case 'N':
-		if (!getArgumentBool(&UseRpcNDR64, optarg)) usage();
+		if (!getArgumentBool(&UseServerRpcNDR64, optarg)) usage();
 		ignoreIniFileParameter(INI_PARAM_RPC_NDR64);
 		break;
 
 	case 'B':
-		if (!getArgumentBool(&UseRpcBTFN, optarg)) usage();
+		if (!getArgumentBool(&UseServerRpcBTFN, optarg)) usage();
 		ignoreIniFileParameter(INI_PARAM_RPC_BTFN);
 		break;
+#	endif // !SIMPLE_RPC
 #	endif // !USE_MSRPC
 
 #	ifndef NO_VERSION_INFORMATION

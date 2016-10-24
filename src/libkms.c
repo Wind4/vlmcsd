@@ -13,7 +13,7 @@
 
 #define EXTERNAL dllexport
 
-#define DLLVERSION 0x30002
+#define DLLVERSION 0x40000
 
 #include "libkms.h"
 #include "shared_globals.h"
@@ -51,7 +51,7 @@ EXTERNC __declspec(EXTERNAL) char* __cdecl GetErrorMessage()
 	return ErrorMessage;
 }
 
-EXTERNC __declspec(EXTERNAL) SOCKET __cdecl ConnectToServer(const char* host, const char* port, const int addressFamily)
+EXTERNC __declspec(EXTERNAL)SOCKET __cdecl ConnectToServer(const char* host, const char* port, const int addressFamily)
 {
 	SOCKET sock;
 	*ErrorMessage = 0;
@@ -74,11 +74,13 @@ EXTERNC __declspec(EXTERNAL) SOCKET __cdecl ConnectToServer(const char* host, co
 	return sock;
 }
 
-EXTERNC __declspec(EXTERNAL) RpcStatus __cdecl BindRpc(const SOCKET sock, const int_fast8_t useMultiplexedRpc)
+EXTERNC __declspec(EXTERNAL)RpcStatus __cdecl BindRpc(const SOCKET sock, const int_fast8_t useMultiplexedRpc, const int_fast8_t useRpcNDR64, const int_fast8_t useRpcBTFN, PRpcDiag_t rpcDiag)
 {
 	*ErrorMessage = 0;
 	UseMultiplexedRpc = useMultiplexedRpc;
-	return rpcBindClient(sock, FALSE);
+	UseClientRpcNDR64 = useRpcNDR64;
+	UseClientRpcBTFN = useRpcBTFN;
+	return rpcBindClient(sock, FALSE, rpcDiag);
 }
 
 EXTERNC __declspec(EXTERNAL) void __cdecl CloseConnection(const SOCKET sock)
@@ -87,24 +89,24 @@ EXTERNC __declspec(EXTERNAL) void __cdecl CloseConnection(const SOCKET sock)
 }
 
 
-EXTERNC __declspec(EXTERNAL) DWORD __cdecl SendKMSRequest(const SOCKET sock, RESPONSE* baseResponse, REQUEST* baseRequest, RESPONSE_RESULT* result, BYTE *hwid)
+EXTERNC __declspec(EXTERNAL)DWORD __cdecl SendKMSRequest(const SOCKET sock, RESPONSE* baseResponse, REQUEST* baseRequest, RESPONSE_RESULT* result, BYTE *hwid)
 {
 	*ErrorMessage = 0;
 	return SendActivationRequest(sock, baseResponse, baseRequest, result, hwid);
 }
 
-EXTERNC __declspec(EXTERNAL) int_fast8_t __cdecl IsDisconnected(const SOCKET sock)
+EXTERNC __declspec(EXTERNAL)int_fast8_t __cdecl IsDisconnected(const SOCKET sock)
 {
 	return isDisconnected(sock);
 }
 
 
-EXTERNC __declspec(EXTERNAL) DWORD __cdecl StartKmsServer(const int port, RequestCallback_t requestCallback)
+EXTERNC __declspec(EXTERNAL)DWORD __cdecl StartKmsServer(const int port, RequestCallback_t requestCallback)
 {
 #ifndef SIMPLE_SOCKETS
 	char listenAddress[64];
 
-	if (IsServerStarted) return !0;
+	if (IsServerStarted) return SOCKET_EALREADY;
 
 #	ifdef _WIN32
 	int error = initializeWinSockets();
@@ -120,7 +122,7 @@ EXTERNC __declspec(EXTERNAL) DWORD __cdecl StartKmsServer(const int port, Reques
 	if (checkProtocolStack(AF_INET)) { haveIPv4 = TRUE; maxsockets++; }
 	if (checkProtocolStack(AF_INET6)) { haveIPv6 = TRUE; maxsockets++; }
 
-	if(!maxsockets) return !0;
+	if (!maxsockets) return SOCKET_EAFNOSUPPORT;
 
 	SocketList = (SOCKET*)vlmcsd_malloc(sizeof(SOCKET) * (size_t)maxsockets);
 	numsockets = 0;
@@ -140,7 +142,7 @@ EXTERNC __declspec(EXTERNAL) DWORD __cdecl StartKmsServer(const int port, Reques
 	if (!numsockets)
 	{
 		free(SocketList);
-		return !0;
+		return SOCKET_EADDRNOTAVAIL;
 	}
 
 	IsServerStarted = TRUE;
@@ -152,7 +154,7 @@ EXTERNC __declspec(EXTERNAL) DWORD __cdecl StartKmsServer(const int port, Reques
 
 #	else // SIMPLE_SOCKETS
 
-	if (IsServerStarted) return !0;
+	if (IsServerStarted) return SOCKET_EALREADY;
 	int error;
 
 #	ifdef _WIN32
@@ -165,6 +167,7 @@ EXTERNC __declspec(EXTERNAL) DWORD __cdecl StartKmsServer(const int port, Reques
 
 	CreateResponseBase = requestCallback;
 	error = listenOnAllAddresses();
+	free(defaultport);
 	if (error) return error;
 
 	IsServerStarted = TRUE;
@@ -178,9 +181,9 @@ EXTERNC __declspec(EXTERNAL) DWORD __cdecl StartKmsServer(const int port, Reques
 }
 
 
-EXTERNC __declspec(EXTERNAL) DWORD __cdecl StopKmsServer()
+EXTERNC __declspec(EXTERNAL)DWORD __cdecl StopKmsServer()
 {
-	if (!IsServerStarted) return !0;
+	if (!IsServerStarted) return VLMCSD_EPERM;
 
 	closeAllListeningSockets();
 

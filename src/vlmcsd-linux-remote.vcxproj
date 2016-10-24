@@ -29,34 +29,34 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\crypto.c" />
-    <ClCompile Include="src\crypto_internal.c" />
-    <ClCompile Include="src\crypto_openssl.c" />
-    <ClCompile Include="src\endian.c" />
-    <ClCompile Include="src\helpers.c" />
-    <ClCompile Include="src\kms.c" />
-    <ClCompile Include="src\network.c" />
-    <ClCompile Include="src\output.c" />
-    <ClCompile Include="src\rpc.c" />
-    <ClCompile Include="src\shared_globals.c" />
-    <ClCompile Include="src\vlmcsd.c" />
+    <ClCompile Include="crypto.c" />
+    <ClCompile Include="crypto_internal.c" />
+    <ClCompile Include="crypto_openssl.c" />
+    <ClCompile Include="endian.c" />
+    <ClCompile Include="helpers.c" />
+    <ClCompile Include="kms.c" />
+    <ClCompile Include="network.c" />
+    <ClCompile Include="output.c" />
+    <ClCompile Include="rpc.c" />
+    <ClCompile Include="shared_globals.c" />
+    <ClCompile Include="vlmcsd.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\config.h" />
-    <ClInclude Include="src\crypto.h" />
-    <ClInclude Include="src\crypto_internal.h" />
-    <ClInclude Include="src\crypto_openssl.h" />
-    <ClInclude Include="src\crypto_polarssl.h" />
-    <ClInclude Include="src\endian.h" />
-    <ClInclude Include="src\helpers.h" />
-    <ClInclude Include="src\kms.h" />
-    <ClInclude Include="src\network.h" />
-    <ClInclude Include="src\ntservice.h" />
-    <ClInclude Include="src\output.h" />
-    <ClInclude Include="src\rpc.h" />
-    <ClInclude Include="src\shared_globals.h" />
-    <ClInclude Include="src\types.h" />
-    <ClInclude Include="src\vlmcsd.h" />
+    <ClInclude Include="config.h" />
+    <ClInclude Include="crypto.h" />
+    <ClInclude Include="crypto_internal.h" />
+    <ClInclude Include="crypto_openssl.h" />
+    <ClInclude Include="crypto_polarssl.h" />
+    <ClInclude Include="endian.h" />
+    <ClInclude Include="helpers.h" />
+    <ClInclude Include="kms.h" />
+    <ClInclude Include="network.h" />
+    <ClInclude Include="ntservice.h" />
+    <ClInclude Include="output.h" />
+    <ClInclude Include="rpc.h" />
+    <ClInclude Include="shared_globals.h" />
+    <ClInclude Include="types.h" />
+    <ClInclude Include="vlmcsd.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{cc2fbe0b-b9df-4306-88a1-20706bbd2b0c}</ProjectGuid>
@@ -99,39 +99,37 @@
     <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
     <SourcePath>
     </SourcePath>
-    <OutDir>$(ProjectDir)VisualStudio-Linux-Remote\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(ProjectDir)VisualStudio-Linux-Remote\vlmcsd\obj\$(Platform)\$(Configuration)\</IntDir>
     <RemoteLdToolExe>gcc</RemoteLdToolExe>
-    <IncludePath>$(IncludePath);$(SolutionDir)..\VisualStudio-Linux-Remote\toolchains\gcc5-x86_64-linux-gnu\usr\include</IncludePath>
+    <IncludePath>$(IncludePath);$(SolutionDir)..\src\VisualStudio-Linux-Remote\toolchains\gcc5-x86_64-linux-gnu\usr\include</IncludePath>
+    <IntDir>$(ProjectDir)vlmcsd\obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>vlmcsd-x64-glibc</TargetName>
     <TargetExt />
     <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
-    <IncludePath>$(IncludePath);$(SolutionDir)..\VisualStudio-Linux-Remote\toolchains\gcc5-x86_64-linux-gnu\usr\include</IncludePath>
-    <OutDir>$(ProjectDir)bin\</OutDir>
-    <IntDir>$(ProjectDir)VisualStudio-Linux-Remote\vlmcsd\obj\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(IncludePath);$(SolutionDir)..\src\VisualStudio-Linux-Remote\toolchains\gcc5-x86_64-linux-gnu\usr\include</IncludePath>
+    <OutDir>$(SolutionDir)bin\</OutDir>
     <RemoteLdToolExe>gcc</RemoteLdToolExe>
+    <IntDir>$(ProjectDir)vlmcsd\obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <IncludePath>$(IncludePath);$(SolutionDir)..\VisualStudio-Linux-Remote\toolchains\gcc5-x86_64-linux-gnu\usr\include</IncludePath>
+    <IncludePath>$(IncludePath);$(SolutionDir)..\src\VisualStudio-Linux-Remote\toolchains\gcc5-x86_64-linux-gnu\usr\include</IncludePath>
     <TargetName>vlmcsd</TargetName>
     <TargetExt />
     <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
     <SourcePath>
     </SourcePath>
-    <OutDir>$(ProjectDir)VisualStudio-Linux-Remote\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(ProjectDir)VisualStudio-Linux-Remote\vlmcsd\obj\$(Platform)\$(Configuration)\</IntDir>
     <RemoteLdToolExe>gcc</RemoteLdToolExe>
+    <IntDir>$(ProjectDir)vlmcsd\obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <TargetName>vlmcsd-x86-glibc</TargetName>
     <TargetExt />
     <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
-    <IncludePath>$(IncludePath);$(SolutionDir)..\VisualStudio-Linux-Remote\toolchains\gcc5-x86_64-linux-gnu\usr\include</IncludePath>
-    <OutDir>$(ProjectDir)bin\</OutDir>
-    <IntDir>$(ProjectDir)VisualStudio-Linux-Remote\vlmcsd\obj\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(IncludePath);$(SolutionDir)..\src\VisualStudio-Linux-Remote\toolchains\gcc5-x86_64-linux-gnu\usr\include</IncludePath>
+    <OutDir>$(SolutionDir)bin\</OutDir>
     <RemoteLdToolExe>gcc</RemoteLdToolExe>
+    <IntDir>$(ProjectDir)vlmcsd\obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -171,6 +169,7 @@
       <CLanguageStandard>c99</CLanguageStandard>
       <CppLanguageStandard>c++98</CppLanguageStandard>
       <AdditionalOptions>-Wno-sign-conversion -Wno-conversion -fno-stack-protector -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants -ffunction-sections -fdata-sections -pipe -std=gnu89 -m64 %(AdditionalOptions)</AdditionalOptions>
+      <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
     <Link>
       <LibraryDependencies>pthread;%(LibraryDependencies)</LibraryDependencies>
@@ -218,6 +217,7 @@
       <CLanguageStandard>c99</CLanguageStandard>
       <CppLanguageStandard>c++98</CppLanguageStandard>
       <AdditionalOptions>-Wno-sign-conversion -Wno-conversion -fno-stack-protector -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants -ffunction-sections -fdata-sections -pipe -std=gnu89 -m32 %(AdditionalOptions)</AdditionalOptions>
+      <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
     <Link>
       <LibraryDependencies>pthread;%(LibraryDependencies)</LibraryDependencies>

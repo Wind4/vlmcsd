@@ -46,7 +46,7 @@
 #include "rpc.h"
 
 #ifndef _WIN32
-typedef ssize_t (*sendrecv_t)(int, void*, size_t, int);
+typedef ssize_t(*sendrecv_t)(int, void*, size_t, int);
 #else
 typedef int (WINAPI *sendrecv_t)(SOCKET, void*, int, int);
 #endif
@@ -57,17 +57,16 @@ int_fast8_t sendrecv(SOCKET sock, BYTE *data, int len, int_fast8_t do_send)
 {
 	int n;
 	sendrecv_t  f = do_send
-			? (sendrecv_t) send
-			: (sendrecv_t) recv;
+		? (sendrecv_t)send
+		: (sendrecv_t)recv;
 
 	do
 	{
-			n = f(sock, data, len, 0);
-	}
-	while (
-			( n < 0 && socket_errno == VLMCSD_EINTR ) || ( n > 0 && ( data += n, (len -= n) > 0 ) ));
+		n = f(sock, data, len, 0);
+	} while (
+		(n < 0 && socket_errno == SOCKET_EINTR) || (n > 0 && (data += n, (len -= n) > 0)));
 
-	return ! len;
+	return !len;
 }
 
 
@@ -78,15 +77,15 @@ static int_fast8_t ip2str(char *restrict result, const size_t resultLength, cons
 	char ipAddress[64], portNumber[8];
 
 	if (getnameinfo
-		(
-			socketAddress,
-			socketLength,
-			ipAddress,
-			sizeof(ipAddress),
-			portNumber,
-			sizeof(portNumber),
-			NI_NUMERICHOST | NI_NUMERICSERV
-		))
+	(
+		socketAddress,
+		socketLength,
+		ipAddress,
+		sizeof(ipAddress),
+		portNumber,
+		sizeof(portNumber),
+		NI_NUMERICHOST | NI_NUMERICSERV
+	))
 	{
 		return FALSE;
 	}
@@ -133,12 +132,12 @@ static int_fast8_t setBlockingEnabled(SOCKET fd, int_fast8_t blocking)
 {
 	if (fd == INVALID_SOCKET) return FALSE;
 
-	#ifdef _WIN32
+#ifdef _WIN32
 
 	unsigned long mode = blocking ? 0 : 1;
 	return (ioctlsocket(fd, FIONBIO, &mode) == 0) ? TRUE : FALSE;
 
-	#else // POSIX
+#else // POSIX
 
 	int flags = fcntl(fd, F_GETFL, 0);
 
@@ -147,7 +146,7 @@ static int_fast8_t setBlockingEnabled(SOCKET fd, int_fast8_t blocking)
 	flags = blocking ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
 	return (fcntl(fd, F_SETFL, flags) == 0) ? TRUE : FALSE;
 
-	#endif // POSIX
+#endif // POSIX
 }
 
 
@@ -182,45 +181,45 @@ static int_fast8_t isPrivateIPAddress(struct sockaddr* addr, socklen_t* length)
 
 	switch (addr->sa_family)
 	{
-		case AF_INET6:
-		{
-			union v6addr* ipv6addr = (union v6addr*)&((struct sockaddr_in6*)addr)->sin6_addr;
+	case AF_INET6:
+	{
+		union v6addr* ipv6addr = (union v6addr*)&((struct sockaddr_in6*)addr)->sin6_addr;
 
-			if
+		if
 			(
-					(ipv6addr->qwords[0] != 0 || BE64(ipv6addr->qwords[1]) != 1) && // ::1 IPv6 localhost
-					(BE16(ipv6addr->words[0]) & 0xe000) == 0x2000 // !2000::/3
-			)
-			{
-				return FALSE;
-			}
-
-			if (length) *length = sizeof(struct sockaddr_in6);
-			break;
+			(ipv6addr->qwords[0] != 0 || BE64(ipv6addr->qwords[1]) != 1) && // ::1 IPv6 localhost
+				(BE16(ipv6addr->words[0]) & 0xe000) == 0x2000 // !2000::/3
+				)
+		{
+			return FALSE;
 		}
 
-		case AF_INET:
-		{
-			uint32_t ipv4addr = BE32(((struct sockaddr_in*)addr)->sin_addr.s_addr);
+		if (length) *length = sizeof(struct sockaddr_in6);
+		break;
+	}
 
-			if
+	case AF_INET:
+	{
+		uint32_t ipv4addr = BE32(((struct sockaddr_in*)addr)->sin_addr.s_addr);
+
+		if
 			(
-				(ipv4addr & 0xff000000) != 0x7f000000 && // 127.x.x.x localhost
+			(ipv4addr & 0xff000000) != 0x7f000000 && // 127.x.x.x localhost
 				(ipv4addr & 0xffff0000) != 0xc0a80000 && // 192.168.x.x private routeable
 				(ipv4addr & 0xffff0000) != 0xa9fe0000 && // 169.254.x.x link local
 				(ipv4addr & 0xff000000) != 0x0a000000 && // 10.x.x.x private routeable
 				(ipv4addr & 0xfff00000) != 0xac100000    // 172.16-31.x.x private routeable
-			)
-			{
-				return FALSE;
-			}
-
-			if (length) *length = sizeof(struct sockaddr_in);
-			break;
+				)
+		{
+			return FALSE;
 		}
 
-		default:
-			return FALSE;
+		if (length) *length = sizeof(struct sockaddr_in);
+		break;
+	}
+
+	default:
+		return FALSE;
 	}
 
 	return TRUE;
@@ -278,7 +277,7 @@ SOCKET connectToAddress(const char *const addr, const int AddressFamily, int_fas
 			break;
 		}
 
-		printerrorf("%s: %s\n", szAddr, socket_errno == VLMCSD_EINPROGRESS ? "Timed out" : vlmcsd_strerror(socket_errno));
+		printerrorf("%s: %s\n", szAddr, socket_errno == SOCKET_EINPROGRESS ? "Timed out" : vlmcsd_strerror(socket_errno));
 
 		socketclose(s);
 		s = INVALID_SOCKET;
@@ -323,8 +322,10 @@ int listenOnAllAddresses()
 	if (!stringToInt(defaultport, 1, 65535, &port_listen))
 	{
 		printerrorf("Fatal: Port must be numeric between 1 and 65535.\n");
-		exit(!0);
+		exit(VLMCSD_EINVAL);
 	}
+
+#	if defined(AF_INET6) && defined(IPV6_V6ONLY)
 
 	struct sockaddr_in6 addr;
 	memset(&addr, 0, sizeof(addr));
@@ -332,38 +333,41 @@ int listenOnAllAddresses()
 	addr.sin6_port = BE16((uint16_t)port_listen);
 	addr.sin6_addr = in6addr_any;
 	BOOL v6only = FALSE;
-
 	s_server = socket(AF_INET6, SOCK_STREAM, 0);
 
 	if (s_server == INVALID_SOCKET
-			|| allowSocketReuse(s_server)
-			|| setsockopt(s_server, IPPROTO_IPV6, IPV6_V6ONLY, (sockopt_t)&v6only, sizeof(v6only))
-			|| bind(s_server, (struct sockaddr *)&addr, sizeof(addr))
-			|| listen(s_server, SOMAXCONN) )
+		|| allowSocketReuse(s_server)
+		|| setsockopt(s_server, IPPROTO_IPV6, IPV6_V6ONLY, (sockopt_t)&v6only, sizeof(v6only))
+		|| bind(s_server, (struct sockaddr *)&addr, sizeof(addr))
+		|| listen(s_server, SOMAXCONN))
 	{
 		socketclose(s_server);
-		struct sockaddr_in addr = {
+#	endif // defined(AF_INET6) && defined(IPV6_V6ONLY)
+		struct sockaddr_in addr4 = {
 				.sin_family = AF_INET,
-				.sin_port   = BE16((uint16_t)port_listen),
+				.sin_port = BE16((uint16_t)port_listen),
+				.sin_addr.s_addr = BE32(INADDR_ANY)
 		};
 
-		addr.sin_addr.s_addr = BE32(INADDR_ANY);
 		s_server = socket(AF_INET, SOCK_STREAM, 0);
 
-		if ( s_server == INVALID_SOCKET
-				|| allowSocketReuse(s_server)
-				|| bind(s_server, (struct sockaddr *)&addr, sizeof(addr))
-				|| listen(s_server, SOMAXCONN) )
+		if (s_server == INVALID_SOCKET
+			|| allowSocketReuse(s_server)
+			|| bind(s_server, (struct sockaddr *)&addr4, sizeof(addr4))
+			|| listen(s_server, SOMAXCONN))
 		{
 			int error = socket_errno;
 			printerrorf("Fatal: Cannot bind to TCP port %u: %s\n", port_listen, vlmcsd_strerror(error));
 			return error;
 		}
-	}
 
-	#ifndef NO_LOG
+#	if defined(AF_INET6) && defined(IPV6_V6ONLY)
+	}
+#	endif // defined(AF_INET6) && defined(IPV6_V6ONLY)
+
+#ifndef NO_LOG
 	logger("Listening on TCP port %u\n", port_listen);
-	#endif // NO_LOG
+#endif // NO_LOG
 
 	return 0;
 }
@@ -380,18 +384,18 @@ void getPrivateIPAddresses(int* numAddresses, char*** ipAddresses)
 
 	PIP_ADAPTER_ADDRESSES firstAdapter, currentAdapter;
 
-    DWORD dwRetVal;
-    ULONG outBufLen = 16384;
-    ULONG flags = GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_DNS_SERVER | GAA_FLAG_SKIP_FRIENDLY_NAME;
+	DWORD dwRetVal;
+	ULONG outBufLen = 16384;
+	ULONG flags = GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_DNS_SERVER | GAA_FLAG_SKIP_FRIENDLY_NAME;
 
-    firstAdapter = (PIP_ADAPTER_ADDRESSES)vlmcsd_malloc(outBufLen);
+	firstAdapter = (PIP_ADAPTER_ADDRESSES)vlmcsd_malloc(outBufLen);
 
-    if ((dwRetVal = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, firstAdapter, &outBufLen)) == ERROR_BUFFER_OVERFLOW)
-    {
-    	free(firstAdapter);
-    	firstAdapter = (PIP_ADAPTER_ADDRESSES)vlmcsd_malloc(outBufLen);
-    	dwRetVal = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, firstAdapter, &outBufLen);
-    }
+	if ((dwRetVal = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, firstAdapter, &outBufLen)) == ERROR_BUFFER_OVERFLOW)
+	{
+		free(firstAdapter);
+		firstAdapter = (PIP_ADAPTER_ADDRESSES)vlmcsd_malloc(outBufLen);
+		dwRetVal = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, firstAdapter, &outBufLen);
+	}
 
 	if (dwRetVal != NO_ERROR)
 	{
@@ -478,12 +482,12 @@ void getPrivateIPAddresses(int* numAddresses, char*** ipAddresses)
 		size_t adrlen = strlen(ipAddress);
 
 		if
-		(
-			addr->ifa_addr->sa_family == AF_INET6 &&
-			adrlen > 5 &&
-			!strchr(ipAddress, '%') &&
-			(BE16(*(uint16_t*)&((struct sockaddr_in6*)addr->ifa_addr)->sin6_addr) & 0xffc0) == 0xfe80
-		)
+			(
+				addr->ifa_addr->sa_family == AF_INET6 &&
+				adrlen > 5 &&
+				!strchr(ipAddress, '%') &&
+				(BE16(*(uint16_t*)&((struct sockaddr_in6*)addr->ifa_addr)->sin6_addr) & 0xffc0) == 0xfe80
+				)
 		{
 			size_t ifnamelen = strlen(addr->ifa_name);
 			char* workaroundIpAddress = (char*)vlmcsd_malloc(adrlen + ifnamelen + 2);
@@ -556,10 +560,10 @@ static int listenOnAddress(const struct addrinfo *const ai, SOCKET *s)
 	{
 #		ifdef _PEDANTIC
 #		if defined(_WIN32) || defined(__CYGWIN__)
-//		if (IsWindowsVistaOrGreater()) //Doesn't work with older version of MingW32-w64 toolchain
-	    if ((GetVersion() & 0xff) > 5)
+		//		if (IsWindowsVistaOrGreater()) //Doesn't work with older version of MingW32-w64 toolchain
+		if ((GetVersion() & 0xff) > 5)
 #		endif // _WIN32
-		printerrorf("Warning: %s does not support socket option IPV6_V6ONLY: %s\n", ipstr, vlmcsd_strerror(socket_errno));
+			printerrorf("Warning: %s does not support socket option IPV6_V6ONLY: %s\n", ipstr, vlmcsd_strerror(socket_errno));
 #		endif // _PEDANTIC
 	}
 #	endif
@@ -645,9 +649,9 @@ BOOL addListeningSocket(const char *const addr)
 
 			if (numsockets >= FD_SETSIZE)
 			{
-				#ifdef _PEDANTIC // Do not report this error in normal builds to keep file size low
+#ifdef _PEDANTIC // Do not report this error in normal builds to keep file size low
 				printerrorf("Warning: Cannot listen on %s. Your OS only supports %u listening sockets in an FD_SET.\n", addr, FD_SETSIZE);
-				#endif
+#endif
 				break;
 			}
 
@@ -680,39 +684,39 @@ __pure int_fast8_t checkProtocolStack(const int addressfamily)
 // Build an fd_set of all listening socket then use select to wait for an incoming connection
 static SOCKET network_accept_any()
 {
-    fd_set ListeningSocketsList;
-    SOCKET maxSocket, sock;
-    int i;
-    int status;
+	fd_set ListeningSocketsList;
+	SOCKET maxSocket, sock;
+	int i;
+	int status;
 
-    FD_ZERO(&ListeningSocketsList);
-    maxSocket = 0;
+	FD_ZERO(&ListeningSocketsList);
+	maxSocket = 0;
 
-    for (i = 0; i < numsockets; i++)
-    {
-        FD_SET(SocketList[i], &ListeningSocketsList);
-        if (SocketList[i] > maxSocket) maxSocket = SocketList[i];
-    }
+	for (i = 0; i < numsockets; i++)
+	{
+		FD_SET(SocketList[i], &ListeningSocketsList);
+		if (SocketList[i] > maxSocket) maxSocket = SocketList[i];
+	}
 
-    status = select((int)maxSocket + 1, &ListeningSocketsList, NULL, NULL, NULL);
+	status = select((int)maxSocket + 1, &ListeningSocketsList, NULL, NULL, NULL);
 
-    if (status < 0) return INVALID_SOCKET;
+	if (status < 0) return INVALID_SOCKET;
 
-    sock = INVALID_SOCKET;
+	sock = INVALID_SOCKET;
 
-    for (i = 0; i < numsockets; i++)
-    {
-        if (FD_ISSET(SocketList[i], &ListeningSocketsList))
-        {
-            sock = SocketList[i];
-            break;
-        }
-    }
+	for (i = 0; i < numsockets; i++)
+	{
+		if (FD_ISSET(SocketList[i], &ListeningSocketsList))
+		{
+			sock = SocketList[i];
+			break;
+		}
+	}
 
-    if (sock == INVALID_SOCKET)
-        return INVALID_SOCKET;
-    else
-        return accept(sock, NULL, NULL);
+	if (sock == INVALID_SOCKET)
+		return INVALID_SOCKET;
+	else
+		return accept(sock, NULL, NULL);
 }
 #endif // !SIMPLE_SOCKETS
 
@@ -734,7 +738,7 @@ void closeAllListeningSockets()
 		socketclose(SocketList[i]);
 	}
 
-	#endif // !SIMPLE_SOCKETS
+#endif // !SIMPLE_SOCKETS
 }
 #endif // NO_SOCKETS
 
@@ -749,7 +753,7 @@ static void serveClient(const SOCKET s_client, const DWORD RpcAssocGroup)
 	to.tv_sec = ServerTimeout;
 	to.tv_usec = 0;
 
-	#else // Windows requires a DWORD with milliseconds
+#else // Windows requires a DWORD with milliseconds
 
 	DWORD to = ServerTimeout * 1000;
 
@@ -761,11 +765,11 @@ static void serveClient(const SOCKET s_client, const DWORD RpcAssocGroup)
 		setsockopt(s_client, SOL_SOCKET, SO_RCVTIMEO, (sockopt_t)&to, sizeof(to)) ||
 		setsockopt(s_client, SOL_SOCKET, SO_SNDTIMEO, (sockopt_t)&to, sizeof(to));
 
-    if (result) logger("Warning: Set timeout failed: %s\n", vlmcsd_strerror(socket_errno));
+	if (result) logger("Warning: Set timeout failed: %s\n", vlmcsd_strerror(socket_errno));
 
 #	else // !(!defined(NO_LOG) && defined(_PEDANTIC))
 
-    setsockopt(s_client, SOL_SOCKET, SO_RCVTIMEO, (sockopt_t)&to, sizeof(to));
+	setsockopt(s_client, SOL_SOCKET, SO_RCVTIMEO, (sockopt_t)&to, sizeof(to));
 	setsockopt(s_client, SOL_SOCKET, SO_SNDTIMEO, (sockopt_t)&to, sizeof(to));
 
 #   endif // !(!defined(NO_LOG) && defined(_PEDANTIC))
@@ -796,7 +800,7 @@ static void serveClient(const SOCKET s_client, const DWORD RpcAssocGroup)
 	static const char *const fIP = "%s connection %s: %s.\n";
 
 	logger(fIP, connection_type, cAccepted, ipstr);
-	#endif // NO_LOG
+#endif // NO_LOG
 
 #	if !defined(NO_PRIVATE_IP_DETECT)
 
@@ -828,23 +832,23 @@ static void serveClient(const SOCKET s_client, const DWORD RpcAssocGroup)
 #ifndef NO_SOCKETS
 static void post_sem(void)
 {
-	#if !defined(NO_LIMIT) && !__minix__
+#if !defined(NO_LIMIT) && !__minix__
 	if (!InetdMode && MaxTasks != SEM_VALUE_MAX)
 	{
 		semaphore_post(Semaphore);
 	}
-	#endif // !defined(NO_LIMIT) && !__minix__
+#endif // !defined(NO_LIMIT) && !__minix__
 }
 
 
 static void wait_sem(void)
 {
-	#if !defined(NO_LIMIT) && !__minix__
+#if !defined(NO_LIMIT) && !__minix__
 	if (!InetdMode && MaxTasks != SEM_VALUE_MAX)
 	{
 		semaphore_wait(Semaphore);
 	}
-	#endif // !defined(NO_LIMIT) && !__minix__
+#endif // !defined(NO_LIMIT) && !__minix__
 }
 #endif // NO_SOCKETS
 
@@ -853,7 +857,7 @@ static void wait_sem(void)
 #if defined(_WIN32) || defined(__CYGWIN__) // Win32 Threads
 static DWORD WINAPI serveClientThreadProc(PCLDATA clData)
 #else // Posix threads
-static void *serveClientThreadProc (PCLDATA clData)
+static void *serveClientThreadProc(PCLDATA clData)
 #endif // Thread proc is identical in WIN32 and Posix threads
 {
 	serveClient(clData->socket, clData->RpcAssocGroup);
@@ -896,18 +900,19 @@ static int ServeClientAsyncPosixThreads(const PCLDATA thr_CLData)
 {
 	pthread_t p_thr;
 	pthread_attr_t attr;
+	int error;
 
 	wait_sem();
 
 	// Must set detached state to avoid memory leak
-	if (pthread_attr_init(&attr) ||
-		pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED) ||
-		pthread_create(&p_thr, &attr, (void * (*)(void *))serveClientThreadProc, thr_CLData))
+	if ((error = pthread_attr_init(&attr)) ||
+		(error = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED)) ||
+		(error = pthread_create(&p_thr, &attr, (void * (*)(void *))serveClientThreadProc, thr_CLData)))
 	{
 		socketclose(thr_CLData->socket);
 		free(thr_CLData);
 		post_sem();
-		return !0;
+		return error;
 	}
 
 	return 0;
@@ -921,11 +926,11 @@ static void ChildSignalHandler(const int signal)
 
 	post_sem();
 
-	#ifndef NO_LOG
+#ifndef NO_LOG
 	logger("Warning: Child killed/crashed by %s\n", strsignal(signal));
-	#endif // NO_LOG
+#endif // NO_LOG
 
-	exit(!0);
+	exit(ECHILD);
 }
 
 static int ServeClientAsyncFork(const SOCKET s_client, const DWORD RpcAssocGroup)
@@ -937,7 +942,7 @@ static int ServeClientAsyncFork(const SOCKET s_client, const DWORD RpcAssocGroup
 	{
 		return errno;
 	}
-	else if ( pid )
+	else if (pid)
 	{
 		// Parent process
 		socketclose(s_client);
@@ -950,7 +955,7 @@ static int ServeClientAsyncFork(const SOCKET s_client, const DWORD RpcAssocGroup
 		// Setup a Child Handler for most common termination signals
 		struct sigaction sa;
 
-		sa.sa_flags   = 0;
+		sa.sa_flags = 0;
 		sa.sa_handler = ChildSignalHandler;
 
 		static int signallist[] = { SIGHUP, SIGINT, SIGTERM, SIGSEGV, SIGILL, SIGFPE, SIGBUS };
@@ -975,27 +980,27 @@ static int ServeClientAsyncFork(const SOCKET s_client, const DWORD RpcAssocGroup
 
 int serveClientAsync(const SOCKET s_client, const DWORD RpcAssocGroup)
 {
-	#ifndef USE_THREADS // fork() implementation
+#ifndef USE_THREADS // fork() implementation
 
 	return ServeClientAsyncFork(s_client, RpcAssocGroup);
 
-	#else // threads implementation
+#else // threads implementation
 
 	PCLDATA thr_CLData = (PCLDATA)vlmcsd_malloc(sizeof(CLDATA));
 	thr_CLData->socket = s_client;
 	thr_CLData->RpcAssocGroup = RpcAssocGroup;
 
-	#if defined(_WIN32) || defined (__CYGWIN__) // Windows threads
+#if defined(_WIN32) || defined (__CYGWIN__) // Windows threads
 
 	return serveClientAsyncWinThreads(thr_CLData);
 
-	#else // Posix Threads
+#else // Posix Threads
 
 	return ServeClientAsyncPosixThreads(thr_CLData);
 
-	#endif // Posix Threads
+#endif // Posix Threads
 
-	#endif // USE_THREADS
+#endif // USE_THREADS
 }
 
 #endif // NO_SOCKETS
@@ -1006,11 +1011,11 @@ int runServer()
 	DWORD RpcAssocGroup = rand32();
 
 	// If compiled for inetd-only mode just serve the stdin socket
-	#ifdef NO_SOCKETS
+#ifdef NO_SOCKETS
 	serveClient(STDIN_FILENO, RpcAssocGroup);
 	return 0;
-	#else
-	// In inetd mode just handle the stdin socket
+#else
+// In inetd mode just handle the stdin socket
 	if (InetdMode)
 	{
 		serveClient(STDIN_FILENO, RpcAssocGroup);
@@ -1022,31 +1027,42 @@ int runServer()
 		int error;
 		SOCKET s_client;
 
-		#ifdef SIMPLE_SOCKETS
-		if ( (s_client = accept(s_server, NULL, NULL)) == INVALID_SOCKET )
-		#else // Standalone mode fully featured sockets
-		if ( (s_client = network_accept_any()) == INVALID_SOCKET )
-		#endif // Standalone mode fully featured sockets
+#		ifdef SIMPLE_SOCKETS
+		if ((s_client = accept(s_server, NULL, NULL)) == INVALID_SOCKET)
+#		else // Standalone mode fully featured sockets
+		if ((s_client = network_accept_any()) == INVALID_SOCKET)
+#		endif // Standalone mode fully featured sockets
 		{
 			error = socket_errno;
+			if (error == SOCKET_EINTR || error == SOCKET_ECONNABORTED) continue;
 
-			if (error == VLMCSD_EINTR || error == VLMCSD_ECONNABORTED) continue;
-
-			#ifdef _NTSERVICE
+#			ifdef _NTSERVICE
 			if (ServiceShutdown) return 0;
-			#endif
+#			endif
 
-			#ifndef NO_LOG
-			logger("Fatal: %s\n",vlmcsd_strerror(error));
-			#endif
+#			ifndef NO_LOG
+			logger("Fatal: %s\n", vlmcsd_strerror(error));
+#			endif
 
 			return error;
 		}
 
 		RpcAssocGroup++;
+
+#		if !defined(NO_LOG) && defined(_PEDANTIC)
+		if ((error = serveClientAsync(s_client, RpcAssocGroup)))
+		{
+#			ifdef USE_THREADS
+			logger("Warning: Could not create client thread: %s\n", vlmcsd_strerror(error));
+#			else // !USE_THREADS
+			logger("Warning: Could not fork client: %s\n", vlmcsd_strerror(error));
+#			endif // !USE_THREADS
+		}
+#		else // NO_LOG || !_PEDANTIC
 		serveClientAsync(s_client, RpcAssocGroup);
+#		endif // NO_LOG || !_PEDANTIC
 	}
-	#endif // NO_SOCKETS
+#	endif // NO_SOCKETS
 }
 
 #endif // USE_MSRPC

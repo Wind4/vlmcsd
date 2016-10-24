@@ -37,19 +37,19 @@
  */
 
 #ifndef EPID_WINDOWS
-#define EPID_WINDOWS "03612-00206-471-494932-03-1033-14393.0000-2382016"
+#define EPID_WINDOWS "03612-00206-471-109239-03-1033-14393.0000-2932016"
 #endif
 
 #ifndef EPID_OFFICE2010
-#define EPID_OFFICE2010 "03612-00096-199-954738-03-1033-14393.0000-2382016"
+#define EPID_OFFICE2010 "03612-00096-199-390352-03-1033-14393.0000-2932016"
 #endif
 
 #ifndef EPID_OFFICE2013
-#define EPID_OFFICE2013 "03612-00206-234-177489-03-1033-14393.0000-2382016"
+#define EPID_OFFICE2013 "03612-00206-234-938378-03-1033-14393.0000-2932016"
 #endif
 
 #ifndef EPID_OFFICE2016
-#define EPID_OFFICE2016 "03612-00206-437-728387-03-1033-14393.0000-2382016"
+#define EPID_OFFICE2016 "03612-00206-437-305903-03-1033-14393.0000-2932016"
 #endif
 
 #ifndef HWID // HwId from the Ratiborus VM
@@ -455,6 +455,20 @@
 
 
 
+#ifndef NO_STRICT_MODES
+/*
+ * Disables the product whitelisting features. Removes -K0, -K1, -K2 and -K3 from vlmcsd
+ * command line options and WhitelistingLevel from INI file parameters. vlmcsd always behaves
+ * as if it was started with -K0.
+ */
+
+//#define NO_STRICT_MODES
+
+#endif // NO_STRICT_MODES
+
+
+
+
 #ifndef NO_RANDOM_EPID
 /*
  * Disables the ability to generate random ePIDs. Useful if you managed to grab ePID/HWID from a
@@ -615,6 +629,19 @@
 //#define NO_SIGHUP
 
 #endif // NO_SIGHUP
+
+
+
+
+#ifndef SIMPLE_RPC
+/*
+ * Uses a simple version of the RPC protocol which does not support NDR64 and BTFN.
+ * Supports RPC with the features present in Windows XP and earlier only. Using this creates
+ * smaller binaries but makes emulator detection easier.
+ */
+
+//#define SIMPLE_RPC
+#endif // !SIMPLE_RPC
 
 
 

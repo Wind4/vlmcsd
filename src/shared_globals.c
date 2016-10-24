@@ -18,14 +18,23 @@ const char *const cIPv6 = "IPv6";
 char ErrorMessage[MESSAGE_BUFFER_SIZE];
 #endif // IS_LIBRARY
 
+#ifndef NO_STRICT_MODES
+uint32_t WhitelistingLevel = 0;
+int_fast8_t CheckClientTime = FALSE;
+#endif // !NO_STRICT_MODES
+
 #ifndef USE_MSRPC
 int_fast8_t UseMultiplexedRpc = TRUE;
-int_fast8_t UseRpcNDR64 = TRUE;
-int_fast8_t UseRpcBTFN = TRUE;
+#ifndef SIMPLE_RPC
+int_fast8_t UseServerRpcNDR64 = TRUE;
+int_fast8_t UseServerRpcBTFN = TRUE;
+#endif // !SIMPLE_RPC
+int_fast8_t UseClientRpcNDR64 = TRUE;
+int_fast8_t UseClientRpcBTFN = TRUE;
 #endif // USE_MSRPC
 
 #ifndef NO_SOCKETS
-const char *defaultport = "1688";
+char *defaultport = "1688";
 #endif // NO_SOCKETS
 
 #if !defined(NO_PRIVATE_IP_DETECT)
