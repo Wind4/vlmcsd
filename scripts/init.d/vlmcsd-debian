@@ -1,0 +1,77 @@
+#!/bin/sh
+#
+# VLMCSD - this script starts and stops the KMS Server daemon
+#
+### BEGIN INIT INFO
+# Provides:          vlmcsd
+# Required-Start:    $local_fs $network $named $time $syslog
+# Required-Stop:     $local_fs $network $named $time $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Description:       KMS Emulator in C
+### END INIT INFO
+
+NAME=vlmcsd
+SCRIPT=/usr/bin/vlmcsd
+RUNAS=
+
+PIDFILE=/var/run/$NAME.pid
+LOGFILE=/var/log/$NAME.log
+
+start() {
+  if [ -f "$PIDFILE" ] && kill -0 $(cat "$PIDFILE"); then
+    echo 'Service already running.'
+    return 1
+  fi
+  echo 'Starting service...'
+  local CMD="$SCRIPT -p $PIDFILE -l $LOGFILE"
+  su -c "$CMD" $RUNAS
+  echo 'Service started.'
+}
+
+stop() {
+  if [ ! -f "$PIDFILE" ] || ! kill -0 $(cat "$PIDFILE"); then
+    echo 'Service not running.'
+    return 1
+  fi
+  echo 'Stopping service...'
+  kill -15 $(cat "$PIDFILE") && rm -f "$PIDFILE"
+  echo 'Service stopped.'
+}
+
+status() {
+  echo "Checking $NAME service..."
+  if [ -f "$PIDFILE" ]; then
+    local PID=$(cat "$PIDFILE")
+    kill -0 $PID
+    if [ $? -eq 0 ]; then
+      echo "Running, the PID is $PID."
+    else
+      echo 'The process appears to be dead but pidfile still exists.'
+    fi
+  else
+    echo 'Service not running.'
+  fi
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  status)
+    status
+    ;;
+  restart)
+    stop
+    start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|status|restart}"
+    exit 1
+    ;;
+esac
+
+exit 0
