@@ -21,6 +21,10 @@ char ErrorMessage[MESSAGE_BUFFER_SIZE];
 #ifndef NO_STRICT_MODES
 uint32_t WhitelistingLevel = 0;
 int_fast8_t CheckClientTime = FALSE;
+#ifndef NO_CLIENT_LIST
+int_fast8_t MaintainClients = FALSE;
+int_fast8_t StartEmpty = FALSE;
+#endif // NO_CLIENT_LIST
 #endif // !NO_STRICT_MODES
 
 #ifndef USE_MSRPC
@@ -95,9 +99,9 @@ int numsockets = 0;
 
 #if !defined(NO_LIMIT) && !__minix__
 #ifndef _WIN32 // Posix
-sem_t *Semaphore;
+sem_t *MaxTaskSemaphore;
 #else // _WIN32
-HANDLE Semaphore;
+HANDLE MaxTaskSemaphore;
 #endif // _WIN32
 
 #endif // !defined(NO_LIMIT) && !__minix__

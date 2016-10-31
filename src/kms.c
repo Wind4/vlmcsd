@@ -13,8 +13,12 @@
 #include <ctype.h>
 #include <time.h>
 #if !defined(_WIN32)
+#if !__ANDROID__
+#include <sys/shm.h>
+#endif // !__ANDROID__
 #include <sys/socket.h>
-#endif
+#include <sys/ipc.h>
+#endif // !defined(_WIN32)
 
 #include "output.h"
 #include "crypto.h"
@@ -306,7 +310,6 @@ const KmsIdList ExtendedProductList[] = {
 	{ { 0xbb11badf, 0xd8aa, 0x470e, { 0x93, 0x11, 0x20, 0xea, 0xf8, 0x0f, 0xe5, 0xcc, } } /*bb11badf-d8aa-470e-9311-20eaf80fe5cc*/, LOGTEXT("Office Word 2016"),                               EPID_OFFICE2016, APP_ID_OFFICE2013, KMS_ID_OFFICE2016 },
 };
 
-
 // necessary because other .c files cannot access _countof()
 __pure ProdListIndex_t getExtendedProductListSize(void)
 {
@@ -425,6 +428,103 @@ const char* getProductNameLE(const GUID *const guid, const KmsIdList *const List
 #endif
 }
 
+#ifndef NO_STRICT_MODES
+#ifndef NO_CLIENT_LIST
+
+static PClientList_t ClientLists;
+static BYTE ZeroGuid[16] = { 0 };
+
+#if !defined(_WIN32) && !defined(__CYGWIN__)
+pthread_mutex_t* mutex;
+#define mutex_size (((sizeof(pthread_mutex_t)+7)>>3)<<3)
+#else
+CRITICAL_SECTION* mutex;
+#define mutex_size (((sizeof(CRITICAL_SECTION)+7)>>3)<<3)
+#endif // _WIN32
+
+#ifndef USE_THREADS
+static int shmid_clients = -1;
+#endif // USE_THREADS
+
+#if !defined(_WIN32) && !defined(__CYGWIN__)
+#define lock_client_lists() pthread_mutex_lock(mutex)
+#define unlock_client_lists() pthread_mutex_unlock(mutex)
+#define mutex_t pthread_mutex_t
+#else
+#define lock_client_lists() EnterCriticalSection(mutex)
+#define unlock_client_lists() LeaveCriticalSection(mutex)
+#define mutex_t CRITICAL_SECTION
+#endif
+
+void CleanUpClientLists()
+{
+#	ifndef USE_THREADS
+	shmctl(shmid_clients, IPC_RMID, NULL);
+#	endif // !USE_THREADS
+}
+
+void InitializeClientLists()
+{
+	int_fast8_t i;
+	int_fast16_t j;
+
+#	ifndef USE_THREADS
+	if (
+		(shmid_clients = shmget(IPC_PRIVATE, sizeof(ClientList_t) * _countof(AppList) + mutex_size, IPC_CREAT | 0600)) < 0 ||
+		(mutex = (mutex_t*)shmat(shmid_clients, NULL, 0)) == (mutex_t*)-1
+		)
+	{
+		int errno_save = errno;
+		printerrorf("Warning: CMID lists disabled. Could not create shared memory: %s\n", vlmcsd_strerror(errno_save));
+		if (shmid_clients >= 0) shmctl(shmid_clients, IPC_RMID, NULL);
+		MaintainClients = FALSE;
+		return;
+	}
+
+	ClientLists = (PClientList_t)((BYTE*)mutex + mutex_size);
+
+#	if __CYGWIN__
+	InitializeCriticalSection(mutex);
+#	else // !__CYGWIN__
+	pthread_mutexattr_t mutex_attr;
+	pthread_mutexattr_init(&mutex_attr);
+	pthread_mutexattr_setpshared(&mutex_attr, PTHREAD_PROCESS_SHARED);
+	pthread_mutex_init(mutex, &mutex_attr);
+
+#	endif // !__CYGWIN__
+
+#	else // USE_THREADS
+
+	ClientLists = (PClientList_t)vlmcsd_malloc(sizeof(ClientList_t) * _countof(AppList));
+	mutex = (mutex_t*)vlmcsd_malloc(sizeof(mutex_t));
+
+#	if !_WIN32 && !__CYGWIN__
+	pthread_mutex_init(mutex, NULL);
+#	else //_WIN32 || __CYGWIN__
+	InitializeCriticalSection(mutex);
+#   endif //_WIN32 || __CYGWIN__
+
+#	endif // USE_THREADS
+
+	memset(ClientLists, 0, sizeof(ClientList_t) * _countof(AppList));
+
+	if (!StartEmpty)
+	{
+		ClientLists[APP_ID_WINDOWS].CurrentCount = 24; ClientLists[APP_ID_WINDOWS].MaxCount = 50;
+		ClientLists[APP_ID_OFFICE2010].CurrentCount = ClientLists[APP_ID_OFFICE2013].CurrentCount = 4;
+		ClientLists[APP_ID_OFFICE2010].MaxCount = ClientLists[APP_ID_OFFICE2013].MaxCount = 10;
+
+		for (i = 0; i < 3; i++)
+		{
+			for (j = 0; j < ClientLists[i].CurrentCount; j++)
+			{
+				get16RandomBytes(&ClientLists[i].Guid[j]);
+			}
+		}
+	}
+}
+#endif // NO_CLIENT_LIST
+#endif // !NO_STRICT_MODES
 
 #ifndef NO_RANDOM_EPID
 // formats an int with a fixed number of digits with leading zeros (helper for ePID generation)
@@ -738,17 +838,29 @@ static HRESULT __stdcall CreateResponseBaseCallback(const REQUEST *const baseReq
 
 	ProdListIndex_t index;
 	getProductNameLE(&baseRequest->KMSID, ProductList, _countof(ProductList), &index);
+	DWORD minClients = LE32(baseRequest->N_Policy);
+	DWORD required_clients = minClients < 1 ? 1 : minClients << 1;
 
 #	ifndef NO_STRICT_MODES
+
+	if (required_clients > 2000)
+	{
+#		ifndef NO_LOG
+		logger("Rejecting request with more than 1000 minimum clients (0x8007000D)\n");
+#		endif
+
+		return 0x8007000D;
+	}
+
 	if (CheckClientTime)
 	{
 		time_t requestTime = (time_t)fileTimeToUnixTime(&baseRequest->ClientTime);
 
 		if (llabs(requestTime - time(NULL)) > 60 * 60 * 4)
 		{
-#		ifndef NO_LOG
-			logger("Client time differs more than 4 hours from system time.\n");
-#		endif // !NO_LOG
+#			ifndef NO_LOG
+			logger("Client time differs more than 4 hours from system time (0xC004F06C)\n");
+#			endif // !NO_LOG
 
 			return 0xC004F06C;
 		}
@@ -762,7 +874,7 @@ static HRESULT __stdcall CreateResponseBaseCallback(const REQUEST *const baseReq
 			if (IsEqualGuidLE(&ProductList[RetailAndBetaProducts[i]].guid, &baseRequest->KMSID))
 			{
 #				ifndef NO_LOG
-				logger("Refusing retail or beta product\n");
+				logger("Refusing retail or beta product (0xC004F042)\n");
 #				endif // !NO_LOG
 
 				return 0xC004F042;
@@ -773,7 +885,7 @@ static HRESULT __stdcall CreateResponseBaseCallback(const REQUEST *const baseReq
 	if ((WhitelistingLevel & 1) && index >= _countof(ProductList))
 	{
 #		ifndef NO_LOG
-		logger("Refusing unknown product\n");
+		logger("Refusing unknown product (0xC004F042)\n");
 #		endif // !NO_LOG
 
 		return 0xC004F042;
@@ -802,16 +914,80 @@ static HRESULT __stdcall CreateResponseBaseCallback(const REQUEST *const baseReq
 	}
 
 #	if !defined(NO_STRICT_MODES)
+
 	ProdListIndex_t appIndex = index >= _countof(AppList) ? _countof(AppList) - 1 : index;
 
 	if ((WhitelistingLevel & 1) && !IsEqualGuidLE(&AppList[appIndex].guid, &baseRequest->AppID))
 	{
 #		ifndef NO_LOG
-		logger("Refusing product with incorrect Application ID\n");
+		logger("Refusing product with incorrect Application ID (0xC004F042)\n");
 #		endif // NO_LOG
 		return 0xC004F042;
 	}
+
+#	ifndef NO_CLIENT_LIST
+	if (MaintainClients)
+	{
+		lock_client_lists();
+
+		int_fast16_t i;
+		int_fast8_t isKnownClient = FALSE;
+
+		if (required_clients > (DWORD)ClientLists[appIndex].MaxCount) ClientLists[appIndex].MaxCount = required_clients;
+
+		for (i = 0; i < ClientLists[appIndex].MaxCount; i++)
+		{
+			if (IsEqualGUID(&ClientLists[appIndex].Guid[i], &baseRequest->CMID))
+			{
+				isKnownClient = TRUE;
+				break;
+			}
+		}
+
+		if (isKnownClient)
+		{
+			baseResponse->Count = LE32(ClientLists[appIndex].CurrentCount);
+		}
+		else
+		{
+			for (i = 0; i < ClientLists[appIndex].MaxCount; i++)
+			{
+				if (IsEqualGUID(ZeroGuid, &ClientLists[appIndex].Guid[i]))
+				{
+					if (ClientLists[appIndex].CurrentCount >= MAX_CLIENTS)
+					{
+#						ifndef NO_LOG
+						logger("Rejecting more than 671 clients (0xC004D104)\n");
+#						endif // !NO_LOG
+
+						unlock_client_lists();
+						return 0xC004D104;
+					}
+
+					baseResponse->Count = LE32(++ClientLists[appIndex].CurrentCount);
+					memcpy(&ClientLists[appIndex].Guid[i], &baseRequest->CMID, sizeof(GUID));
+					break;
+				}
+			}
+
+			if (i >= ClientLists[appIndex].MaxCount)
+			{
+				memcpy(&ClientLists[appIndex].Guid[ClientLists[appIndex].CurrentPosition], &baseRequest->CMID, sizeof(GUID));
+				ClientLists[appIndex].CurrentPosition = (ClientLists[appIndex].CurrentPosition + 1) % (ClientLists[appIndex].MaxCount > MAX_CLIENTS ? MAX_CLIENTS : ClientLists[appIndex].MaxCount);
+				baseResponse->Count = LE32(ClientLists[appIndex].CurrentCount);
+			}
+		}
+
+		unlock_client_lists();
+	}
+	else
+#	endif // !NO_CLIENT_LIST
 #	endif // !defined(NO_STRICT_MODES)
+	{
+		DWORD minimum_answer_clients = index > 0 && index < 4 ? 10 : 50;
+		baseResponse->Count = LE32(required_clients > minimum_answer_clients ? required_clients : minimum_answer_clients);
+		//if (LE32(baseRequest->N_Policy) > LE32(baseResponse->Count)) baseResponse->Count = LE32(LE32(baseRequest->N_Policy) << 1);
+	}
 
 	getEpid(baseResponse, &EpidSource, index, hwId);
 
@@ -820,14 +996,8 @@ static HRESULT __stdcall CreateResponseBaseCallback(const REQUEST *const baseReq
 	memcpy(&baseResponse->CMID, &baseRequest->CMID, sizeof(GUID));
 	memcpy(&baseResponse->ClientTime, &baseRequest->ClientTime, sizeof(FILETIME));
 
-	DWORD required_clients = LE32(baseRequest->N_Policy) << 1;
-	DWORD minimum_answer_clients = index > 0 && index < 4 ? 10 : 50;
-
-	baseResponse->Count = LE32(required_clients > minimum_answer_clients ? required_clients : minimum_answer_clients);
 	baseResponse->VLActivationInterval = LE32(VLActivationInterval);
 	baseResponse->VLRenewalInterval = LE32(VLRenewalInterval);
-
-	if (LE32(baseRequest->N_Policy) > LE32(baseResponse->Count)) baseResponse->Count = LE32(LE32(baseRequest->N_Policy) << 1);
 
 #ifndef NO_LOG
 	logResponse(baseResponse, hwId, EpidSource);

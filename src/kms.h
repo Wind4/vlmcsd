@@ -54,6 +54,15 @@
 #define ActivationInterval VLActivationInterval
 #define RenewalInterval VLRenewalInterval
 
+#define MAX_CLIENTS 671
+
+typedef struct
+{
+	GUID Guid[MAX_CLIENTS];
+	int_fast16_t CurrentCount;
+	int_fast16_t MaxCount;
+	int_fast16_t CurrentPosition;
+} ClientList_t, *PClientList_t;
 
 typedef struct {
 	VERSION_INFO;
@@ -291,6 +300,11 @@ __pure ProdListIndex_t getProductListSize(void);
 extern const KmsIdList ProductList[];
 extern const KmsIdList AppList[];
 extern const KmsIdList ExtendedProductList[];
+
+#ifndef NO_STRICT_MODES
+void InitializeClientLists();
+void CleanUpClientLists();
+#endif // !NO_STRICT_MODES
 
 extern RequestCallback_t CreateResponseBase;
 

@@ -390,3 +390,36 @@ __pure BOOL getArgumentBool(int_fast8_t *result, const char *const argument)
 	return FALSE;
 }
 
+#if __ANDROID__ && !defined(USE_THREADS) // Bionic does not wrap these syscalls (intentionally because Google fears, developers don't know how to use it)
+
+#ifdef __NR_shmget
+int shmget(key_t key, size_t size, int shmflg)
+{
+	return syscall(__NR_shmget, key, size, shmflg);
+}
+#endif // __NR_shmget
+
+#ifdef __NR_shmat
+void *shmat(int shmid, const void *shmaddr, int shmflg)
+{
+	return (void *)syscall(__NR_shmat, shmid, shmaddr, shmflg);
+}
+#endif // __NR_shmat
+
+#ifdef __NR_shmdt
+int shmdt(const void *shmaddr)
+{
+	return syscall(__NR_shmdt, shmaddr);
+}
+#endif // __NR_shmdt
+
+#ifdef __NR_shmctl
+int shmctl(int shmid, int cmd, /*struct shmid_ds*/void *buf)
+{
+	return syscall(__NR_shmctl, shmid, cmd, buf);
+}
+#endif // __NR_shmctl
+
+#endif // __ANDROID__ && !defined(USE_THREADS)
+
+

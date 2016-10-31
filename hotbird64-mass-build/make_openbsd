@@ -16,10 +16,10 @@ REUSEOBJFLAGS="-j12"
 CF="-static-libgcc -pipe -fwhole-program -fno-common -fno-exceptions -fno-stack-protector -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants"
 CF45="-static-libgcc -pipe -fno-common -fno-exceptions -fno-stack-protector -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants"
 CFCLANG="-pipe -fno-common -fno-exceptions -fno-stack-protector -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants"
-LF="-Wl,-z,norelro"
-LFCLANG="-Wl,-z,norelro"
+LF="-lpthread -Wl,-z,norelro"
+LFCLANG="-lpthread -Wl,-z,norelro"
 
-gmake -Bj12 allmulti $MAKEFLAGS CC=egcc MULTI_NAME=$BINDIR/vlmcsdmulti-OpenBSD-x64 PROGRAM_NAME=$BINDIR/vlmcsd-OpenBSD-x64 CLIENT_NAME=$BINDIR/vlmcs-OpenBSD-x64 CFLAGS="$CF" LDFLAGS="$LF"
+gmake -Bj12 allmulti $MAKEFLAGS CC=egcc THREADS=1 MULTI_NAME=$BINDIR/vlmcsdmulti-OpenBSD-x64 PROGRAM_NAME=$BINDIR/vlmcsd-OpenBSD-x64 CLIENT_NAME=$BINDIR/vlmcs-OpenBSD-x64 CFLAGS="$CF" LDFLAGS="$LF"
 
 #gmake allmulti $MAKEFLAGS CAT=2 MULTI_NAME=vlmcsdmulti-OpenBSD-x86 PROGRAM_NAME=vlmcsd-OpenBSD-x86 CLIENT_NAME=vlmcs-OpenBSD-x86 CFLAGS="$CF45 -m32" LDFLAGS="$LF"
 

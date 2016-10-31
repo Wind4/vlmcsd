@@ -310,6 +310,12 @@ CONFIGURATION
               That means you can telnet and ftp to your virtual machine.
 
 
+       VLMCSD_EXTRA_ARGS=comma-seperated-argument-list
+              Allows  you to specify additional command line options that will
+              be passed to vlmcsd(8). Instead of spaces you use commas between
+              arguments. Example: VLMCSD_EXTRA_ARGS=-c1,-K3,-M1
+
+
 OPERATION
    Diskless System
        The  floppy144.vfd  virtual  machine  is  a  diskless system that works
@@ -527,4 +533,4 @@ SEE ALSO
 
 
 
-Hotbird64                          June 2016                  VLMCSD-FLOPPY(7)
+Hotbird64                        October 2016                 VLMCSD-FLOPPY(7)

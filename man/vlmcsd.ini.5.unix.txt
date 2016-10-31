@@ -243,6 +243,46 @@ KEYWORDS
               csd(8).
 
 
+       MaintainClients
+              Can be TRUE or FALSE (the default). Disables (FALSE) or  enables
+              (TRUE) maintaining a list of client machine IDs (CMIDs). TRUE is
+              useful to prevent emulator detection. By maintaing a CMID  list,
+              vlmcsd(8)  reports current active clients exactly like a genuine
+              KMS emulator. This includes bug compatibility to the extent that
+              you  can  permanently  kill a genuine KMS emulator by sending an
+              "overcharge request" with a required client count of 376 or more
+              and  then  request  activation for 671 clients. vlmcsd(8) can be
+              reset from this condition by restarting it. If  FALSE  is  used,
+              vlmcsd(8) reports current active clients as good as possible. If
+              no client sends an "overcharge request", it is not  possible  to
+              detect  vlmcsd(8)  as  an emulator with MaintainClients = FALSE.
+              Maintaining clients requires the allocation of a buffer that  is
+              about  50  kB in size. On hardware with few memory resources use
+              it only if you really need it.
+
+              If you start vlmcsd(8) from an internet superserver,  this  set‐
+              ting  cannot  be  used. Since vlmcsd(8) exits after each activa‐
+              tion, it cannot maintain any state in memory.
+
+
+       StartEmpty
+              This setting is ignored if you do  not  also  specify  Maintain‐
+              Clients  =  TRUE.  If you specify FALSE (the default), vlmcsd(8)
+              starts up as a fully  "charged"  KMS  server.  Clients  activate
+              immediately.  StartEmpty = TRUE lets you start up vlmcsd(8) with
+              an empty CMID list. Activation will start when the required min‐
+              imum  clients (25 for Windows Client OSses, 5 for Windows Server
+              OSses and Office) have registered with the KMS server.  As  long
+              as the minimum client count has not been reached, clients end up
+              in HRESULT 0xC004F038 "The count reported by your Key Management
+              Service (KMS) is insufficient. Please contact your system admin‐
+              istrator". You may use vlmcs(1) or another KMS  client  emulator
+              to  "charge"  vlmcsd(8). Setting this parameter to TRUE does not
+              improve emulator detection prevention. It's primary  purpose  is
+              to  help  developers  of  KMS  clients  to test "charging" a KMS
+              server.
+
+
        ActivationInterval
               This is the same as specifying -A on the command line. See  vlm‐
               csd(8) for details. The default is 2 hours. Example: Activation‐

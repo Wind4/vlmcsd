@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Fri Oct 21 03:17:10 2016 -->
+<!-- CreationDate: Tue Oct 25 06:23:57 2016 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -498,6 +498,14 @@ pre-defined guest user. This user has the same priviliges
 <p style="margin-left:22%;"><b>INETD=</b>Y specifies that
 <b>inetd</b>(8) should automatically be started. That means
 you can telnet and ftp to your virtual machine.</p>
+
+
+<p style="margin-left:11%;"><b>VLMCSD_EXTRA_ARGS=</b><i>comma-seperated-argument-list</i></p>
+
+<p style="margin-left:22%;">Allows you to specify
+additional command line options that will be passed to
+<b>vlmcsd</b>(8). Instead of spaces you use commas between
+arguments. Example: <b>VLMCSD_EXTRA_ARGS=</b>-c1,-K3,-M1</p>
 
 <h2>OPERATION
 <a name="OPERATION"></a>

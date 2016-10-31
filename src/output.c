@@ -74,6 +74,7 @@ static void vlogger(const char *message, va_list args)
 	// so formatting the output can be concurrent
 	int len = (int)strlen(mbstr);
 	//#	if !_MSC_VER
+
 	vlmcsd_vsnprintf(mbstr + len, sizeof(mbstr) - len, message, args);
 	//#	else
 	//	wvsprintf(mbstr + len, message, args);
@@ -629,6 +630,10 @@ void printServerFlags()
 #		ifdef NO_STRICT_MODES
 		" NO_STRICT_MODES"
 #		endif // NO_STRICT_MODES
+
+#		ifdef NO_CLIENT_LIST
+		" NO_CLIENT_LIST"
+#		endif // NO_CLIENT_LIST
 
 #		if (_WIN32 || __CYGWIN__) && (!defined(USE_MSRPC) || defined(SUPPORT_WINE))
 		" SUPPORT_WINE"

@@ -133,7 +133,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>USE_THREADS;_PEDANTIC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_PEDANTIC;USE_THREADS</PreprocessorDefinitions>
       <ThreadSafeStatics>
       </ThreadSafeStatics>
       <ExceptionHandling>Disabled</ExceptionHandling>

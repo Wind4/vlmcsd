@@ -449,6 +449,44 @@ OPTIONS
               system time after you started vlmcsd.
 
 
+       -M0 and -M1
+              Disables (-M0) or enables (-M1) maintaining  a  list  of  client
+              machine  IDs  (CMIDs). The default is -M0. -M1 is useful to pre‐
+              vent emulator  detection.  By  maintaing  a  CMID  list,  vlmcsd
+              reports current active clients exactly like a genuine KMS emula‐
+              tor. This includes bug compatibility to the extent that you  can
+              permanently  kill  a  genuine  KMS emulator by sending an "over‐
+              charge request" with a required client count of 376 or more  and
+              then  request  activation  for  671 clients. vlmcsd can be reset
+              from this condition by restarting it. If  -M0  is  used,  vlmcsd
+              reports current active clients as good as possible. If no client
+              sends an "overcharge request", it is not possible to detect vlm‐
+              csd  as  an  emulator with -M0. -M1 requires the allocation of a
+              buffer that is about 50 kB in size. On hardware with few  memory
+              resources use it only if you really need it.
+
+              If  you start vlmcsd from an internet superserver, -M1 cannot be
+              used. Since vlmcsd exits after each activation, it cannot  main‐
+              tain any state in memory.
+
+
+       -E0 and -E1
+              These options are ignored if you do not also specify -M1. If you
+              use -E0 (the default), vlmcsd starts up as a fully "charged" KMS
+              server. Clients activate immediately. -E1 lets you start up vlm‐
+              csd with an empty CMID list.  Activation  will  start  when  the
+              required  minimum  clients  (25  for Windows Client OSses, 5 for
+              Windows Server OSses and Office) have registered  with  the  KMS
+              server.  As  long  as  the  minimum  client  count  has not been
+              reached,  clients  end  up  in  HRESULT  0xC004F038  "The  count
+              reported  by  your Key Management Service (KMS) is insufficient.
+              Please contact your system administrator". You may use  vlmcs(1)
+              or  another KMS client emulator to "charge" vlmcsd. -E1 does not
+              improve emulator detection prevention. It's primary  purpose  is
+              to  help  developers  of  KMS  clients  to test "charging" a KMS
+              server.
+
+
        -R renewal-interval
               Instructs clients to renew  activation  every  renewal-interval.
               The renewal-interval is a number optionally immediately followed

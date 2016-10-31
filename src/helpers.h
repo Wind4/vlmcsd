@@ -9,6 +9,10 @@
 #include <stdint.h>
 #include "types.h"
 
+#if __ANDROID__
+#include <sys/syscall.h>
+#endif // __ANDROID__
+
 #define GUID_LE 0
 #define GUID_BE 1
 #define GUID_SWAP 2
@@ -31,5 +35,11 @@ void hex2bin(BYTE *const bin, const char *hex, const size_t maxbin);
 __pure BOOL getArgumentBool(int_fast8_t *result, const char *const argument);
 __pure int IsEqualGuidLE(const GUID *const restrict first, const GUID *const restrict second);
 
+#if __ANDROID__ && !defined(USE_THREADS) // Bionic does not wrap these syscalls (intentionally because Google fears, developers don't know how to use it)
+int shmget(key_t key, size_t size, int shmflg);
+void *shmat(int shmid, const void *shmaddr, int shmflg);
+int shmdt(const void *shmaddr);
+int shmctl(int shmid, int cmd, /*struct shmid_ds*/void *buf);
+#endif // __ANDROID__ && !defined(USE_THREADS)
 
 #endif // HELPERS_H

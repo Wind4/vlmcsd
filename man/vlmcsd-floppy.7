@@ -1,5 +1,5 @@
 .mso www.tmac
-.TH "VLMCSD-FLOPPY" 7 "June 2016" "Hotbird64" "KMS Activation Manual"
+.TH "VLMCSD-FLOPPY" 7 "October 2016" "Hotbird64" "KMS Activation Manual"
 .LO 8
 
 .SH NAME
@@ -165,6 +165,9 @@ Sets the password for the pre-defined guest user. This user has the same privili
 
 .IP "\fBINETD=\fRY | N"
 \fBINETD=\fRY specifies that \fBinetd\fR(8) should automatically be started. That means you can telnet and ftp to your virtual machine.
+
+.IP "\fBVLMCSD_EXTRA_ARGS=\fR\fIcomma-seperated-argument-list\fR"
+Allows you to specify additional command line options that will be passed to \fBvlmcsd\fR(8). Instead of spaces you use commas between arguments. Example: \fBVLMCSD_EXTRA_ARGS=\fR\-c1,-K3,-M1
 
 .SH OPERATION
 

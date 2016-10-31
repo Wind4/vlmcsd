@@ -1,6 +1,10 @@
 #ifndef __types_h
 #define __types_h
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif
@@ -22,7 +26,12 @@
 #define ANDROID_HELPER1(s) ANDROID_HELPER2(s)
 #define ANDROID_HELPER2(s) #s
 
-#if !defined(_WIN32) && !__CYGWIN__
+#if !_WIN32 && !__CYGWIN__
+
+#if !__minix__
+#include <pthread.h>
+#endif // !__minix__
+
 #define __declspec(x) __attribute__((__visibility__("default")))
 #endif
 
@@ -45,6 +54,7 @@
 #endif // __ANDROID__
 
 #ifndef _WIN32
+#include <unistd.h>
 #include <netinet/in.h>
 #endif // _WIN32
 
@@ -66,6 +76,28 @@
 #if !defined(NO_STRICT_MODES) && defined(NO_BASIC_PRODUCT_LIST)
 #define NO_STRICT_MODES
 #endif // !defined(NO_STRICT_MODES) && defined(NO_BASIC_PRODUCT_LIST)
+
+//#if (__minix__ || defined(NO_SOCKETS)) && !defined(NO_STRICT_MODES)
+//#define NO_STRICT_MODES
+//#endif // __minix__ && !defined(NO_STRICT_MODES)
+
+#if (defined(NO_STRICT_MODES) || defined(NO_SOCKETS)) && !defined(NO_CLIENT_LIST)
+#define NO_CLIENT_LIST
+#endif // defined(NO_STRICT_MODES) || defined(NO_SOCKETS) && !defined(NO_CLIENT_LIST)
+
+#if !_WIN32 && !__CYGWIN__
+
+#if !defined(_POSIX_THREADS) || (!defined(_POSIX_THREAD_PROCESS_SHARED) && !defined(USE_THREADS))
+#ifndef NO_CLIENT_LIST
+#define NO_CLIENT_LIST
+#endif // !NO_CLIENT_LIST
+#endif // !defined(_POSIX_THREADS) || (!defined(_POSIX_THREAD_PROCESS_SHARED) && !defined(USE_THREADS))
+
+#if !defined(_POSIX_THREADS) && !defined(NO_LIMIT)
+#define NO_LIMIT
+#endif // !defined(POSIX_THREADS) && !defined(NO_LIMIT)
+
+#endif // !_WIN32 && !__CYGWIN__
 
 #ifndef alloca
 #ifdef __GNUC__

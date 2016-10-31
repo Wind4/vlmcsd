@@ -42,9 +42,7 @@
 #include <sys/ipc.h>
 #if !__ANDROID__
 #include <sys/shm.h>
-#else // __ANDROID__
-#include <sys/syscall.h>
-#endif // __ANDROID__
+#endif // !__ANDROID__
 #endif // !defined(NO_LIMIT) && !__minix__
 
 #include <sys/wait.h>
@@ -69,7 +67,9 @@
 #endif
 
 #include "vlmcsd.h"
+// ReSharper disable CppUnusedIncludeDirective
 #include "endian.h"
+// ReSharper restore CppUnusedIncludeDirective
 #include "shared_globals.h"
 #include "output.h"
 #ifndef USE_MSRPC
@@ -80,8 +80,7 @@
 #include "ntservice.h"
 #include "helpers.h"
 
-static const char* const optstring = "N:B:m:t:w:0:3:6:H:A:R:u:g:L:p:i:P:l:r:U:W:C:c:F:o:T:K:SseDdVvqkZ";
-
+static const char* const optstring = "N:B:m:t:w:0:3:6:H:A:R:u:g:L:p:i:P:l:r:U:W:C:c:F:o:T:K:E:M:SseDdVvqkZ";
 
 #if !defined(NO_SOCKETS) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 static uint_fast8_t maxsockets = 0;
@@ -119,6 +118,10 @@ static IniFileParameter_t IniFileParameterList[] =
 #	ifndef NO_STRICT_MODES
 		{ "WhiteListingLevel", INI_PARAM_WHITELISTING_LEVEL },
 		{ "CheckClientTime", INI_PARAM_CHECK_CLIENT_TIME },
+#		ifndef NO_CLIENT_LIST
+		{ "StartEmpty", INI_PARAM_START_EMPTY },
+		{ "MaintainClients", INI_PARAM_MAINTAIN_CLIENTS },
+#		endif // NO_CLIENT_LIST
 #	endif // NO_STRICT_MODES
 #	ifndef NO_RANDOM_EPID
 		{ "RandomizationLevel", INI_PARAM_RANDOMIZATION_LEVEL },
@@ -180,37 +183,6 @@ static IniFileParameter_t IniFileParameterList[] =
 static int shmid = -1;
 #endif
 
-#if __ANDROID__ && !defined(USE_THREADS) // Bionic does not wrap these syscalls (willingly because Google fears, developers don't know how to use it)
-
-#ifdef __NR_shmget
-static int shmget(key_t key, size_t size, int shmflg)
-{
-	return syscall(__NR_shmget, key, size, shmflg);
-}
-#endif // __NR_shmget
-
-#ifdef __NR_shmat
-static void *shmat(int shmid, const void *shmaddr, int shmflg)
-{
-	return (void *)syscall(__NR_shmat, shmid, shmaddr, shmflg);
-}
-#endif // __NR_shmat
-
-#ifdef __NR_shmdt
-static int shmdt(const void *shmaddr)
-{
-	return syscall(__NR_shmdt, shmaddr);
-}
-#endif // __NR_shmdt
-
-#ifdef __NR_shmctl
-static int shmctl(int shmid, int cmd, /*struct shmid_ds*/void *buf)
-{
-	return syscall(__NR_shmctl, shmid, cmd, buf);
-}
-#endif // __NR_shmctl
-
-#endif // __ANDROID__ && !defined(USE_THREADS)
 
 #endif // !defined(NO_LIMIT) && !defined (NO_SOCKETS) && !__minix__
 
@@ -341,6 +313,10 @@ static __noreturn void usage()
 #		ifndef NO_STRICT_MODES
 		"  -K 0|1|2|3\t\tset whitelisting level for KMS IDs (default -K0)\n"
 		"  -c0, -c1\t\tdisable/enable client time checking (default -c0)\n"
+#		ifndef NO_CLIENT_LIST
+		"  -M0, -M1\t\tdisable/enable maintaining clients (default -M0)\n"
+		"  -E0, -E1\t\tdisable/enable start with empty client list (default -E0, ignored if -M0)\n"
+#		endif // !NO_CLIENT_LIST
 #		endif // !NO_STRICT_MODES
 #		ifndef USE_MSRPC
 #		if !defined(NO_TIMEOUT) && !__minix__
@@ -674,7 +650,7 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 
 #	endif // NO_PID_FILE
 
-#ifndef NO_STRICT_MODES
+#	ifndef NO_STRICT_MODES
 
 	case INI_PARAM_WHITELISTING_LEVEL:
 		success = getIniFileArgumentInt(&WhitelistingLevel, iniarg, 0, 3);
@@ -684,7 +660,17 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 		success = getIniFileArgumentBool(&CheckClientTime, iniarg);
 		break;
 
-#endif // !NO_STRICT_MODES
+#	ifndef NO_CLIENT_LIST
+	case INI_PARAM_MAINTAIN_CLIENTS:
+		success = getIniFileArgumentBool(&MaintainClients, iniarg);
+		break;
+
+	case INI_PARAM_START_EMPTY:
+		success = getIniFileArgumentBool(&StartEmpty, iniarg);
+		break;
+
+#	endif // NO_CLIENT_LIST
+#	endif // !NO_STRICT_MODES
 
 
 #	ifndef  NO_LOG
@@ -1286,6 +1272,18 @@ static void parseGeneralArguments() {
 		ignoreIniFileParameter(INI_PARAM_CHECK_CLIENT_TIME);
 		break;
 
+#	ifndef NO_CLIENT_LIST
+	case 'E':
+		if (!getArgumentBool(&StartEmpty, optarg)) usage();
+		ignoreIniFileParameter(INI_PARAM_START_EMPTY);
+		break;
+
+	case 'M':
+		if (!getArgumentBool(&MaintainClients, optarg)) usage();
+		ignoreIniFileParameter(INI_PARAM_MAINTAIN_CLIENTS);
+		break;
+
+#	endif // !NO_CLIENT_LIST
 #	endif // !NO_STRICT_MODES
 
 	case 'D':
@@ -1458,6 +1456,10 @@ void cleanup()
 {
 	if (!InetdMode)
 	{
+#		ifndef NO_CLIENT_LIST
+		if (MaintainClients) CleanUpClientLists();
+#		endif // !NO_CLIENT_LIST
+
 #		ifndef NO_PID_FILE
 		if (fn_pid) vlmcsd_unlink(fn_pid);
 #		endif // NO_PID_FILE
@@ -1468,7 +1470,7 @@ void cleanup()
 #		if !defined(USE_THREADS) && !defined(CYGWIN)
 		if (shmid >= 0)
 		{
-			if (Semaphore != (sem_t*)-1) shmdt(Semaphore);
+			if (MaxTaskSemaphore != (sem_t*)-1) shmdt(MaxTaskSemaphore);
 			shmctl(shmid, IPC_RMID, NULL);
 		}
 #		endif // !defined(USE_THREADS) && !defined(CYGWIN)
@@ -1520,18 +1522,18 @@ static void allocateSemaphore(void)
 
 #		if !defined(USE_THREADS) && !defined(CYGWIN)
 
-		if ((Semaphore = sem_open("/vlmcsd", O_CREAT /*| O_EXCL*/, 0700, MaxTasks)) == SEM_FAILED) // fails on many systems
+		if ((MaxTaskSemaphore = sem_open("/vlmcsd", O_CREAT /*| O_EXCL*/, 0700, MaxTasks)) == SEM_FAILED) // fails on many systems
 		{
 			// We didn't get a named Semaphore (/dev/shm on Linux) so let's try our own shared page
 
 			if (
 				(shmid = shmget(IPC_PRIVATE, sizeof(sem_t), IPC_CREAT | 0600)) < 0 ||
-				(Semaphore = (sem_t*)shmat(shmid, NULL, 0)) == (sem_t*)-1 ||
-				sem_init(Semaphore, 1, MaxTasks) < 0
+				(MaxTaskSemaphore = (sem_t*)shmat(shmid, NULL, 0)) == (sem_t*)-1 ||
+				sem_init(MaxTaskSemaphore, 1, MaxTasks) < 0
 				)
 			{
 				int errno_save = errno;
-				if (Semaphore != (sem_t*)-1) shmdt(Semaphore);
+				if (MaxTaskSemaphore != (sem_t*)-1) shmdt(MaxTaskSemaphore);
 				if (shmid >= 0) shmctl(shmid, IPC_RMID, NULL);
 				printerrorf("Warning: Could not create semaphore: %s\n", vlmcsd_strerror(errno_save));
 				MaxTasks = SEM_VALUE_MAX;
@@ -1540,13 +1542,13 @@ static void allocateSemaphore(void)
 
 #		else // THREADS or CYGWIN
 
-		Semaphore = (sem_t*)vlmcsd_malloc(sizeof(sem_t));
+		MaxTaskSemaphore = (sem_t*)vlmcsd_malloc(sizeof(sem_t));
 
-		if (sem_init(Semaphore, sharemode, MaxTasks) < 0) // sem_init is not implemented on Darwin (returns ENOSYS)
+		if (sem_init(MaxTaskSemaphore, sharemode, MaxTasks) < 0) // sem_init is not implemented on Darwin (returns ENOSYS)
 		{
-			free(Semaphore);
+			free(MaxTaskSemaphore);
 
-			if ((Semaphore = sem_open("/vlmcsd", O_CREAT /*| O_EXCL*/, 0700, MaxTasks)) == SEM_FAILED)
+			if ((MaxTaskSemaphore = sem_open("/vlmcsd", O_CREAT /*| O_EXCL*/, 0700, MaxTasks)) == SEM_FAILED)
 			{
 				printerrorf("Warning: Could not create semaphore: %s\n", vlmcsd_strerror(errno));
 				MaxTasks = SEM_VALUE_MAX;
@@ -1557,7 +1559,7 @@ static void allocateSemaphore(void)
 
 #		else // _WIN32
 
-		if (!((Semaphore = CreateSemaphoreA(NULL, MaxTasks, MaxTasks, NULL))))
+		if (!((MaxTaskSemaphore = CreateSemaphoreA(NULL, MaxTasks, MaxTasks, NULL))))
 		{
 			printerrorf("Warning: Could not create semaphore: %s\n", vlmcsd_strerror(GetLastError()));
 			MaxTasks = SEM_VALUE_MAX;
@@ -1687,9 +1689,9 @@ int newmain()
 
 #	ifndef NO_LOG
 // Initialize the Critical Section for proper logging
-#	if _WIN32
+#	if _WIN32 || __CYGWIN__
 	InitializeCriticalSection(&logmutex);
-#	endif // _WIN32
+#	endif // _WIN32 || __CYGWIN__
 #	endif // NO_LOG
 
 #	endif // USE_THREADS
@@ -1729,13 +1731,16 @@ int newmain()
 	if (S_ISSOCK(statbuf.st_mode))
 	{
 		InetdMode = 1;
+#		ifndef NO_CLIENT_LIST
+		MaintainClients = FALSE;
+#		endif // !NO_CLIENT_LIST
 		nodaemon = 1;
 #		ifndef SIMPLE_SOCKETS
 		maxsockets = 0;
-#		endif // SIMPLE_SOCKETS
+#		endif // !SIMPLE_SOCKETS
 #		ifndef NO_LOG
 		logstdout = 0;
-#		endif // NO_LOG
+#		endif // !NO_LOG
 	}
 #	endif // !defined(_WIN32) && !defined(NO_SOCKETS) && !defined(USE_MSRPC)
 
@@ -1750,6 +1755,10 @@ int newmain()
 	}
 
 #	endif // NO_INI_FILE
+
+#	ifndef NO_CLIENT_LIST
+	if (MaintainClients) InitializeClientLists();
+#	endif // !NO_CLIENT_LIST
 
 #	if defined(USE_MSRPC) && !defined(NO_PRIVATE_IP_DETECT)
 	if (PublicIPProtectionLevel)

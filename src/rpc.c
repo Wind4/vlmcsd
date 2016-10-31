@@ -108,9 +108,9 @@ static void CheckRpcRequest(const RPC_REQUEST64 *const Request, const unsigned i
 	}
 	else
 	{
-		if (len > _Versions[kmsMajorVersion].RequestSize + requestSize)
+		if (len > _Versions[kmsMajorVersion - 4].RequestSize + requestSize)
 			logger("Warning: %u excess bytes in RPC request.\n",
-				len - _Versions[kmsMajorVersion].RequestSize
+				len - (_Versions[kmsMajorVersion - 4].RequestSize + requestSize)
 			);
 	}
 
@@ -743,7 +743,7 @@ RpcStatus rpcSendRequest(const RpcCtx sock, const BYTE *const KmsRequest, const 
 	RPC_REQUEST64 *RpcRequest;
 	RPC_RESPONSE64 _Response;
 	int status;
-	int_fast8_t useNdr64 = UseClientRpcNDR64 && firstPacketSent;
+	int_fast8_t useNdr64 = RpcFlags.HasNDR64 && UseClientRpcNDR64 && firstPacketSent;
 	size_t size = sizeof(RPC_HEADER) + (useNdr64 ? sizeof(RPC_REQUEST64) : sizeof(RPC_REQUEST)) + requestSize;
 	size_t responseSize2;
 

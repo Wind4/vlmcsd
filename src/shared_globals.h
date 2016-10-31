@@ -16,9 +16,9 @@
 #include <pwd.h>
 #include <grp.h>
 #include <syslog.h>
-#if (!defined(NO_LIMIT) || defined(USE_THREADS)) && !__minix__
+#if !__minix__
 #include <pthread.h>
-#endif // (!defined(NO_LIMIT) || defined(USE_THREADS)) && !__minix__
+#endif // !__minix__
 #include <fcntl.h>
 #include <sys/stat.h>
 #if !defined(NO_LIMIT) && !__minix__
@@ -104,6 +104,10 @@ extern int_fast8_t InetdMode;
 #ifndef NO_STRICT_MODES
 extern uint32_t WhitelistingLevel;
 extern int_fast8_t CheckClientTime;
+#ifndef NO_CLIENT_LIST
+extern int_fast8_t MaintainClients;
+extern int_fast8_t StartEmpty;
+#endif // NO_CLIENT_LIST
 #endif // !NO_STRICT_MODES
 
 
@@ -162,9 +166,9 @@ extern int numsockets;
 #if !defined(NO_LIMIT) && !__minix__
 
 #ifndef _WIN32
-extern sem_t *Semaphore;
+extern sem_t *MaxTaskSemaphore;
 #else // _WIN32
-extern HANDLE Semaphore;
+extern HANDLE MaxTaskSemaphore;
 #endif // _WIN32
 
 #endif // !defined(NO_LIMIT) && !__minix__

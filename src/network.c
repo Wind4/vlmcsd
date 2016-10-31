@@ -835,7 +835,7 @@ static void post_sem(void)
 #if !defined(NO_LIMIT) && !__minix__
 	if (!InetdMode && MaxTasks != SEM_VALUE_MAX)
 	{
-		semaphore_post(Semaphore);
+		semaphore_post(MaxTaskSemaphore);
 	}
 #endif // !defined(NO_LIMIT) && !__minix__
 }
@@ -846,7 +846,7 @@ static void wait_sem(void)
 #if !defined(NO_LIMIT) && !__minix__
 	if (!InetdMode && MaxTasks != SEM_VALUE_MAX)
 	{
-		semaphore_wait(Semaphore);
+		semaphore_wait(MaxTaskSemaphore);
 	}
 #endif // !defined(NO_LIMIT) && !__minix__
 }
