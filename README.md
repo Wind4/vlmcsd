@@ -20,6 +20,7 @@ cscript ospp.vbs /act
 ```
 
 ## GVLKs
+Authoritative source on Microsoft's [TechNet](https://technet.microsoft.com/en-us/library/jj612867)
 
 ### Windows 10
 | Operating system edition          | KMS Client Setup Key          |
@@ -62,6 +63,13 @@ cscript ospp.vbs /act
 | Windows 7 Enterprise      | 33PXH-7Y6KF-2VJC9-XBBR8-HVTHH |
 | Windows 7 Enterprise N    | YDRBP-3D83W-TY26F-D46B2-XCKRJ |
 | Windows 7 Enterprise E    | C29WB-22CC8-VJ326-GHFJW-H9DH4 |
+
+### Windows Server 2016
+| Operating system edition                  | KMS Client Setup Key          |
+| ----------------------------------------- | ----------------------------- |
+| Windows Server 2016 Datacenter            | CB7KF-BWN84-R7R2Y-793K2-8XDDG |
+| Windows Server 2016 Standard              | WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY |
+| Windows Server 2016 Essentials            | JCKRF-N37P4-C2D82-9YXRT-4M63B |
 
 ### Windows Server 2012
 | Operating system edition                  | KMS Client Setup Key          |
