@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export VLMCSD_VERSION="svn`svnversion`"
+export VLMCSD_VERSION=$(git describe)
 SMALLCC="-pipe -fno-common -fno-exceptions -fno-stack-protector -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants"
 SMALLLD="-pipe -Wl,--hash-style=sysv -Wl,-z,norelro -Wl,--build-id=none"
 SMALL="$SMALLCC $SMALLLD"

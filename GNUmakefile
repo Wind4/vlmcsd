@@ -190,6 +190,7 @@ help:
 	@echo "    -DNO_EXTENDED_PRODUCT_LIST   Don't compile the detailed product list."
 	@echo "    -DNO_BASIC_PRODUCT_LIST      Don't compile the basic product list."
 	@echo "    -DNO_STRICT_MODES            Don't support enhanced emulator detection prevention."
+	@echo "    -DNO_CLIENT_LIST		Don't support maintaining a client list (CMIDs)."
 	@echo "    -DNO_VERBOSE_LOG             Don't support verbose logging. Removes -v option."
 	@echo "    -DNO_LOG                     Don't add support for logging. Implies -DNO_VERBOSE_LOG -DNO_EXTENDED_PRODUCT_LIST and -DNO_BASIC_PRODUCT_LIST."
 	@echo "    -DNO_RANDOM_EPID             Don't support random ePIDs."

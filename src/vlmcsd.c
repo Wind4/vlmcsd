@@ -1867,3 +1867,25 @@ int newmain()
 
 	return rc;
 }
+
+
+#if _MSC_VER && !defined(_DEBUG)&& !MULTI_CALL_BINARY
+int __stdcall WinStartUp(void)
+{
+	WCHAR **szArgList;
+	int argc;
+	szArgList = CommandLineToArgvW(GetCommandLineW(), &argc);
+
+	int i;
+	char **argv = (char**)vlmcsd_malloc(sizeof(char*)*argc);
+
+	for (i = 0; i < argc; i++)
+	{
+		int size = WideCharToMultiByte(CP_UTF8, 0, szArgList[i], -1, argv[i], 0, NULL, NULL);
+		argv[i] = (char*)vlmcsd_malloc(size);
+		WideCharToMultiByte(CP_UTF8, 0, szArgList[i], -1, argv[i], size, NULL, NULL);
+	}
+
+	exit(server_main(argc, argv));
+}
+#endif // _MSC_VER && !defined(_DEBUG)&& !MULTI_CALL_BINARY

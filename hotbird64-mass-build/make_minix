@@ -2,9 +2,7 @@
 
 cd ~/vlmcsd/hotbird64-mass-build
 
-export VLMCSD_VERSION=svn$(ssh root@ubuntu64.internal "cd x; svnversion")
-scp -p make_minix root@ubuntu64.internal:x/hotbird64-mass-build
-scp -pr root@ubuntu64.internal:x/* ..
+export VLMCSD_VERSION=$(git describe)
 
 BINDIR="bin"
 cd ..

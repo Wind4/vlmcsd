@@ -62,7 +62,7 @@ DNS_PARSER ?= OS
 
 # You should supply your own version string here
 
-VLMCSD_VERSION ?= $(shell test -d ../.svn && echo svn`svnversion`)
+VLMCSD_VERSION ?= $(shell test -d ../.git && git describe)
 
 FEATURES ?= full
 VERBOSE ?= NO

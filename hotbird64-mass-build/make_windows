@@ -2,7 +2,7 @@
 
 cd "$( dirname "$0" )"
 
-export VLMCSD_VERSION="svn`svnversion`"
+export VLMCSD_VERSION=$(git describe)
 
 msbuild='/cygdrive/c/Program Files (x86)/MSBuild/14.0/bin/MSBuild.exe'
 version="$VLMCSD_VERSION, built $(date -u '+%Y-%m-%d %H:%M:%S') UTC"

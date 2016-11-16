@@ -152,6 +152,7 @@
       <TerminalServerAware>true</TerminalServerAware>
       <SwapRunFromCD>true</SwapRunFromCD>
       <SwapRunFromNET>true</SwapRunFromNET>
+      <EntryPointSymbol>WinStartUp</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -190,6 +191,7 @@
       <SwapRunFromCD>true</SwapRunFromCD>
       <SwapRunFromNET>true</SwapRunFromNET>
       <MinimumRequiredVersion>5.02</MinimumRequiredVersion>
+      <EntryPointSymbol>WinStartUp</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

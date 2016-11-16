@@ -1,6 +1,6 @@
 #!/usr/local/bin/bash
 
-export VLMCSD_VERSION="svn`svnversion`"
+export VLMCSD_VERSION=$(git describe)
 
 cd "$( dirname "$0" )"
 gmake -C .. clean

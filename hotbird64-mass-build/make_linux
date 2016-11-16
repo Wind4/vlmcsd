@@ -2,7 +2,7 @@
 
 cd "$( dirname "$0" )"
 
-export VLMCSD_VERSION="svn`svnversion`"
+export VLMCSD_VERSION=$(git describe)
 
 export VERBOSE=3
 export DNS_PARSER=internal
@@ -400,7 +400,7 @@ fi
 export CLIENT_NAME=../binaries/Linux/ppc/big-endian/glibc/vlmcs-ppc-glibc
 export PROGRAM_NAME=../binaries/Linux/ppc/big-endian/glibc/vlmcsd-ppc-glibc
 export MULTI_NAME=../binaries/Linux/ppc/big-endian/glibc/vlmcsdmulti-ppc-glibc
-export CC=~/openwrt/staging_dir/toolchain-powerpc_405_gcc-4.8-linaro_eglibc-2.19/bin/powerpc-openwrt-linux-gcc
+export CC=/opt/toolchains/ppc-openwrt-eglibc-2.19-gcc-4.8/bin/powerpc-openwrt-linux-gcc
 export CFLAGS="$SMALLCC"
 export PLATFORMFLAGS="-flto=16 -fwhole-program --sysroot=/opt/simplebuild/toolchains/powerpc -L/opt/simplebuild/toolchains/powerpc/lib -L/opt/simplebuild/toolchains/powerpc/usr/lib"
 export LDFLAGS="$SMALLLD"
@@ -481,6 +481,60 @@ if [ $? != 0 ]; then
   exit $?
 fi
 
+
+
+
+# armv7 glibc 2.22 gcc 5.3 OpenWRT toolchain
+
+export CC=/opt/toolchains/armelv7-OpenWRT-BCM47xx_53xx-gcc-5.3.0-glibc-2.22/bin/arm-openwrt-linux-gcc
+export CLIENT_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcs-armelv7-bcm47xx_53xx-openwrt-glibc
+export PROGRAM_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcsd-armelv7-bcm47xx_53xx-openwrt-glibc
+export MULTI_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcsdmulti-armelv7-bcm47xx_53xx-openwrt-glibc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv7-a -mthumb -mtune=cortex-a9"
+export LDFLAGS="$SMALLLD -static-libgcc"
+export THREADS=0
+export DNS_PARSER=internal
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $MULTI_NAME, $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+# armv7 glibc 2.22 gcc 5.3 OpenWRT toolchain
+
+export CC=/opt/toolchains/armelv7-OpenWRT-BCM47xx_53xx-gcc-5.3.0-musl-1.14/bin/arm-openwrt-linux-gcc
+export CLIENT_NAME=../binaries/Linux/arm/little-endian/musl/vlmcs-armelv7-bcm47xx_53xx-openwrt-musl
+export PROGRAM_NAME=../binaries/Linux/arm/little-endian/musl/vlmcsd-armelv7-bcm47xx_53xx-openwrt-musl
+export MULTI_NAME=../binaries/Linux/arm/little-endian/musl/vlmcsdmulti-armelv7-bcm47xx_53xx-openwrt-musl
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv7-a -mthumb -mtune=cortex-a9"
+export LDFLAGS="$SMALLLD -static-libgcc"
+export THREADS=0
+
+make DNS_PARSER=OS $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $MULTI_NAME, $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export CLIENT_NAME=../binaries/Linux/arm/little-endian/static/vlmcs-armelv7-bcm47xx_53xx-openwrt-musl-static
+export PROGRAM_NAME=../binaries/Linux/arm/little-endian/static/vlmcsd-armelv7-bcm47xx_53xx-openwrt-musl-static
+export MULTI_NAME=../binaries/Linux/arm/little-endian/static/vlmcsdmulti-armelv7-bcm47xx_53xx-openwrt-musl-static
+export LDFLAGS="$SMALLLD -static"
+
+make DNS_PARSER=OS $REUSEOBJFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $MULTI_NAME, $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
 
 
 
@@ -1233,7 +1287,7 @@ fi
 export MULTI_NAME=../binaries/Linux/intel/glibc/vlmcsdmulti-x86-glibc
 export CLIENT_NAME=../binaries/Linux/intel/glibc/vlmcs-x86-glibc
 export PROGRAM_NAME=../binaries/Linux/intel/glibc/vlmcsd-x86-glibc
-export CC=~/openwrt/staging_dir/toolchain-i386_i486_gcc-4.8-linaro_eglibc-2.19/bin/i486-openwrt-linux-gcc
+export CC=/opt/toolchains/toolchain-i386_i486_gcc-4.8-linaro_eglibc-2.19/bin/i486-openwrt-linux-gcc
 export CFLAGS="$SMALLCC"
 export PLATFORMFLAGS="-flto=16 -fwhole-program -m32 -march=i686 -mtune=generic"
 export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
@@ -1252,7 +1306,7 @@ fi
 
 # Linux x86 glibc minimum standalone version
 export PROGRAM_NAME=../binaries/Linux/intel/glibc/vlmcsd-x86-glibc-minimum
-export CC=~/openwrt/staging_dir/toolchain-i386_i486_gcc-4.8-linaro_eglibc-2.19/bin/i486-openwrt-linux-gcc
+export CC=/opt/toolchains/toolchain-i386_i486_gcc-4.8-linaro_eglibc-2.19/bin/i486-openwrt-linux-gcc
 export CFLAGS="$SMALLCC"
 export PLATFORMFLAGS="-flto=16 -fwhole-program -m32 -march=i686 -mtune=generic"
 export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
@@ -1503,7 +1557,7 @@ fi
 export PROGRAM_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcsd-armv4el-openwrt-glibc
 export CLIENT_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcs-armv4el-openwrt-glibc
 export MULTI_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcsdmulti-armv4el-openwrt-glibc
-export CC=~/openwrt/staging_dir/toolchain-arm_mpcore+vfp_gcc-4.8-linaro_eglibc-2.19_eabi/bin/arm-openwrt-linux-gcc
+export CC=/opt/toolchains/toolchain-arm_mpcore+vfp_gcc-4.8-linaro_eglibc-2.19_eabi/bin/arm-openwrt-linux-gcc
 export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv4"
 export FEATURES=full
 export CFLAGS="$SMALLCC"
@@ -1528,7 +1582,7 @@ SUFFIX=-armv7el-openwrt-glibc
 export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
 export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
 export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
-export CC=~/openwrt/staging_dir/toolchain-arm_mpcore+vfp_gcc-4.8-linaro_eglibc-2.19_eabi/bin/arm-openwrt-linux-gcc
+export CC=/opt/toolchains/toolchain-arm_mpcore+vfp_gcc-4.8-linaro_eglibc-2.19_eabi/bin/arm-openwrt-linux-gcc
 export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv7 -mthumb"
 export FEATURES=full
 export CFLAGS="$SMALLCC"
@@ -1656,7 +1710,7 @@ SUFFIX=-armv4el-openwrt-uclibc
 export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
 export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
 export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
-export CC=~/openwrt/staging_dir/toolchain-arm_mpcore+vfp_gcc-4.8-linaro_uClibc-0.9.33.2_eabi/bin/arm-openwrt-linux-gcc
+export CC=/opt/toolchains/toolchain-arm_mpcore+vfp_gcc-4.8-linaro_uClibc-0.9.33.2_eabi/bin/arm-openwrt-linux-gcc
 export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv4 -marm"
 export FEATURES=full
 export CFLAGS="$SMALLCC"
@@ -1712,7 +1766,7 @@ SUFFIX=-armv7el-openwrt-uclibc
 export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
 export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
 export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
-export CC=~/openwrt/staging_dir/toolchain-arm_mpcore+vfp_gcc-4.8-linaro_uClibc-0.9.33.2_eabi/bin/arm-openwrt-linux-gcc
+export CC=/opt/toolchains/toolchain-arm_mpcore+vfp_gcc-4.8-linaro_uClibc-0.9.33.2_eabi/bin/arm-openwrt-linux-gcc
 export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv7 -mthumb"
 export FEATURES=full
 export CFLAGS="$SMALLCC"
