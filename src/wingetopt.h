@@ -4,15 +4,14 @@ POSIX getopt for Windows
 AT&T Public License
 
 Code given out at the 1985 UNIFORUM conference in Dallas.
+Modified for vlmcsd by Hotbird64
 */
-
-#ifndef _MSC_VER
-#include <getopt.h>
-#endif
-#ifdef _MSC_VER
 
 #ifndef _WINGETOPT_H_
 #define _WINGETOPT_H_
+
+#ifdef _MSC_VER
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,5 +27,5 @@ extern "C" {
 }
 #endif
 
-#endif  /* _GETOPT_H_ */
-#endif  /* __GNUC__ */
+#endif  // _MSC_VER
+#endif // __wingetopt_h

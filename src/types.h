@@ -14,6 +14,10 @@
 #endif // CONFIG
 #include CONFIG
 
+#if defined(NO_INTERNAL_DATA) && defined(NO_EXTERNAL_DATA)
+#error NO_INTERAL_DATA and NO_EXTERNAL_DATA cannot be used together
+#endif
+
 #if defined(_WIN32)
 
 //#ifndef USE_MSRPC
@@ -46,7 +50,7 @@
 #endif
 
 #include <stdlib.h>
-#include <limits.h>
+//#include <limits.h>
 #include <stdint.h>
 
 #ifdef __ANDROID__
@@ -65,6 +69,12 @@
 #endif // IP_FREEBIND
 #endif // __linux__
 
+#ifdef NO_EXTERNAL_DATA
+#ifndef UNSAFE_DATA_LOAD
+#define UNSAFE_DATA_LOAD
+#endif // UNSAFE_DATA_LOAD
+#endif // NO_EXTERNAL_DATA
+
 #if (IP_BINDANY || IP_FREEBIND || IPV6_BINDANY || IP_NONLOCALOK) && !defined(NO_FREEBIND) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 #define HAVE_FREEBIND 1
 #endif
@@ -72,10 +82,6 @@
 #if !defined(NO_GETIFADDRS) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS) && !defined(NO_SOCKETS) && !defined(NO_PRIVATE_IP_DETECT) 
 #define HAVE_GETIFADDR 1
 #endif
-
-#if !defined(NO_STRICT_MODES) && defined(NO_BASIC_PRODUCT_LIST)
-#define NO_STRICT_MODES
-#endif // !defined(NO_STRICT_MODES) && defined(NO_BASIC_PRODUCT_LIST)
 
 //#if (__minix__ || defined(NO_SOCKETS)) && !defined(NO_STRICT_MODES)
 //#define NO_STRICT_MODES
@@ -87,7 +93,7 @@
 
 #if !_WIN32 && !__CYGWIN__
 
-#if !defined(_POSIX_THREADS) || (!defined(_POSIX_THREAD_PROCESS_SHARED) && !defined(USE_THREADS))
+#if !defined(_POSIX_THREADS) || (!defined(_POSIX_THREAD_PROCESS_SHARED) && !defined(USE_THREADS) && !__ANDROID__)
 #ifndef NO_CLIENT_LIST
 #define NO_CLIENT_LIST
 #endif // !NO_CLIENT_LIST
@@ -165,9 +171,6 @@ typedef struct __packed
 {
 	uint64_t val[0];
 } PACKED64;
-
-// Extend this type to 16 or 32 bits if more than 254 products appear
-typedef uint8_t ProdListIndex_t;
 
 // Deal with Mingw32-w64 C++ header which defines a _countof that is incompatible with vlmcsd
 #define vlmcsd_countof(x)	( sizeof(x) / sizeof(x[0]) )

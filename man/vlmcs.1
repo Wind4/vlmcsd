@@ -1,5 +1,5 @@
 .mso www.tmac
-.TH VLMCS 1 "October 2016" "Hotbird64" "KMS Activation Manual"
+.TH VLMCS 1 "November 2016" "Hotbird64" "KMS Activation Manual"
 .LO 1
 
 .SH NAME
@@ -80,6 +80,11 @@ Force a specific version of the KMS protocol. Valid versions are 4.0, 5.0 and 6.
 
 .IP "\fB-4\fR, \fB-5\fR and \fB-6"
 Force version 4, 5 or 6 of the KMS protocol. These options are actually shortcuts of \fB-K 4.0\fR, \fB-K 5.0\fR and \fB-K 6.0\fR.
+
+.IP "\fB-j\fR \fIfilename\fR"
+Use KMS data file \fIfilename\fR. By default vlmcs contains product data that is recent when vlmcs was compiled. You may use a more recent KMS data file that contains additional products.
+
+If vlmcsd has been compiled to use a default KMS data file, you may use \fB-j-\fR to ignore the default configuration file.
 
 .IP "\fB-m"
 Let the client pretend to be a virtual machine. Early versions of Microsoft's

@@ -23,6 +23,7 @@ export MULTI_NAME=$BINDIR/vlmcsdmulti-FreeBSD-10.1-x64-glibc
 
 make $MAKEFLAGS CFLAGS="$CF -m64" LDFLAGS="$LF" CAT=2 allmulti
 
+cp -af ../etc/vlmcsd.kmd /usr/local/sbin
 cp -af $PROGRAM_NAME /usr/local/sbin/vlmcsd
 cp -af $CLIENT_NAME /usr/local/bin/vlmcs
 

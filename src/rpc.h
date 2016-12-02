@@ -159,7 +159,7 @@ typedef struct {
 	WORD   MaxRecvFrag;
 	DWORD  AssocGroup;
 	DWORD  NumCtxItems;
-	struct {
+	struct CtxItem {
 		WORD   ContextId;
 		WORD   NumTransItems;
 		GUID   InterfaceUUID;
@@ -177,7 +177,7 @@ typedef struct {
 	WORD   SecondaryAddressLength;
 	BYTE   SecondaryAddress[6];
 	DWORD  NumResults;
-	struct {
+	struct CtxResults {
 		WORD   AckResult;
 		WORD   AckReason;
 		GUID   TransferSyntax;
@@ -254,6 +254,12 @@ typedef struct {
 			};
 			BYTE     Data[0];
 		} Ndr64;
+		struct
+		{
+			DWORD Code;
+			DWORD Padding;
+		} Error;
+
 	};
 } /*__packed*/ RPC_RESPONSE64;
 
@@ -262,7 +268,7 @@ typedef struct {
 typedef SOCKET RpcCtx;
 typedef int RpcStatus;
 
-#define INVALID_NDR_CTX ((WORD)~0)
+#define RPC_INVALID_CTX ((WORD)~0)
 
 #define RPC_BIND_ACCEPT (0)
 #define RPC_BIND_NACK   (LE16(2))
@@ -270,6 +276,8 @@ typedef int RpcStatus;
 
 #define RPC_SYNTAX_UNSUPPORTED         (LE16(2))
 #define RPC_ABSTRACTSYNTAX_UNSUPPORTED (LE16(1))
+#define RPC_NCA_UNK_IF                 (LE32(0x1c010003))
+#define RPC_NCA_PROTO_ERROR            (LE32(0x1c01000b))
 
 #define RPC_BTFN_SEC_CONTEXT_MULTIPLEX (LE16(1))
 #define RPC_BTFN_KEEP_ORPHAN           (LE16(2))
@@ -279,6 +287,7 @@ typedef int RpcStatus;
 
 #define RPC_PT_REQUEST            0
 #define RPC_PT_RESPONSE           2
+#define RPC_PT_FAULT              3
 #define RPC_PT_BIND_REQ          11
 #define RPC_PT_BIND_ACK          12
 #define RPC_PT_ALTERCONTEXT_REQ  14
@@ -293,21 +302,22 @@ typedef int RpcStatus;
 #define RPC_PF_MAYBE			 64
 #define RPC_PF_OBJECT			128
 
+
 typedef union _RPC_FLAGS
 {
 	DWORD mask;
 	struct {
 		uint32_t FlagsBTFN : 16;
-		BOOL HasNDR32      :  1;
-		BOOL HasNDR64      :  1;
-		BOOL HasBTFN       :  1;
+		BOOL HasNDR32 : 1;
+		BOOL HasNDR64 : 1;
+		BOOL HasBTFN : 1;
 	};
 } RPC_FLAGS, *PRPC_FLAGS;
 
 extern RPC_FLAGS RpcFlags;
 
-void rpcServer(const SOCKET sock, const DWORD RpcAssocGroup, const char* const ipstr);
+void rpcServer(const SOCKET sock, const DWORD rpcAssocGroup, const char* const ipstr);
 RpcStatus rpcBindClient(const RpcCtx sock, const int_fast8_t verbose, PRpcDiag_t rpcDiag);
-RpcStatus rpcSendRequest(const RpcCtx socket, const BYTE *const KmsRequest, const size_t requestSize, BYTE **KmsResponse, size_t *const responseSize);
+RpcStatus rpcSendRequest(const RpcCtx socket, const BYTE *const kmsRequest, const size_t requestSize, BYTE **kmsResponse, size_t *const responseSize);
 
 #endif // __rpc_h

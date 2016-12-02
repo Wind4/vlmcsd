@@ -64,6 +64,7 @@ MANDIR="../man"
 
 rm -fr *.dSYM
 
+sudo cp -p ../etc/vlmcsd.kmd /usr/local/bin
 sudo cp -p vlmcs-MacOSX-x86-gcc /usr/local/bin/vlmcs
 sudo cp -p vlmcsd-MacOSX-x86-gcc /usr/local/bin/vlmcsd
 

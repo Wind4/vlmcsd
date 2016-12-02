@@ -188,7 +188,7 @@ endif
 
 ifneq ($(NOLIBS),1)
   ifeq ($(MINGW),1)
-    BASELDFLAGS += -lws2_32 -liphlpapi
+    BASELDFLAGS += -lws2_32 -liphlpapi -lshlwapi
   endif
 endif 
 
@@ -251,14 +251,14 @@ else
   STRIPFLAGS += -s
 endif
 
-LIBRARY_CFLAGS = -DSIMPLE_SOCKETS -DNO_TIMEOUT -DNO_SIGHUP -DNO_CL_PIDS -DNO_EXTENDED_PRODUCT_LIST -DNO_BASIC_PRODUCT_LIST -DNO_LOG -DNO_RANDOM_EPID -DNO_INI_FILE -DNO_HELP -DNO_CUSTOM_INTERVALS -DNO_PID_FILE -DNO_USER_SWITCH -DNO_VERBOSE_LOG -DNO_LIMIT -DNO_VERSION_INFORMATION -DNO_PRIVATE_IP_DETECT -UNO_SOCKETS -USIMPLE_RPC
+LIBRARY_CFLAGS = -DSIMPLE_SOCKETS -DNO_TIMEOUT -DNO_SIGHUP -DNO_CL_PIDS -DNO_LOG -DNO_RANDOM_EPID -DNO_INI_FILE -DNO_HELP -DNO_CUSTOM_INTERVALS -DNO_PID_FILE -DNO_USER_SWITCH -DNO_VERBOSE_LOG -DNO_LIMIT -DNO_VERSION_INFORMATION -DNO_PRIVATE_IP_DETECT -DNO_STRICT_MODES -DNO_CLIENT_LIST -UNO_SOCKETS -USIMPLE_RPC
 
 ifeq ($(FEATURES), embedded)
-  BASECFLAGS += -DNO_HELP -DNO_USER_SWITCH -DNO_BASIC_PRODUCT_LIST -DNO_CUSTOM_INTERVALS -DNO_PID_FILE -DNO_VERBOSE_LOG -DNO_VERSION_INFORMATION
+  BASECFLAGS += -DNO_HELP -DNO_USER_SWITCH -DNO_CUSTOM_INTERVALS -DNO_PID_FILE -DNO_VERBOSE_LOG -DNO_VERSION_INFORMATION
 else ifeq ($(FEATURES), autostart)
   BASECFLAGS += -DNO_HELP -DNO_VERSION_INFORMATION
 else ifeq ($(FEATURES), minimum)
-  BASECFLAGS += -DSIMPLE_RPC -DSIMPLE_SOCKETS -DNO_TIMEOUT -DNO_SIGHUP -DNO_CL_PIDS -DNO_EXTENDED_PRODUCT_LIST -DNO_BASIC_PRODUCT_LIST -DNO_LOG -DNO_RANDOM_EPID -DNO_INI_FILE -DNO_HELP -DNO_CUSTOM_INTERVALS -DNO_PID_FILE -DNO_USER_SWITCH -DNO_VERBOSE_LOG -DNO_LIMIT -DNO_VERSION_INFORMATION -DNO_PRIVATE_IP_DETECT -DSMALL_AES
+  BASECFLAGS += -DSIMPLE_RPC -DSIMPLE_SOCKETS -DNO_TIMEOUT -DNO_SIGHUP -DNO_CL_PIDS -DNO_LOG -DNO_RANDOM_EPID -DNO_INI_FILE -DNO_HELP -DNO_CUSTOM_INTERVALS -DNO_PID_FILE -DNO_USER_SWITCH -DNO_VERBOSE_LOG -DNO_LIMIT -DNO_VERSION_INFORMATION -DNO_PRIVATE_IP_DETECT -DSMALL_AES -DNO_STRICT_MODES -DNO_CLIENT_LIST -DUNSAFE_DATA_LOAD -DNO_EXTERNAL_DATA -UFULL_INTERNAL_DATA -U_PEDANTIC
 else ifeq ($(FEATURES), most)
   BASECFLAGS += -DNO_SIGHUP -DNO_PID_FILE -DNO_LIMIT
 else ifeq ($(FEATURES), inetd)
@@ -269,6 +269,10 @@ endif
 
 ifdef INI
   BASECFLAGS += -DINI_FILE=\"$(INI)\"
+endif
+
+ifdef DATA
+  BASECFLAGS += -DDATA_FILE=\"$(DATA)\"
 endif
 
 ifeq ($(NO_GETIFADDRS), 1)
@@ -366,17 +370,17 @@ ifdef CAT
 endif
 
 SRCS = crypto.c kms.c endian.c output.c shared_globals.c helpers.c
-HEADERS = $(CONFIG) types.h rpc.h vlmcsd.h endian.h crypto.h kms.h network.h output.h shared_globals.h vlmcs.h helpers.h
+HEADERS = $(CONFIG) types.h rpc.h vlmcsd.h endian.h crypto.h kms.h network.h output.h shared_globals.h vlmcs.h helpers.h kmsdata.h
 DEPS = $(patsubst %,../build/%,$(MULTI_SRCS:.c=.d))
 
-VLMCSD_SRCS = vlmcsd.c $(SRCS)
+VLMCSD_SRCS = vlmcsd.c kmsdata.c $(SRCS)
 VLMCSD_OBJS = $(patsubst %,../build/%,$(VLMCSD_SRCS:.c=.o))
 
-VLMCS_SRCS = vlmcs.c $(SRCS)
+VLMCS_SRCS = vlmcs.c kmsdata-full.c $(SRCS)
 VLMCS_OBJS = $(patsubst %,../build/%,$(VLMCS_SRCS:.c=.o))
 
-MULTI_SRCS = vlmcsd.c vlmcs.c vlmcsdmulti.c $(SRCS)
-MULTI_OBJS = $(patsubst %,../build/%,$(SRCS:.c=.o)) ../build/vlmcsd-m.o ../build/vlmcs-m.o ../build/vlmcsdmulti-m.o
+MULTI_SRCS = vlmcsd.c vlmcs.c vlmcsdmulti.c kmsdata-full.c $(SRCS)
+MULTI_OBJS = $(patsubst %,../build/%,$(SRCS:.c=.o)) ../build/kmsdata-full.o ../build/vlmcsd-m.o ../build/vlmcs-m.o ../build/vlmcsdmulti-m.o
 
 DLL_SRCS = libkms.c vlmcs.c $(SRCS)
 DLL_OBJS = $(patsubst %,../build/%,$(DLL_SRCS:.c=-l.o))

@@ -56,11 +56,12 @@ int server_main(int argc, CARGV argv);
 #define INI_PARAM_CHECK_CLIENT_TIME 25
 #define INI_PARAM_MAINTAIN_CLIENTS 26
 #define INI_PARAM_START_EMPTY 27
+#define INI_PARAM_DATA_FILE 28
 
 #define INI_FILE_PASS_1 1
 #define INI_FILE_PASS_2 2
 
-typedef struct
+typedef struct IniFileParameter
 {
 	const char* const Name;
 	uint_fast8_t Id;

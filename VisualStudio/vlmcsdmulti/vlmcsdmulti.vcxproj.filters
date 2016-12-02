@@ -60,6 +60,9 @@
     <ClCompile Include="..\..\src\vlmcsdmulti.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\kmsdata-full.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\config.h">
@@ -108,6 +111,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\vlmcsd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\kmsdata.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

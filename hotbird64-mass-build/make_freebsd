@@ -38,6 +38,7 @@ cd ../bin
 strip -s --strip-unneeded --remove-section=.eh_frame_hdr --remove-section=.eh_frame --remove-section=.note.gnu.gold-version --remove-section=.comment --remove-section=.note --remove-section=.note.gnu.build-id --remove-section=.note.ABI-tag vlmcs-* vlmcsd-* vlmcsdmulti-*
 sstrip -z vlmcs-* vlmcsd-* vlmcsdmulti-*
 
+sudo cp -af ../etc/vlmcsd.kmd /usr/local/sbin
 sudo cp -af vlmcsd-FreeBSD-$VERSION-x64-gcc /usr/local/sbin/vlmcsd
 sudo cp -af vlmcs-FreeBSD-$VERSION-x64-gcc /usr/local/bin/vlmcs
 

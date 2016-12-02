@@ -21,7 +21,7 @@
 
 #ifndef VERSION
   /*
-   * Define your own version identifier here, e.g. '#define VERSION "my vlmcsd based on svn560"'
+   * Define your own version identifier here, e.g. '#define VERSION "my vlmcsd based on 1103"'
    */
 
 #define VERSION "private build"
@@ -36,21 +36,21 @@
 	* from a real KMS server.
 	*/
 
-#ifndef EPID_WINDOWS
-#define EPID_WINDOWS "03612-00206-471-452343-03-1033-14393.0000-2932016"
-#endif
-
-#ifndef EPID_OFFICE2010
-#define EPID_OFFICE2010 "03612-00096-199-303490-03-1033-14393.0000-2932016"
-#endif
-
-#ifndef EPID_OFFICE2013
-#define EPID_OFFICE2013 "03612-00206-234-394838-03-1033-14393.0000-2932016"
-#endif
-
-#ifndef EPID_OFFICE2016
-#define EPID_OFFICE2016 "03612-00206-437-938923-03-1033-14393.0000-2932016"
-#endif
+//#ifndef EPID_WINDOWS
+//#define EPID_WINDOWS "03612-00206-471-452343-03-1033-14393.0000-2932016"
+//#endif
+//
+//#ifndef EPID_OFFICE2010
+//#define EPID_OFFICE2010 "03612-00096-199-303490-03-1033-14393.0000-2932016"
+//#endif
+//
+//#ifndef EPID_OFFICE2013
+//#define EPID_OFFICE2013 "03612-00206-234-394838-03-1033-14393.0000-2932016"
+//#endif
+//
+//#ifndef EPID_OFFICE2016
+//#define EPID_OFFICE2016 "03612-00206-437-938923-03-1033-14393.0000-2932016"
+//#endif
 
 #ifndef HWID // HwId from the Ratiborus VM
 #define HWID 0x3A, 0x1C, 0x04, 0x96, 0x00, 0xB6, 0x00, 0x76
@@ -60,30 +60,44 @@
 
 
 
-	/*
-	 * Anything below this line is optional. If you want to use any of these options
-	 * uncomment one or more lines starting with "//#define"
-	 */
+/*
+ * Anything below this line is optional. If you want to use any of these options
+ * uncomment one or more lines starting with "//#define"
+ */
 
 
 
-	 /*
-	  * -------------------------------
-	  * Defaults
-	  * -------------------------------
-	  */
+/*
+ * -------------------------------
+ * Defaults
+ * -------------------------------
+ */
+
 
 
 #ifndef INI_FILE
-	  /*
-	   * Uncomment and customize the following line if you want vlmcsd to look for an ini file
-	   * at a default location
-	   */
+/*
+ * Uncomment and customize the following line if you want vlmcsd to look for an ini file
+ * at a default location.
+ */
 
-	   //#define INI_FILE "/etc/vlmcsd.ini"
+//#define INI_FILE "/etc/vlmcsd.ini"
 
 #endif // INI_FILE
 
+
+
+
+
+#ifndef DATA_FILE
+/*
+ * Uncomment and customize the following line if you want vlmcsd to look for a KMS data file
+ * at a custom default location.
+ */
+
+//#define DATA_FILE "/etc/vlmcsd.kmd"
+
+#endif // DATA_FILE
 
 
 /*
@@ -165,24 +179,16 @@
 /*
  * Cygwin, Linux, Android, NetBSD, DragonflyBSD:
  *    Do not rely on a properly mounted proc filesystem and use the less reliable
- *    argv[0] to determine the program's executable name when restarting vlmcsd
- *    by sending a SIGHUP signal. Use only if absolutely necessary (very old versions
- *    of these OSses).
+ *    argv[0] to determine the program's executable name.
+ *    Use only if absolutely necessary (very old versions of these OSses).
  *
- * FreeBSD:
- *    Do not use sysctl and but the less reliable
- *    argv[0] to determine the program's executable name when restarting vlmcsd
- *    by sending a SIGHUP signal. Use only if absolutely necessary (very old FreeBSD).
+ * Minix, OpenBSD:
+ *    This option has no effect since the OS always must use the less reliable argv[0].
  *
- * OpenBSD:
- *    This option has no effect since OpenBSD always must use the less reliable argv[0].
- *
- * Mac OS X, Solaris:
+ * FreeBSD, Mac OS X, iOS, Solaris, Windows:
  *    This option is not neccessary (and has no effect) since these OSses provide
  *    a reliable way to determine the executable name.
  *
- * Windows:
- *    This option is not used because Windows doesn't support signals.
  */
 
  //#define NO_PROCFS
@@ -195,9 +201,9 @@
 #ifndef USE_AUXV
 /*
  * Linux only:
- *    Use the process' ELF aux vector to determine the executable name when restarting
- *    vlmcsd by sending a SIGHUP signal. This is actually the best method but is supported
- *    only with
+ *    Use the process' ELF aux vector to determine the executable name.
+ *    This is actually the best method but is supported only with
+ *
  *        * the musl library
  *        * the glbic library 2.16 or newer
  *
@@ -205,7 +211,7 @@
  *    Use it only if your system supports it and you do not plan to use the binary on older systems.
  *    It won't work on debian 7 or Red Hat 6.x.
  *
- *    It it safe to try this by yourself. vlmcsd won't compile if your system doesn't support it.
+ *    It is safe to try this by yourself. vlmcsd won't compile if your system doesn't support it.
  */
 
  //#define USE_AUXV
@@ -342,21 +348,13 @@
 
 
 
+#ifndef FULL_INTERNAL_DATA
 /*
- * ------------------------------------------------------------------------------------------
- * Extra features not compiled by default because they are rarely needed
- * ------------------------------------------------------------------------------------------
+ * Includes the full database in vlmcsd.
  */
 
-
-#ifndef INCLUDE_BETAS
- /*
-  * Uncomment the following #define if you want obsolete beta/preview SKUs
-  * to be included in the extended product list.
-  */
-
-  //#define INCLUDE_BETAS
-#endif
+//#define FULL_INTERNAL_DATA
+#endif // FULL_INTERNAL_DATA
 
 
 
@@ -379,39 +377,6 @@
   //#define NO_FREEBIND
 
 #endif // NO_FREEBIND
-
-
-
-
-#ifndef NO_EXTENDED_PRODUCT_LIST
-/*
- * Do not compile the extended product list. Removes the list of Activation GUIDs (aka
- * Client SKU Id, License Id) and their respective product names (e.g. Windows 8.1 Enterprise).
- *
- * This affects logging only and does not have an effect on activation itself. As long as you
- * do not also define NO_BASIC_PRODUCT_LIST more generic names like Windows 8.1 or Office 2013
- * will still be logged. Saves a lot of space without loosing much functionality.
- *
- */
-
- //#define NO_EXTENDED_PRODUCT_LIST
-
-#endif // NO_EXTENDED_PRODUCT_LIST
-
-
-
-
-#ifndef NO_BASIC_PRODUCT_LIST
-/*
- * Do not compile the basic product list. Removes the list KMS GUIDs (aka Server SKU Id) and their
- * respective product names. Only affects logging not activation. This has a negative impact only
- * if you activate a product that is not (yet) in the extended product list. On the other hand you
- * do not save much space by not compiling this list.
- */
-
- //#define NO_BASIC_PRODUCT_LIST
-
-#endif // NO_BASIC_PRODUCT_LIST
 
 
 
@@ -445,7 +410,7 @@
 /*
  * Disables logging completely. You can neither log to a file nor to the console. -D and -f will
  * start vlmcsd in foreground. -e will not be available. Disables ini file directive LogFile.
- * Implies NO_VERBOSE_LOG, NO_EXTENDED_PRODUCT_LIST and NO_BASIC_PRODUCT_LIST.
+ * Implies NO_VERBOSE_LOG.
  */
 
  //#define NO_LOG
@@ -509,7 +474,7 @@
 
 
 #ifndef NO_PID_FILE
-/*
+ /*
  * Disables the abilty to write a pid file containing the process id of vlmcsd. If your init system
  * does not need this feature, you can safely disables this but it won't save much space. Disables
  * the use of -p from the command line and PidFile from the ini file.
@@ -518,6 +483,46 @@
  //#define NO_PID_FILE
 
 #endif // NO_PID_FILE
+
+
+
+
+#ifndef NO_EXTERNAL_DATA
+ /*
+ * Disables the abilty to load external KMS data from a file. Disables command line options -j
+ * and ini file parameter KmsData. Implies UNSAFE_DATA_LOAD.
+ */
+
+//#define NO_EXTERNAL_DATA
+
+#endif // NO_EXTERNAL_DATA
+
+
+
+
+#ifndef NO_INTERNAL_DATA
+ /*
+ * Compiles vlmcsd and vlmcs without an internal database. If no database is found at
+ * either the default location or the file specified with command line option -j.,
+ * the program exits with an error message.
+ */
+
+//#define NO_INTERNAL_DATA
+
+#endif // NO_INTERNAL_DATA
+
+
+
+
+#ifndef UNSAFE_DATA_LOAD
+ /*
+ * Does not check an external KMS data file for integrity.
+ * This save some bytes but it dangerous if you load a KMS data file from an unknown source.
+ */
+
+ //#define UNSAFE_DATA_LOAD
+
+#endif // UNSAFE_DATA_LOAD
 
 
 
@@ -653,7 +658,7 @@
  * smaller binaries but makes emulator detection easier.
  */
 
- //#define SIMPLE_RPC
+//#define SIMPLE_RPC
 #endif // !SIMPLE_RPC
 
 
@@ -665,7 +670,7 @@
  * It still supports IPv4 and IPv6.
  */
 
- //#define SIMPLE_SOCKETS
+//#define SIMPLE_SOCKETS
 
 #endif // SIMPLE_SOCKETS
 

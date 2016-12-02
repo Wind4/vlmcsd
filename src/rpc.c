@@ -71,6 +71,7 @@ static const struct {
 
 RPC_FLAGS RpcFlags;
 static int_fast8_t firstPacketSent;
+static DWORD CallId = 2; // M$ starts with CallId 2. So we do the same.
 
 //
 // RPC request (server)
@@ -115,11 +116,20 @@ static void CheckRpcRequest(const RPC_REQUEST64 *const Request, const unsigned i
 	}
 
 	if (Ctx != *Ndr64Ctx && Ctx != *NdrCtx)
-		logger("Warning: Context id should be %u (NDR32) or %u (NDR64) but is %u.\n",
-		(unsigned int)*NdrCtx,
-			(unsigned int)*Ndr64Ctx,
-			Ctx
-		);
+	{
+		if (*Ndr64Ctx == RPC_INVALID_CTX)
+		{
+			logger("Warning: Context id should be %u but is %u.\n", (unsigned int)*NdrCtx, Ctx);
+		}
+		else
+		{
+			logger("Warning: Context id should be %u (NDR32) or %u (NDR64) but is %u.\n",
+				(unsigned int)*NdrCtx,
+				(unsigned int)*Ndr64Ctx,
+				Ctx
+			);
+		}
+	}
 
 	if (Request->Opnum)
 		logger("Warning: OpNum should be 0 but is %u.\n",
@@ -216,6 +226,16 @@ static unsigned int checkRpcRequestSize(const RPC_REQUEST64 *const Request, cons
 	return (requestSize >= _Versions[majorIndex].RequestSize);
 }
 
+#ifndef SIMPLE_RPC
+static int SendError(RPC_RESPONSE64 *const Response, DWORD nca_error)
+{
+	Response->Error.Code = nca_error;
+	Response->Error.Padding = 0;
+	Response->AllocHint = LE32(32);
+	Response->ContextId = 0;
+	return 32;
+}
+#endif // SIMPLE_RPC
 
 /*
  * Handles the actual KMS request from the client.
@@ -236,15 +256,19 @@ static int rpcRequest(const RPC_REQUEST64 *const Request, RPC_RESPONSE64 *const 
 
 	WORD Ctx = LE16(Request->ContextId);
 
-	if (Ctx != *Ndr64Ctx)
+	if (Ctx == *NdrCtx)
 	{
 		requestData = (BYTE*)&Request->Ndr.Data;
 		responseData = (BYTE*)&Response->Ndr.Data;
 	}
-	else
+	else if (Ctx == *Ndr64Ctx)
 	{
 		requestData = (BYTE*)&Request->Ndr64.Data;
 		responseData = (BYTE*)&Response->Ndr64.Data;
+	}
+	else
+	{
+		return SendError(Response, RPC_NCA_UNK_IF);
 	}
 
 #	else // SIMPLE_RPC
@@ -332,43 +356,44 @@ static void CheckRpcBindRequest(const RPC_BIND_REQUEST *const Request, const uns
 
 	for (i = 0; i < NumCtxItems; i++)
 	{
-		if (!IsEqualGUID(&Request->CtxItems[i].InterfaceUUID, InterfaceUuid))
+		struct CtxItem const* ctxItem = Request->CtxItems + i;
+		if (!IsEqualGUID(&ctxItem->InterfaceUUID, InterfaceUuid))
 		{
-			uuid2StringLE((GUID*)&Request->CtxItems[i].InterfaceUUID, guidBuffer1);
+			uuid2StringLE(&ctxItem->InterfaceUUID, guidBuffer1);
 			uuid2StringLE((GUID*)InterfaceUuid, guidBuffer2);
-			logger("Warning: Interface UUID is %s but should be %s in Ctx item %u.\n", guidBuffer1, guidBuffer2, (unsigned int)i);
+			logger("Fatal: Interface UUID is %s but should be %s in Ctx item %u.\n", guidBuffer1, guidBuffer2, (unsigned int)i);
 		}
 
-		if (Request->CtxItems[i].NumTransItems != LE16(1))
+		if (ctxItem->NumTransItems != LE16(1))
 			logger("Fatal: %u NDR32 transfer items detected in Ctx item %u, but only one is supported.\n",
-			(unsigned int)LE16(Request->CtxItems[i].NumTransItems), (unsigned int)i
+			(unsigned int)LE16(ctxItem->NumTransItems), (unsigned int)i
 			);
 
-		if (Request->CtxItems[i].InterfaceVerMajor != LE16(1) || Request->CtxItems[i].InterfaceVerMinor != 0)
-			logger("Warning: NDR32 Interface version is %u.%u but should be 1.0.\n",
-			(unsigned int)LE16(Request->CtxItems[i].InterfaceVerMajor),
-				(unsigned int)LE16(Request->CtxItems[i].InterfaceVerMinor)
+		if (ctxItem->InterfaceVerMajor != LE16(1) || ctxItem->InterfaceVerMinor != 0)
+			logger("Warning: Interface version is %u.%u but should be 1.0.\n",
+				(unsigned int)LE16(ctxItem->InterfaceVerMajor),
+				(unsigned int)LE16(ctxItem->InterfaceVerMinor)
 			);
 
-		if (Request->CtxItems[i].ContextId != LE16((WORD)i))
-			logger("Warning: context id of Ctx item %u is %u.\n", (unsigned int)i, (unsigned int)Request->CtxItems[i].ContextId);
+		if (ctxItem->ContextId != LE16((WORD)i))
+			logger("Warning: context id of Ctx item %u is %u.\n", (unsigned int)i, (unsigned int)ctxItem->ContextId);
 
-		if (IsEqualGUID((GUID*)TransferSyntaxNDR32, &Request->CtxItems[i].TransferSyntax))
+		if (IsEqualGUID((GUID*)TransferSyntaxNDR32, &ctxItem->TransferSyntax))
 		{
 			HasTransferSyntaxNDR32 = TRUE;
 
-			if (Request->CtxItems[i].SyntaxVersion != LE32(2))
-				logger("NDR32 transfer syntax version is %u but should be 2.\n", LE32(Request->CtxItems[i].SyntaxVersion));
+			if (ctxItem->SyntaxVersion != LE32(2))
+				logger("NDR32 transfer syntax version is %u but should be 2.\n", LE32(ctxItem->SyntaxVersion));
 		}
-		else if (IsEqualGUID((GUID*)TransferSyntaxNDR64, &Request->CtxItems[i].TransferSyntax))
+		else if (IsEqualGUID((GUID*)TransferSyntaxNDR64, &ctxItem->TransferSyntax))
 		{
-			if (Request->CtxItems[i].SyntaxVersion != LE32(1))
-				logger("NDR64 transfer syntax version is %u but should be 1.\n", LE32(Request->CtxItems[i].SyntaxVersion));
+			if (ctxItem->SyntaxVersion != LE32(1))
+				logger("NDR64 transfer syntax version is %u but should be 1.\n", LE32(ctxItem->SyntaxVersion));
 		}
-		else if (!memcmp(BindTimeFeatureNegotiation, (BYTE*)(&Request->CtxItems[i].TransferSyntax), 8))
+		else if (!memcmp(BindTimeFeatureNegotiation, (BYTE*)(&ctxItem->TransferSyntax), 8))
 		{
-			if (Request->CtxItems[i].SyntaxVersion != LE32(1))
-				logger("BTFN syntax version is %u but should be 1.\n", LE32(Request->CtxItems[i].SyntaxVersion));
+			if (ctxItem->SyntaxVersion != LE32(1))
+				logger("BTFN syntax version is %u but should be 1.\n", LE32(ctxItem->SyntaxVersion));
 		}
 	}
 
@@ -385,9 +410,9 @@ static unsigned int checkRpcBindSize(const RPC_BIND_REQUEST *const Request, cons
 {
 	if (RequestSize < sizeof(RPC_BIND_REQUEST)) return FALSE;
 
-	unsigned int _NumCtxItems = LE32(Request->NumCtxItems);
+	unsigned int numCtxItems = LE32(Request->NumCtxItems);
 
-	if (RequestSize < sizeof(RPC_BIND_REQUEST) - sizeof(Request->CtxItems[0]) + _NumCtxItems * sizeof(Request->CtxItems[0])) return FALSE;
+	if (RequestSize < sizeof(RPC_BIND_REQUEST) - sizeof(Request->CtxItems[0]) + numCtxItems * sizeof(Request->CtxItems[0])) return FALSE;
 
 #if defined(_PEDANTIC) && !defined(NO_LOG)
 	CheckRpcBindRequest(Request, RequestSize);
@@ -406,7 +431,7 @@ static unsigned int checkRpcBindSize(const RPC_BIND_REQUEST *const Request, cons
  */
 static int rpcBind(const RPC_BIND_REQUEST *const Request, RPC_BIND_RESPONSE* Response, const DWORD RpcAssocGroup, const SOCKET sock, WORD* NdrCtx, WORD* Ndr64Ctx, BYTE packetType, const char* const ipstr_unused)
 {
-	unsigned int  i, _st = FALSE;
+	unsigned int i;
 	DWORD numCtxItems = LE32(Request->NumCtxItems);
 	int_fast8_t IsNDR64possible = FALSE;
 	uint_fast8_t portNumberSize;
@@ -447,23 +472,21 @@ static int rpcBind(const RPC_BIND_REQUEST *const Request, RPC_BIND_RESPONSE* Res
 
 #	ifndef SIMPLE_RPC
 
-	if (UseServerRpcNDR64)
+	for (i = 0; i < numCtxItems; i++)
 	{
-		for (i = 0; i < numCtxItems; i++)
+		const struct CtxItem* ctxItem = &Request->CtxItems[i];
+		if (IsEqualGUID((GUID*)TransferSyntaxNDR32, &ctxItem->TransferSyntax))
 		{
-			if (IsEqualGUID((GUID*)TransferSyntaxNDR32, &Request->CtxItems[i].TransferSyntax))
-			{
-				/*if (packetType == RPC_PT_BIND_REQ)*/
-				*NdrCtx = LE16(Request->CtxItems[i].ContextId);
-			}
+			/*if (packetType == RPC_PT_BIND_REQ)*/
+			*NdrCtx = LE16(ctxItem->ContextId);
+		}
 
-			if (IsEqualGUID((GUID*)TransferSyntaxNDR64, &Request->CtxItems[i].TransferSyntax))
-			{
-				IsNDR64possible = TRUE;
+		if (UseServerRpcNDR64 && IsEqualGUID((GUID*)TransferSyntaxNDR64, &ctxItem->TransferSyntax))
+		{
+			IsNDR64possible = TRUE;
 
-				/*if (packetType == RPC_PT_BIND_REQ)*/
-				*Ndr64Ctx = LE16(Request->CtxItems[i].ContextId);
-			}
+			/*if (packetType == RPC_PT_BIND_REQ)*/
+			*Ndr64Ctx = LE16(ctxItem->ContextId);
 		}
 	}
 
@@ -471,53 +494,78 @@ static int rpcBind(const RPC_BIND_REQUEST *const Request, RPC_BIND_RESPONSE* Res
 
 	for (i = 0; i < numCtxItems; i++)
 	{
-		memset(&Response->Results[i].TransferSyntax, 0, sizeof(GUID));
+		struct CtxResults* result = Response->Results+i;
+		const GUID* ctxTransferSyntax = &Request->CtxItems[i].TransferSyntax;
 
-		if (!IsNDR64possible && IsEqualGUID((GUID*)TransferSyntaxNDR32, &Request->CtxItems[i].TransferSyntax))
+#		ifndef SIMPLE_RPC
+		WORD nackReason = RPC_ABSTRACTSYNTAX_UNSUPPORTED;
+#		endif // !SIMPLE_RPC
+
+		memset(&result->TransferSyntax, 0, sizeof(GUID));
+
+#		ifndef SIMPLE_RPC
+		int isInterfaceUUID = IsEqualGUID(&Request->CtxItems[i].InterfaceUUID, (GUID*)InterfaceUuid);
+		if (isInterfaceUUID) nackReason = RPC_SYNTAX_UNSUPPORTED;
+#		else // SIMPLE_RPC
+#		define isInterfaceUUID TRUE
+#		endif // SIMPLE_RPC
+
+		if (isInterfaceUUID && !IsNDR64possible && IsEqualGUID((GUID*)TransferSyntaxNDR32, ctxTransferSyntax))
 		{
-			Response->Results[i].SyntaxVersion = LE32(2);
-			Response->Results[i].AckResult =
-				Response->Results[i].AckReason = RPC_BIND_ACCEPT;
-			memcpy(&Response->Results[i].TransferSyntax, TransferSyntaxNDR32, sizeof(GUID));
-
-			_st = TRUE;
+			result->SyntaxVersion = LE32(2);
+			result->AckResult = result->AckReason = RPC_BIND_ACCEPT;
+			memcpy(&result->TransferSyntax, TransferSyntaxNDR32, sizeof(GUID));
+			continue;
 		}
 
 #		ifndef SIMPLE_RPC
 
-		else if (IsNDR64possible && IsEqualGUID((GUID*)TransferSyntaxNDR64, &Request->CtxItems[i].TransferSyntax))
+		if (IsEqualGUID((GUID*)TransferSyntaxNDR64, ctxTransferSyntax))
 		{
-			Response->Results[i].SyntaxVersion = LE32(1);
-			Response->Results[i].AckResult =
-				Response->Results[i].AckReason = RPC_BIND_ACCEPT;
-			memcpy(&Response->Results[i].TransferSyntax, TransferSyntaxNDR64, sizeof(GUID));
+			if (!UseServerRpcNDR64) nackReason = RPC_SYNTAX_UNSUPPORTED;
 
-			_st = TRUE;
+			if (isInterfaceUUID && IsNDR64possible)
+			{
+				result->SyntaxVersion = LE32(1);
+				result->AckResult = result->AckReason = RPC_BIND_ACCEPT;
+				memcpy(&result->TransferSyntax, TransferSyntaxNDR64, sizeof(GUID));
+				continue;
+			}
 		}
-		else if (UseServerRpcBTFN && !memcmp(BindTimeFeatureNegotiation, (BYTE*)(&Request->CtxItems[i].TransferSyntax), 8))
-		{
-			Response->Results[i].SyntaxVersion = 0;
-			Response->Results[i].AckResult = RPC_BIND_ACK;
 
-			// Features requested are actually encoded in the GUID
-			Response->Results[i].AckReason =
-				((WORD*)(&Request->CtxItems[i].TransferSyntax))[4] &
-				(RPC_BTFN_SEC_CONTEXT_MULTIPLEX | RPC_BTFN_KEEP_ORPHAN);
+		if (!memcmp(BindTimeFeatureNegotiation, ctxTransferSyntax, 8))
+		{
+			nackReason = RPC_SYNTAX_UNSUPPORTED;
+
+			if (UseServerRpcBTFN)
+			{
+				result->SyntaxVersion = 0;
+				result->AckResult = RPC_BIND_ACK;
+
+				// Features requested are actually encoded in the GUID
+				result->AckReason =
+					((WORD*)(ctxTransferSyntax))[4] &
+					(RPC_BTFN_SEC_CONTEXT_MULTIPLEX | RPC_BTFN_KEEP_ORPHAN);
+
+				continue;
+			}
 		}
 
 #		endif // !SIMPLE_RPC
 
-		else
-		{
-			Response->Results[i].SyntaxVersion = 0;
-			Response->Results[i].AckResult =
-				Response->Results[i].AckReason = RPC_BIND_NACK; // Unsupported
-		}
+		result->SyntaxVersion = 0;
+		result->AckResult = RPC_BIND_NACK;
+#		ifndef SIMPLE_RPC
+		result->AckReason = nackReason;
+#		else // SIMPLE_RPC
+#		undef isInterfaceUUID
+		result->AckReason = RPC_SYNTAX_UNSUPPORTED;
+#		endif // SIMPLE_RPC
 	}
 
-	if (!_st) return 0;
+	//if (!_st) return 0;
 
-	return sizeof(RPC_BIND_RESPONSE) + numCtxItems * sizeof(((RPC_BIND_RESPONSE *)0)->Results[0]) - (portNumberSize < 3 ? 4 : 0);
+	return sizeof(RPC_BIND_RESPONSE) + numCtxItems * sizeof(struct CtxResults) - (portNumberSize < 3 ? 4 : 0);
 }
 
 
@@ -530,7 +578,7 @@ typedef int(*GetResponse_t)(const void* const request, void* response, const DWO
 // ReSharper disable CppIncompatiblePointerConversion
 static const struct {
 	BYTE  ResponsePacketType;
-	GetResponseSize_t CheckRequestSize;
+	GetResponseSize_t CheckRequest;
 	GetResponse_t GetResponse;
 }
 _Actions[] = {
@@ -542,13 +590,30 @@ _Actions[] = {
 
 
 /*
+* Initializes an RPC request header as needed for KMS, i.e. packet always fits in one fragment.
+* size cannot be greater than fragment length negotiated during RPC bind.
+*/
+static void createRpcHeader(RPC_HEADER* header, BYTE packetType, WORD size)
+{
+	header->PacketType = packetType;
+	header->PacketFlags = RPC_PF_FIRST | RPC_PF_LAST;
+	header->VersionMajor = 5;
+	header->VersionMinor = 0;
+	header->AuthLength = 0;
+	header->DataRepresentation = BE32(0x10000000); // Little endian, ASCII charset, IEEE floating point
+	header->CallId = LE32(CallId);
+	header->FragLength = LE16(size);
+}
+
+
+/*
  * This is the main RPC server loop. Returns after KMS request has been serviced
  * or a timeout has occured.
  */
-void rpcServer(const SOCKET sock, const DWORD RpcAssocGroup, const char* const ipstr)
+void rpcServer(const SOCKET sock, const DWORD rpcAssocGroup, const char* const ipstr)
 {
 	RPC_HEADER  rpcRequestHeader;
-	WORD NdrCtx = INVALID_NDR_CTX, Ndr64Ctx = INVALID_NDR_CTX;
+	WORD NdrCtx = RPC_INVALID_CTX, Ndr64Ctx = RPC_INVALID_CTX;
 
 	randomNumberInit();
 
@@ -584,81 +649,99 @@ void rpcServer(const SOCKET sock, const DWORD RpcAssocGroup, const char* const i
 		// Unable to receive the complete request
 		if (!_recv(sock, requestBuffer, request_len)) return;
 
-		// Request is invalid
-		BYTE isValid = (BYTE)_Actions[_a].CheckRequestSize(requestBuffer, request_len, &NdrCtx, &Ndr64Ctx);
-		if (rpcRequestHeader.PacketType != RPC_PT_REQUEST && !isValid) return;
+#       if !defined(SIMPLE_RPC) && defined(_PEDANTIC)
+		if (rpcRequestHeader.PacketType == RPC_PT_REQUEST && (rpcRequestHeader.VersionMajor != 5 || rpcRequestHeader.VersionMinor != 0))
+		{
+			response_len = SendError((RPC_RESPONSE64*)rpcResponse, RPC_NCA_PROTO_ERROR);
+		}
+		else
+#		endif // !defined(SIMPLE_RPC) && defined(_PEDANTIC)
+		{
+			BYTE isValid = (BYTE)_Actions[_a].CheckRequest(requestBuffer, request_len, &NdrCtx, &Ndr64Ctx);
+			if (rpcRequestHeader.PacketType != RPC_PT_REQUEST && !isValid) return;
 
-		// Unable to create a valid response from request
-		if (!((response_len = _Actions[_a].GetResponse(requestBuffer, rpcResponse, RpcAssocGroup, sock, &NdrCtx, &Ndr64Ctx, rpcRequestHeader.PacketType != RPC_PT_REQUEST ? rpcRequestHeader.PacketType : isValid, ipstr)))) return;
-
-		response_len += sizeof(RPC_HEADER);
+			// Unable to create a valid response from request
+			if (!((response_len = _Actions[_a].GetResponse(requestBuffer, rpcResponse, rpcAssocGroup, sock, &NdrCtx, &Ndr64Ctx, rpcRequestHeader.PacketType != RPC_PT_REQUEST ? rpcRequestHeader.PacketType : isValid, ipstr)))) return;
+		}
 
 		memcpy(rpcResponseHeader, &rpcRequestHeader, sizeof(RPC_HEADER));
 
-		rpcResponseHeader->FragLength = LE16((WORD)response_len);
-		rpcResponseHeader->PacketType = _Actions[_a].ResponsePacketType;
+#       ifndef SIMPLE_RPC
+		if (response_len == 32)
+		{
+			createRpcHeader(rpcResponseHeader, RPC_PT_FAULT, 0);
+			rpcResponseHeader->PacketFlags = RPC_PF_FIRST | RPC_PF_LAST | RPC_PF_NOT_EXEC;
+		}
+		else
+#		endif // SIMPLE_RPC
+		{
+			response_len += sizeof(RPC_HEADER);
+			rpcResponseHeader->PacketType = _Actions[_a].ResponsePacketType;
 
-		if (rpcResponseHeader->PacketType == RPC_PT_ALTERCONTEXT_ACK)
-			rpcResponseHeader->PacketFlags = RPC_PF_FIRST | RPC_PF_LAST;
+			if (rpcResponseHeader->PacketType == RPC_PT_ALTERCONTEXT_ACK)
+			{
+				rpcResponseHeader->PacketFlags = RPC_PF_FIRST | RPC_PF_LAST;
+			}
+		}
+
+		rpcResponseHeader->FragLength = LE16((WORD)response_len);
 
 		if (!_send(sock, responseBuffer, response_len)) return;
 
-		if (DisconnectImmediately && rpcResponseHeader->PacketType == RPC_PT_RESPONSE)
-			shutdown(sock, VLMCSD_SHUT_RDWR);
+		if (DisconnectImmediately && (rpcResponseHeader->PacketType == RPC_PT_RESPONSE || rpcResponseHeader->PacketType == RPC_PT_FAULT))
+			return;
 	}
 }
 
 
 /* RPC client functions */
 
-static DWORD CallId = 2; // M$ starts with CallId 2. So we do the same.
-
 
 /*
  * Checks RPC header. Returns 0 on success.
  * This is mainly for debugging a non Microsoft KMS server that uses its own RPC code.
  */
-static int checkRpcHeader(const RPC_HEADER *const Header, const BYTE desiredPacketType, const PRINTFUNC p)
+static int checkRpcHeader(const RPC_HEADER *const header, const BYTE desiredPacketType, const PRINTFUNC p)
 {
 	int status = 0;
 
-	if (Header->PacketType != desiredPacketType)
+	if (header->PacketType != desiredPacketType)
 	{
 		p("Fatal: Received wrong RPC packet type. Expected %u but got %u\n",
 			(uint32_t)desiredPacketType,
-			Header->PacketType
+			header->PacketType
 		);
 		status = RPC_S_PROTOCOL_ERROR;
 	}
 
-	if (Header->DataRepresentation != BE32(0x10000000))
+	if (header->DataRepresentation != BE32(0x10000000))
 	{
 		p("Fatal: RPC response does not conform to Microsoft's limited support of DCE RPC\n");
 		status = RPC_S_PROTOCOL_ERROR;
 	}
 
-	if (Header->AuthLength != 0)
+	if (header->AuthLength != 0)
 	{
 		p("Fatal: RPC response requests authentication\n");
 		status = RPC_S_UNKNOWN_AUTHN_TYPE;
 	}
 
 	// vlmcsd does not support fragmented packets (not yet neccassary)
-	if ((Header->PacketFlags & (RPC_PF_FIRST | RPC_PF_LAST)) != (RPC_PF_FIRST | RPC_PF_LAST))
+	if ((header->PacketFlags & (RPC_PF_FIRST | RPC_PF_LAST)) != (RPC_PF_FIRST | RPC_PF_LAST))
 	{
 		p("Fatal: RPC packet flags RPC_PF_FIRST and RPC_PF_LAST are not both set.\n");
 		status = RPC_S_CANNOT_SUPPORT;
 	}
 
-	if (Header->PacketFlags & RPC_PF_CANCEL_PENDING)	p("Warning: %s should not be set\n", "RPC_PF_CANCEL_PENDING");
-	if (Header->PacketFlags & RPC_PF_RESERVED)			p("Warning: %s should not be set\n", "RPC_PF_RESERVED");
-	if (Header->PacketFlags & RPC_PF_NOT_EXEC)			p("Warning: %s should not be set\n", "RPC_PF_NOT_EXEC");
-	if (Header->PacketFlags & RPC_PF_MAYBE)				p("Warning: %s should not be set\n", "RPC_PF_MAYBE");
-	if (Header->PacketFlags & RPC_PF_OBJECT)			p("Warning: %s should not be set\n", "RPC_PF_OBJECT");
+	if (header->PacketFlags & RPC_PF_CANCEL_PENDING)	p("Warning: %s should not be set\n", "RPC_PF_CANCEL_PENDING");
+	if (header->PacketFlags & RPC_PF_RESERVED)			p("Warning: %s should not be set\n", "RPC_PF_RESERVED");
+	if (header->PacketFlags & RPC_PF_NOT_EXEC)			p("Warning: %s should not be set\n", "RPC_PF_NOT_EXEC");
+	if (header->PacketFlags & RPC_PF_MAYBE)				p("Warning: %s should not be set\n", "RPC_PF_MAYBE");
+	if (header->PacketFlags & RPC_PF_OBJECT)			p("Warning: %s should not be set\n", "RPC_PF_OBJECT");
 
-	if (Header->VersionMajor != 5 || Header->VersionMinor != 0)
+	if (header->VersionMajor != 5 || header->VersionMinor != 0)
 	{
-		p("Fatal: Expected RPC version 5.0 and got %u.%u\n", Header->VersionMajor, Header->VersionMinor);
+		p("Fatal: Expected RPC version 5.0 and got %u.%u\n", header->VersionMajor, header->VersionMinor);
 		status = RPC_S_INVALID_VERS_OPTION;
 	}
 
@@ -715,28 +798,11 @@ static int checkRpcResponseHeader(const RPC_HEADER *const ResponseHeader, const 
 }
 
 /*
- * Initializes an RPC request header as needed for KMS, i.e. packet always fits in one fragment.
- * size cannot be greater than fragment length negotiated during RPC bind.
- */
-static void createRpcRequestHeader(RPC_HEADER* RequestHeader, BYTE packetType, WORD size)
-{
-	RequestHeader->PacketType = packetType;
-	RequestHeader->PacketFlags = RPC_PF_FIRST | RPC_PF_LAST;
-	RequestHeader->VersionMajor = 5;
-	RequestHeader->VersionMinor = 0;
-	RequestHeader->AuthLength = 0;
-	RequestHeader->DataRepresentation = BE32(0x10000000); // Little endian, ASCII charset, IEEE floating point
-	RequestHeader->CallId = LE32(CallId);
-	RequestHeader->FragLength = LE16(size);
-}
-
-
-/*
  * Sends a KMS request via RPC and receives a response.
  * Parameters are raw (encrypted) reqeuests / responses.
  * Returns 0 on success.
  */
-RpcStatus rpcSendRequest(const RpcCtx sock, const BYTE *const KmsRequest, const size_t requestSize, BYTE **KmsResponse, size_t *const responseSize)
+RpcStatus rpcSendRequest(const RpcCtx sock, const BYTE *const kmsRequest, const size_t requestSize, BYTE **kmsResponse, size_t *const responseSize)
 {
 #define MAX_EXCESS_BYTES 16
 	RPC_HEADER *RequestHeader, ResponseHeader;
@@ -747,14 +813,14 @@ RpcStatus rpcSendRequest(const RpcCtx sock, const BYTE *const KmsRequest, const 
 	size_t size = sizeof(RPC_HEADER) + (useNdr64 ? sizeof(RPC_REQUEST64) : sizeof(RPC_REQUEST)) + requestSize;
 	size_t responseSize2;
 
-	*KmsResponse = NULL;
+	*kmsResponse = NULL;
 
 	BYTE *_Request = (BYTE*)vlmcsd_malloc(size);
 
 	RequestHeader = (RPC_HEADER*)_Request;
 	RpcRequest = (RPC_REQUEST64*)(_Request + sizeof(RPC_HEADER));
 
-	createRpcRequestHeader(RequestHeader, RPC_PT_REQUEST, (WORD)size);
+	createRpcHeader(RequestHeader, RPC_PT_REQUEST, (WORD)size);
 
 	// Increment CallId for next Request
 	CallId++;
@@ -767,7 +833,7 @@ RpcStatus rpcSendRequest(const RpcCtx sock, const BYTE *const KmsRequest, const 
 		RpcRequest->AllocHint = LE32((DWORD)(requestSize + sizeof(RpcRequest->Ndr64)));
 		RpcRequest->Ndr64.DataLength = LE64((uint64_t)requestSize);
 		RpcRequest->Ndr64.DataSizeIs = LE64((uint64_t)requestSize);
-		memcpy(RpcRequest->Ndr64.Data, KmsRequest, requestSize);
+		memcpy(RpcRequest->Ndr64.Data, kmsRequest, requestSize);
 	}
 	else
 	{
@@ -775,7 +841,7 @@ RpcStatus rpcSendRequest(const RpcCtx sock, const BYTE *const KmsRequest, const 
 		RpcRequest->AllocHint = LE32((DWORD)(requestSize + sizeof(RpcRequest->Ndr)));
 		RpcRequest->Ndr.DataLength = LE32((DWORD)requestSize);
 		RpcRequest->Ndr.DataSizeIs = LE32((DWORD)requestSize);
-		memcpy(RpcRequest->Ndr.Data, KmsRequest, requestSize);
+		memcpy(RpcRequest->Ndr.Data, kmsRequest, requestSize);
 	}
 
 	for (;;)
@@ -864,13 +930,13 @@ RpcStatus rpcSendRequest(const RpcCtx sock, const BYTE *const KmsRequest, const 
 			break;
 		}
 
-		*KmsResponse = (BYTE*)vlmcsd_malloc(*responseSize + MAX_EXCESS_BYTES);
+		*kmsResponse = (BYTE*)vlmcsd_malloc(*responseSize + MAX_EXCESS_BYTES);
 
 		// If RPC stub is too short, assume missing bytes are zero (same ill behavior as MS RPC)
-		memset(*KmsResponse, 0, *responseSize + MAX_EXCESS_BYTES);
+		memset(*kmsResponse, 0, *responseSize + MAX_EXCESS_BYTES);
 
 		// Read up to 16 bytes more than bytes expected to detect faulty KMS emulators
-		if ((bytesread = recv(sock, (char*)*KmsResponse, (int)(*responseSize) + MAX_EXCESS_BYTES, 0)) < (int)*responseSize)
+		if ((bytesread = recv(sock, (char*)*kmsResponse, (int)(*responseSize) + MAX_EXCESS_BYTES, 0)) < (int)*responseSize)
 		{
 			printerrorf("\nFatal: No or incomplete KMS response received. Required %u bytes but only got %i\n",
 				(uint32_t)*responseSize,
@@ -895,7 +961,7 @@ RpcStatus rpcSendRequest(const RpcCtx sock, const BYTE *const KmsRequest, const 
 			size_t i;
 			for (i = 0; i < pad; i++)
 			{
-				if (*(*KmsResponse + *responseSize + sizeof(*pReturnCode) + i))
+				if (*(*kmsResponse + *responseSize + sizeof(*pReturnCode) + i))
 				{
 					printerrorf("\nWarning: RPC stub data not padded to zeros according to Microsoft standard\n");
 					break;
@@ -903,7 +969,7 @@ RpcStatus rpcSendRequest(const RpcCtx sock, const BYTE *const KmsRequest, const 
 			}
 		}
 
-		pReturnCode = (DWORD*)(*KmsResponse + *responseSize + pad);
+		pReturnCode = (DWORD*)(*kmsResponse + *responseSize + pad);
 		status = LE32(UA32(pReturnCode));
 
 		break;
@@ -933,7 +999,7 @@ static int_fast8_t IsNullGuid(BYTE* guidPtr)
  * Returns 0 on success. RPC binding is required before any payload can be
  * exchanged. It negotiates about protocol details.
  */
-RpcStatus rpcBindOrAlterClientContext(const RpcCtx sock, BYTE packetType, const int_fast8_t verbose)
+static RpcStatus rpcBindOrAlterClientContext(const RpcCtx sock, const BYTE packetType, const int_fast8_t verbose)
 {
 	RPC_HEADER *RequestHeader, ResponseHeader;
 	RPC_BIND_REQUEST *bindRequest;
@@ -943,13 +1009,13 @@ RpcStatus rpcBindOrAlterClientContext(const RpcCtx sock, BYTE packetType, const 
 	size_t rpcBindSize = (sizeof(RPC_HEADER) + sizeof(RPC_BIND_REQUEST) + (ctxItems - 1) * sizeof(bindRequest->CtxItems[0]));
 	WORD ctxIndex = 0;
 	WORD i;
-	WORD CtxBTFN = (WORD)~0, CtxNDR64 = (WORD)~0;
-	BYTE* _Request = (BYTE*)alloca(rpcBindSize);
+	WORD CtxBTFN = RPC_INVALID_CTX, CtxNDR64 = RPC_INVALID_CTX;
+	BYTE* request = (BYTE*)alloca(rpcBindSize);
 
-	RequestHeader = (RPC_HEADER*)_Request;
-	bindRequest = (RPC_BIND_REQUEST*)(_Request + sizeof(RPC_HEADER));
+	RequestHeader = (RPC_HEADER*)request;
+	bindRequest = (RPC_BIND_REQUEST*)(request + sizeof(RPC_HEADER));
 
-	createRpcRequestHeader(RequestHeader, packetType, (WORD)rpcBindSize);
+	createRpcHeader(RequestHeader, packetType, (WORD)rpcBindSize);
 	RequestHeader->PacketFlags |= UseMultiplexedRpc ? RPC_PF_MULTIPLEX : 0;
 
 	bindRequest->AssocGroup = 0;
@@ -959,13 +1025,14 @@ RpcStatus rpcBindOrAlterClientContext(const RpcCtx sock, BYTE packetType, const 
 	// data that is identical in all Ctx items
 	for (i = 0; i < ctxItems; i++)
 	{
-		bindRequest->CtxItems[i].ContextId = LE16(i);
-		bindRequest->CtxItems[i].InterfaceVerMajor = LE16(1);
-		bindRequest->CtxItems[i].InterfaceVerMinor = 0;
-		bindRequest->CtxItems[i].NumTransItems = LE16(1);
-		bindRequest->CtxItems[i].SyntaxVersion = i ? LE32(1) : LE32(2);
+		struct CtxItem* ctxItem = bindRequest->CtxItems + i;
+		ctxItem->ContextId = LE16(i);
+		ctxItem->InterfaceVerMajor = LE16(1);
+		ctxItem->InterfaceVerMinor = 0;
+		ctxItem->NumTransItems = LE16(1);
+		ctxItem->SyntaxVersion = i ? LE32(1) : LE32(2);
 
-		memcpy(&bindRequest->CtxItems[i].InterfaceUUID, InterfaceUuid, sizeof(GUID));
+		memcpy(&ctxItem->InterfaceUUID, InterfaceUuid, sizeof(GUID));
 	}
 
 	memcpy(&bindRequest->CtxItems[0].TransferSyntax, TransferSyntaxNDR32, sizeof(GUID));
@@ -982,7 +1049,7 @@ RpcStatus rpcBindOrAlterClientContext(const RpcCtx sock, BYTE packetType, const 
 		CtxBTFN = ctxIndex;
 	}
 
-	if (!_send(sock, _Request, (int)rpcBindSize))
+	if (!_send(sock, request, (int)rpcBindSize))
 	{
 		printerrorf("\nFatal: Sending RPC bind request failed\n");
 		return RPC_S_COMM_FAILURE;
@@ -1040,9 +1107,11 @@ RpcStatus rpcBindOrAlterClientContext(const RpcCtx sock, BYTE packetType, const 
 		const char* transferSyntaxName =
 			i == CtxBTFN ? "BTFN" : i == CtxNDR64 ? "NDR64" : "NDR32";
 
-		if (bindResponse->Results[i].AckResult == RPC_BIND_NACK) // transfer syntax was declined
+		struct CtxResults* ctxResult = bindResponse->Results + i;
+		struct CtxItem* ctxItem = bindRequest->CtxItems + i;
+		if (ctxResult->AckResult == RPC_BIND_NACK) // transfer syntax was declined
 		{
-			if (!IsNullGuid((BYTE*)&bindResponse->Results[i].TransferSyntax))
+			if (!IsNullGuid((BYTE*)&ctxResult->TransferSyntax))
 			{
 				printerrorf(
 					"\nWarning: Rejected transfer syntax %s did not return NULL Guid\n",
@@ -1050,23 +1119,23 @@ RpcStatus rpcBindOrAlterClientContext(const RpcCtx sock, BYTE packetType, const 
 				);
 			}
 
-			if (bindResponse->Results[i].SyntaxVersion)
+			if (ctxResult->SyntaxVersion)
 			{
 				printerrorf(
 					"\nWarning: Rejected transfer syntax %s did not return syntax version 0 but %u\n",
 					transferSyntaxName,
-					LE32(bindResponse->Results[i].SyntaxVersion)
+					LE32(ctxResult->SyntaxVersion)
 				);
 			}
 
-			if (bindResponse->Results[i].AckReason == RPC_ABSTRACTSYNTAX_UNSUPPORTED)
+			if (ctxResult->AckReason == RPC_ABSTRACTSYNTAX_UNSUPPORTED)
 			{
 				printerrorf(
 					"\nWarning: Transfer syntax %s does not support KMS activation\n",
 					transferSyntaxName
 				);
 			}
-			else if (bindResponse->Results[i].AckReason != RPC_SYNTAX_UNSUPPORTED)
+			else if (ctxResult->AckReason != RPC_SYNTAX_UNSUPPORTED)
 			{
 				printerrorf(
 					"\nWarning: Rejected transfer syntax %s did not return ack reason RPC_SYNTAX_UNSUPPORTED\n",
@@ -1079,14 +1148,14 @@ RpcStatus rpcBindOrAlterClientContext(const RpcCtx sock, BYTE packetType, const 
 
 		if (i == CtxBTFN) // BTFN
 		{
-			if (bindResponse->Results[i].AckResult != RPC_BIND_ACK)
+			if (ctxResult->AckResult != RPC_BIND_ACK)
 			{
 				printerrorf("\nWarning: BTFN did not respond with RPC_BIND_ACK or RPC_BIND_NACK\n");
 			}
 
-			if (bindResponse->Results[i].AckReason != LE16(3))
+			if (ctxResult->AckReason != LE16(3))
 			{
-				printerrorf("\nWarning: BTFN did not return expected feature mask 0x3 but 0x%X\n", (unsigned int)LE16(bindResponse->Results[i].AckReason));
+				printerrorf("\nWarning: BTFN did not return expected feature mask 0x3 but 0x%X\n", (unsigned int)LE16(ctxResult->AckReason));
 			}
 
 			if (verbose) printf("... BTFN ");
@@ -1096,7 +1165,7 @@ RpcStatus rpcBindOrAlterClientContext(const RpcCtx sock, BYTE packetType, const 
 		}
 
 		// NDR32 or NDR64 Ctx
-		if (bindResponse->Results[i].AckResult != RPC_BIND_ACCEPT)
+		if (ctxResult->AckResult != RPC_BIND_ACCEPT)
 		{
 			printerrorf(
 				"\nFatal: transfer syntax %s returned an invalid status, neither RPC_BIND_ACCEPT nor RPC_BIND_NACK\n",
@@ -1106,7 +1175,7 @@ RpcStatus rpcBindOrAlterClientContext(const RpcCtx sock, BYTE packetType, const 
 			status = RPC_S_PROTOCOL_ERROR;
 		}
 
-		if (!IsEqualGUID(&bindResponse->Results[i].TransferSyntax, &bindRequest->CtxItems[i].TransferSyntax))
+		if (!IsEqualGUID(&ctxResult->TransferSyntax, &ctxItem->TransferSyntax))
 		{
 			printerrorf(
 				"\nFatal: Transfer syntax of RPC bind request and response does not match\n"
@@ -1115,23 +1184,23 @@ RpcStatus rpcBindOrAlterClientContext(const RpcCtx sock, BYTE packetType, const 
 			status = RPC_S_UNSUPPORTED_TRANS_SYN;
 		}
 
-		if (bindResponse->Results[i].SyntaxVersion != bindRequest->CtxItems[i].SyntaxVersion)
+		if (ctxResult->SyntaxVersion != ctxItem->SyntaxVersion)
 		{
 			printerrorf("\nFatal: Expected transfer syntax version %u for %s but got %u\n",
-				(uint32_t)LE32(bindRequest->CtxItems[0].SyntaxVersion),
+				(uint32_t)LE32(ctxItem->SyntaxVersion),
 				transferSyntaxName,
-				(uint32_t)LE32(bindResponse->Results[0].SyntaxVersion)
+				(uint32_t)LE32(ctxResult->SyntaxVersion)
 			);
 
 			status = RPC_S_UNSUPPORTED_TRANS_SYN;
 		}
 
 		// The ack reason field is actually undefined here but Microsoft sets this to 0
-		if (bindResponse->Results[i].AckReason != 0)
+		if (ctxResult->AckReason != 0)
 		{
 			printerrorf(
 				"\nWarning: Ack reason should be 0 but is %u\n",
-				LE16(bindResponse->Results[i].AckReason)
+				LE16(ctxResult->AckReason)
 			);
 		}
 

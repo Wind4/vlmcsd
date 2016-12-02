@@ -1,5 +1,5 @@
 .mso www.tmac
-.TH VLMCSD 8 "October 2016" "Hotbird64" "KMS Activation Manual"
+.TH VLMCSD 8 "November 2016" "Hotbird64" "KMS Activation Manual"
 .LO 8
 
 .SH NAME
@@ -17,7 +17,17 @@ vlmcsd \- a fully Microsoft compatible KMS server
 .PP
 Although \fBvlmcsd\fR does neither require an activation key nor a payment to anyone, it is not meant to run illegal copies of Windows. Its purpose is to ensure that owners of legal copies can use their software without restrictions, e.g. if you buy a new computer or motherboard and your key will be refused activation from Microsoft servers due to hardware changes.
 .PP
-\fBvlmcsd\fR may be started via an internet superserver like \fBinetd\fR(8) or \fBxinetd\fR(8) as well as an advanced init system like \fBsystemd\fR(8) or \fBlaunchd\fR(8) using socket based activation. If \fBvlmcsd\fR detects that \fBstdin\fR(3) is a socket, it assumes that there is already a connected client on stdin that wants to be activated. All options that control setting up listening sockets will be ignored when in inetd mode. 
+\fBvlmcsd\fR may be started via an internet superserver like \fBinetd\fR(8) or \fBxinetd\fR(8) as well as an advanced init system like \fBsystemd\fR(8) or \fBlaunchd\fR(8) using socket based activation. If \fBvlmcsd\fR detects that \fBstdin\fR(3) is a socket, it assumes that there is already a connected client on stdin that wants to be activated.
+
+All options that control setting up listening sockets will be ignored when in inetd mode. The sockets will be set up by your internet superserver. You also cannot limit the number of simultanous clients (option \fB-m\fR). You need to configure the limit in your internet superserver.
+
+The followong features that require that vlmcsd is permanently loaded will not work if started from an internet superserver:
+
+.IP
+You cannot maintain a client list (option \fB-M1\fR)
+
+.IP
+EPID Randomization Level 1 (option \fB-r1\fR) works like Level 2 (\fB-r2\fR). You may want to use Level 0 (\fB-r0\fR) or custom EPIDs (options \fB-w\fR, \fB-0\fR, \fB-3\fR and \fB-6\fR) instead.
 
 .SH OPTIONS
 Since vlmcsd can be configured at compile time, some options may not be available on your system.
@@ -155,6 +165,11 @@ vlmcsd -H "01 23 45 67 89 AB CD EF"
 Use configuration file (aka ini file) \fIfilename\fR. Most configuration parameters can be set either via the command line or an ini file. The command line always has precedence over configuration items in the ini file. See \fBvlmcsd.ini\fR(5) for the format of the configuration file.
 
 If vlmcsd has been compiled to use a default configuration file (often /etc/vlmcsd.ini), you may use \fB-i-\fR to ignore the default configuration file.
+
+.IP "\fB-j\fR \fIfilename\fR"
+Use KMS data file \fIfilename\fR. By default vlmcsd only contains the minimum product data that is required to perform all operations correctly. You may use a more complete KMS data file that contains all detailed product names. This is especially useful if you are logging KMS requests. If you don't log, there is no need to load an external KMS data file.
+
+If vlmcsd has been compiled to use a default KMS data file, you may use \fB-j-\fR to ignore the default configuration file.
 
 .IP "\fB-r0\fR, \fB-r1\fR (default) and \fB-r2\fR"
 These options determine how ePIDs are generated if
@@ -299,9 +314,6 @@ Installs \fBvlmcsd\fR as a Windows service with low privileges and logs everythi
 
 .SH BUGS
 An ePID specified in an ini file must not contain spaces.
-
-.SH INTENTIONAL BUGS
-vlmcsd always reports enough active clients to satisfy the N count policy of the request.
 
 .SH AUTHOR
 Written by crony12, Hotbird64 and vityan666.

@@ -25,15 +25,18 @@ int ucs2_to_utf8_char (const WCHAR ucs2_le, char *utf8);
 size_t utf8_to_ucs2(WCHAR* const ucs2_le, const char* const utf8, const size_t maxucs2, const size_t maxutf8);
 WCHAR utf8_to_ucs2_char (const unsigned char * input, const unsigned char ** end_ptr);
 BOOL ucs2_to_utf8(const WCHAR* const ucs2_le, char* utf8, size_t maxucs2, size_t maxutf8);
-int_fast8_t string2Uuid(const char *const restrict input, GUID *const restrict guid);
+int_fast8_t string2UuidLE(const char *const restrict input, GUID *const restrict guid);
 void randomNumberInit();
-void LEGUID(GUID *const restrict result, const GUID* const restrict guid);
 void parseAddress(char *const addr, char** szHost, char** szPort);
 __noreturn void OutOfMemory(void);
 void* vlmcsd_malloc(size_t len);
 void hex2bin(BYTE *const bin, const char *hex, const size_t maxbin);
+void loadKmsData();
+#if !defined(DATA_FILE) || !defined(NO_SIGHUP)
+void getExeName();
+#endif // !defined(DATA_FILE) || !defined(NO_SIGHUP)
 __pure BOOL getArgumentBool(int_fast8_t *result, const char *const argument);
-__pure int IsEqualGuidLE(const GUID *const restrict first, const GUID *const restrict second);
+char* vlmcsd_strdup(const char* src);
 
 #if __ANDROID__ && !defined(USE_THREADS) // Bionic does not wrap these syscalls (intentionally because Google fears, developers don't know how to use it)
 int shmget(key_t key, size_t size, int shmflg);

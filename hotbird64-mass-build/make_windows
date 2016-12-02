@@ -69,12 +69,14 @@ echo "Installing binaries"
 
 cp -p bin/vlmcs-cygwin-x64.exe /usr/local/bin/vlmcs &
 cp -p bin/vlmcsd-cygwin-x64.exe /usr/local/bin/vlmcsd &
+cp -p etc/vlmcsd.kmd /usr/local/bin &
 cp -p bin/cygkms64.dll /usr/local/bin/cygkms.dll &
 
 cp -p bin/libkms32.dll /cygdrive/c/nttools/x86 &
 cp -p bin/libkms64.dll /cygdrive/c/nttools/x64 &
-cp -p bin/vlmcsd-Windows-x86.exe /cygdrive/c/nttools/x86/vlmcsd.exe 
-cp -p bin/vlmcs-Windows-x86.exe /cygdrive/c/nttools/x86/vlmcs.exe 
+cp -p bin/vlmcsd-Windows-x86.exe /cygdrive/c/nttools/x86/vlmcsd.exe &
+cp -p bin/vlmcs-Windows-x86.exe /cygdrive/c/nttools/x86/vlmcs.exe &
+cp -p etc/vlmcsd.kmd /cygdrive/c/nttools/x86
 
 #cmd /C mklink c:\\nttools\\x86\\vlmcsd.exe vlmcsdmulti.exe 2> /dev/null &
 #cmd /C mklink c:\\nttools\\x86\\vlmcs.exe vlmcsdmulti.exe 2> /dev/null &

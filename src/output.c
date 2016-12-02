@@ -184,30 +184,23 @@ void logRequestVerbose(const REQUEST *const Request, const PRINTFUNC p)
 {
 	char guidBuffer[GUID_STRING_LENGTH + 1];
 	char WorkstationBuffer[3 * WORKSTATION_NAME_BUFFER];
-	const char *productName;
-	ProdListIndex_t index;
+	char* productName;
 
 	p("Protocol version                : %u.%u\n", LE16(Request->MajorVer), LE16(Request->MinorVer));
 	p("Client is a virtual machine     : %s\n", LE32(Request->VMInfo) ? "Yes" : "No");
-	p("Licensing status                : %u (%s)\n", (uint32_t)LE32(Request->LicenseStatus), LE32(Request->LicenseStatus) < _countof(LicenseStatusText) ? LicenseStatusText[LE32(Request->LicenseStatus)] : "Unknown");
+	p("Licensing status                : %u (%s)\n", (uint32_t)LE32(Request->LicenseStatus), LE32(Request->LicenseStatus) < vlmcsd_countof(LicenseStatusText) ? LicenseStatusText[LE32(Request->LicenseStatus)] : "Unknown");
 	p("Remaining time (0 = forever)    : %i minutes\n", (uint32_t)LE32(Request->BindingExpiration));
 
 	uuid2StringLE(&Request->AppID, guidBuffer);
-	productName = getProductNameLE(&Request->AppID, AppList, getAppListSize(), &index);
+	getProductIndex(&Request->AppID, KmsData->AppItemList, KmsData->AppItemCount, &productName, NULL);
 	p("Application ID                  : %s (%s)\n", guidBuffer, productName);
 
 	uuid2StringLE(&Request->ActID, guidBuffer);
-
-#	ifndef NO_EXTENDED_PRODUCT_LIST
-	productName = getProductNameLE(&Request->ActID, ExtendedProductList, getExtendedProductListSize(), &index);
-#	else
-	productName = "Unknown";
-#	endif
-
+	getProductIndex(&Request->ActID, KmsData->SkuItemList, KmsData->SkuItemCount, &productName, NULL);
 	p("SKU ID (aka Activation ID)      : %s (%s)\n", guidBuffer, productName);
 
 	uuid2StringLE(&Request->KMSID, guidBuffer);
-	productName = getProductNameLE(&Request->KMSID, ProductList, getProductListSize(), &index);
+	getProductIndex(&Request->KMSID, KmsData->KmsItemList, KmsData->KmsItemCount, &productName, NULL);
 	p("KMS ID (aka KMS counted ID)     : %s (%s)\n", guidBuffer, productName);
 
 	uuid2StringLE(&Request->CMID, guidBuffer);
@@ -232,7 +225,6 @@ void logRequestVerbose(const REQUEST *const Request, const PRINTFUNC p)
 void logResponseVerbose(const char *const ePID, const BYTE *const hwid, const RESPONSE *const response, const PRINTFUNC p)
 {
 	char guidBuffer[GUID_STRING_LENGTH + 1];
-	//SYSTEMTIME st;
 
 	p("Protocol version                : %u.%u\n", (uint32_t)LE16(response->MajorVer), (uint32_t)LE16(response->MinorVer));
 	p("KMS host extended PID           : %s\n", ePID);
@@ -469,13 +461,25 @@ void printCommonFlags()
 	(
 		"Common flags:%s\n", ""
 
-#		ifdef NO_EXTENDED_PRODUCT_LIST
-		" NO_EXTENDED_PRODUCT_LIST"
-#		endif // NO_EXTENDED_PRODUCT_LIST
+#		ifdef NO_EXTERNAL_DATA
+		" NO_EXTERNAL_DATA"
+#		endif // NO_EXTERNAL_DATA
 
-#		ifdef NO_BASIC_PRODUCT_LIST
-		" NO_BASIC_PRODUCT_LIST"
-#		endif // NO_BASIC_PRODUCT_LIST
+#		ifdef NO_INTERNAL_DATA
+		" NO_INTERNAL_DATA"
+#		endif // NO_INTERNAL_DATA
+
+#		if !defined(NO_EXTERNAL_DATA)
+
+#		ifdef DATA_FILE
+		" DATA=" DATA_FILE
+#		endif // DATA_FILE
+
+#		ifdef UNSAFE_DATA_LOAD
+		" UNSAFE_DATA_LOAD"
+#		endif // UNSAFE_DATA_LOAD
+
+#		endif // !defined(NO_EXTERNAL_DATA)
 
 #		ifdef USE_MSRPC
 		" USE_MSRPC"

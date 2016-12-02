@@ -7,11 +7,11 @@
 #include CONFIG
 
 #if _MSC_VER
-#include <time.h>
+//#include <time.h>
 #else
 #include <sys/time.h>
 #endif // _MSC_VER
-#include <stdlib.h>
+//#include <stdlib.h>
 #include "types.h"
 //
 // REQUEST... types are actually fixed size
@@ -80,7 +80,7 @@ typedef struct {
 } /*__packed*/ REQUEST;
 
 typedef struct {
-	VERSION_INFO;					
+	VERSION_INFO;
 	DWORD PIDSize;					// Size of PIDData in bytes.
 	WCHAR KmsPID[PID_BUFFER_SIZE];	// ePID (must include terminating zero)
 	GUID CMID;						// Client machine id. Must be the same as in request.
@@ -228,56 +228,115 @@ typedef union
 
 typedef BYTE hwid_t[8];
 
-typedef struct
+typedef struct CsvlkData
 {
-	GUID guid;
-	const char* name;
-	const char* pid;
+	union
+	{
+		uint64_t EPidOffset;
+		char* EPid;
+	};
+
+	uint32_t GroupId;
+	uint32_t MinKeyId;
+	uint32_t MaxKeyId;
+	uint8_t MinActiveClients;
+	uint8_t Reserved[3];
+
+} CsvlkData_t, *PCsvlkData_t;
+
+typedef struct VlmcsdData
+{
+	union
+	{
+		GUID Guid;
+		uint8_t GuidBytes[16];
+	};
+
+	union
+	{
+		uint64_t NameOffset;
+		char* Name;
+	};
+
+	//union
+	//{
+	//	uint64_t X_EPidOffset;
+	//	char* X_EPid;
+	//};
+
 	uint8_t AppIndex;
 	uint8_t KmsIndex;
-} KmsIdList;
+	uint8_t ProtocolVersion;
+	uint8_t NCountPolicy;
+	uint8_t IsRetail;
+	uint8_t IsPreview;
+	uint8_t EPidIndex;
+	uint8_t reserved;
 
-#define KMS_PARAM_MAJOR AppIndex
-#define KMS_PARAM_REQUIREDCOUNT KmsIndex
+} VlmcsdData_t, *PVlmcsdData_t;
 
-#define APP_ID_WINDOWS 0
-#define APP_ID_OFFICE2010 1
-#define APP_ID_OFFICE2013 2
+typedef struct
+{
+	union
+	{
+		uint64_t Offset;
+		void* Pointer;
+	};
+} DataPointer_t;
 
-#define EPID_INDEX_WINDOWS APP_ID_WINDOWS
-#define EPID_INDEX_OFFICE2010 APP_ID_OFFICE2010
-#define EPID_INDEX_OFFICE2013 APP_ID_OFFICE2013
+typedef struct VlmcsdHeader
+{
+	BYTE Magic[4];
+	VERSION_INFO;
+	uint8_t CsvlkCount;
+	uint8_t Reserved[3];
+
+	union
+	{
+		int32_t Counts[3];
+
+		struct
+		{
+			int32_t AppItemCount;
+			int32_t KmsItemCount;
+			int32_t SkuItemCount;
+		};
+	};
+
+	union
+	{
+		DataPointer_t Datapointers[3];
+
+		struct
+		{
+			union
+			{
+				uint64_t AppItemOffset;
+				PVlmcsdData_t AppItemList;
+			};
+
+			union
+			{
+				uint64_t KmsItemOffset;
+				PVlmcsdData_t KmsItemList;
+			};
+
+			union
+			{
+				uint64_t SkuItemOffset;
+				PVlmcsdData_t SkuItemList;
+			};
+
+			CsvlkData_t CsvlkData[1];
+		};
+	};
+
+} VlmcsdHeader_t, *PVlmcsdHeader_t;
+
+#define EPID_INDEX_WINDOWS 0
+#define EPID_INDEX_OFFICE2010 1
+#define EPID_INDEX_OFFICE2013 2
 #define EPID_INDEX_OFFICE2016 3
-
-// Update these numbers in License Manager
-#define KMS_ID_OFFICE2010 0
-#define KMS_ID_OFFICE2013 1
-#define KMS_ID_OFFICE2013_BETA 2
-#define KMS_ID_OFFICE2016 3
-#define KMS_ID_VISTA 4
-#define KMS_ID_WIN7 5
-#define KMS_ID_WIN8_VL 6
-#define KMS_ID_WIN_BETA 7
-#define KMS_ID_WIN8_RETAIL 8
-#define KMS_ID_WIN81_VL 9
-#define KMS_ID_WIN81_RETAIL 10
-#define KMS_ID_WIN2008A 11
-#define KMS_ID_WIN2008B 12
-#define KMS_ID_WIN2008C 13
-#define KMS_ID_WIN2008R2A 14
-#define KMS_ID_WIN2008R2B 15
-#define KMS_ID_WIN2008R2C 16
-#define KMS_ID_WIN2012 17
-#define KMS_ID_WIN2012R2 18
-#define KMS_ID_WIN_SRV_BETA 19
-#define KMS_ID_WIN10_VL 20
-#define KMS_ID_WIN10_RETAIL 21
-#define KMS_ID_WIN2016 22
-#define KMS_ID_WIN10_LTSB2016 23
-
-#define PWINGUID &AppList[APP_ID_WINDOWS].guid
-#define POFFICE2010GUID &AppList[APP_ID_OFFICE2010].guid
-#define POFFICE2013GUID &AppList[APP_ID_OFFICE2013].guid
 
 typedef HRESULT(__stdcall *RequestCallback_t)(const REQUEST *const baseRequest, RESPONSE *const baseResponse, BYTE *const hwId, const char* const ipstr);
 
@@ -291,15 +350,10 @@ RESPONSE_RESULT DecryptResponseV6(RESPONSE_V6* Response_v6, int responseSize, BY
 RESPONSE_RESULT DecryptResponseV4(RESPONSE_V4* Response_v4, const int responseSize, BYTE* const response, const BYTE* const request);
 void getUnixTimeAsFileTime(FILETIME *const ts);
 __pure int64_t fileTimeToUnixTime(const FILETIME *const ts);
-const char* getProductNameHE(const GUID *const guid, const KmsIdList *const List, ProdListIndex_t maxList, ProdListIndex_t *const i);
-const char* getProductNameLE(const GUID *const guid, const KmsIdList *const List, ProdListIndex_t maxList, ProdListIndex_t *const i);
-__pure ProdListIndex_t getExtendedProductListSize();
-__pure ProdListIndex_t getAppListSize(void);
-__pure ProdListIndex_t getProductListSize(void);
 
-extern const KmsIdList ProductList[];
-extern const KmsIdList AppList[];
-extern const KmsIdList ExtendedProductList[];
+#ifndef IS_LIBRARY
+int32_t getProductIndex(const GUID* guid, const PVlmcsdData_t list, const int32_t count, char** name, char** ePid);
+#endif // IS_LIBRARY
 
 #ifndef NO_STRICT_MODES
 void InitializeClientLists();

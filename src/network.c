@@ -298,18 +298,25 @@ SOCKET connectToAddress(const char *const addr, const int AddressFamily, int_fas
 
 static int_fast8_t allowSocketReuse(SOCKET s)
 {
-#	if !defined(_WIN32) && !defined(__CYGWIN__)
+#	if !__CYGWIN__
+
 	BOOL socketOption = TRUE;
+
+#	if !_WIN32
+#	define VLMCSD_SOCKET_OPTION SO_REUSEADDR
 #	else // _WIN32
-	BOOL socketOption = FALSE;
+#	define VLMCSD_SOCKET_OPTION SO_EXCLUSIVEADDRUSE
 #	endif // _WIN32
 
-	if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (sockopt_t)&socketOption, sizeof(socketOption)))
+	if (setsockopt(s, SOL_SOCKET, VLMCSD_SOCKET_OPTION, (sockopt_t)&socketOption, sizeof(socketOption)))
 	{
 #		ifdef _PEDANTIC
 		printerrorf("Warning: Socket option SO_REUSEADDR unsupported: %s\n", vlmcsd_strerror(socket_errno));
 #		endif // _PEDANTIC
 	}
+
+#	undef VLMCSD_SOCKET_OPTION
+#	endif // !__CYGWIN__
 
 	return 0;
 }
@@ -568,14 +575,14 @@ static int listenOnAddress(const struct addrinfo *const ai, SOCKET *s)
 	}
 #	endif
 
-#	ifndef _WIN32
+#	if !_WIN32 && !__CYGWIN__
 	if (setsockopt(*s, SOL_SOCKET, SO_REUSEADDR, (sockopt_t)&socketOption, sizeof(socketOption)))
 	{
 #		ifdef _PEDANTIC
 		printerrorf("Warning: %s does not support socket option SO_REUSEADDR: %s\n", ipstr, vlmcsd_strerror(socket_errno));
 #		endif // _PEDANTIC
 	}
-#	endif // _WIN32
+#	endif // !_WIN32 && !__CYGWIN__
 
 #	if HAVE_FREEBIND
 #	if (defined(IP_NONLOCALOK) || __FreeBSD_kernel__ || __FreeBSD__) && !defined(IPV6_BINDANY)
@@ -725,7 +732,6 @@ void closeAllListeningSockets()
 {
 #	ifdef SIMPLE_SOCKETS
 
-	shutdown(s_server, VLMCSD_SHUT_RDWR);
 	socketclose(s_server);
 
 #	else // !SIMPLE_SOCKETS
@@ -734,7 +740,6 @@ void closeAllListeningSockets()
 
 	for (i = 0; i < numsockets; i++)
 	{
-		shutdown(SocketList[i], VLMCSD_SHUT_RDWR);
 		socketclose(SocketList[i]);
 	}
 
@@ -780,7 +785,7 @@ static void serveClient(const SOCKET s_client, const DWORD RpcAssocGroup)
 	socklen_t len;
 	struct sockaddr_storage addr;
 
-	len = sizeof addr;
+	len = sizeof(addr);
 
 	if (getpeername(s_client, (struct sockaddr*)&addr, &len) ||
 		!ip2str(ipstr, sizeof(ipstr), (struct sockaddr*)&addr, len))
@@ -964,7 +969,7 @@ static int ServeClientAsyncFork(const SOCKET s_client, const DWORD RpcAssocGroup
 		{
 			uint_fast8_t i;
 
-			for (i = 0; i < _countof(signallist); i++)
+			for (i = 0; i < vlmcsd_countof(signallist); i++)
 			{
 				sigaction(signallist[i], &sa, NULL);
 			}

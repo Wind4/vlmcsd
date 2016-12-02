@@ -51,6 +51,9 @@
     <ClCompile Include="dns_srv.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="kmsdata-full.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="config.h">
@@ -102,6 +105,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vlmcs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="kmsdata.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

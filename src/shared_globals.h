@@ -46,8 +46,9 @@
 #include <stdarg.h>
 //#include <semaphore.h>
 #include "types.h"
+#include "kms.h"
 
-#define MAX_KMSAPPS 4
+#define MIN_CSVLK 4
 typedef struct
 {
 	const char* Epid;
@@ -96,10 +97,20 @@ extern int_fast8_t nodaemon;
 extern DWORD VLActivationInterval;
 extern DWORD VLRenewalInterval;
 extern int_fast8_t DisconnectImmediately;
-extern KmsResponseParam_t KmsResponseParameters[MAX_KMSAPPS];
+#if !defined(NO_RANDOM_EPID) || !defined(NO_CL_PIDS) || !defined(NO_INI_FILE)
+extern KmsResponseParam_t* KmsResponseParameters;
+#endif // !defined(NO_RANDOM_EPID) || !defined(NO_CL_PIDS) || !defined(NO_INI_FILE)
 extern const char *const cIPv4;
 extern const char *const cIPv6;
 extern int_fast8_t InetdMode;
+extern PVlmcsdHeader_t KmsData;
+#ifndef NO_EXTERNAL_DATA
+extern char* fn_data;
+#ifndef NO_INTERNAL_DATA
+extern int_fast8_t ExplicitDataLoad;
+#endif // NO_INTERNAL_DATA
+#endif // NO_EXTERNAL_DATA
+extern const char* fn_exe;
 
 #ifndef NO_STRICT_MODES
 extern uint32_t WhitelistingLevel;

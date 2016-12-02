@@ -42,6 +42,9 @@
     <ClCompile Include="vlmcsd.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="kmsdata.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="config.h">
@@ -87,6 +90,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vlmcsd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="kmsdata.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

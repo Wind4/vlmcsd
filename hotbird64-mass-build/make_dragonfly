@@ -28,6 +28,7 @@ cd $BINDIR
 strip -s --strip-unneeded --remove-section=.eh_frame_hdr --remove-section=.eh_frame --remove-section=.note.gnu.gold-version --remove-section=.comment --remove-section=.note --remove-section=.note.gnu.build-id --remove-section=.note.ABI-tag vlmcs-* vlmcsd-* vlmcsdmulti-*
 sstrip -z vlmcs-* vlmcsd-* vlmcsdmulti-*
 
+cp -af ../etc/vlmcsd.kmd /usr/local/sbin
 cp -af vlmcsd-DragonFly-x64 /usr/local/sbin/vlmcsd
 cp -af vlmcs-DragonFly-x64 /usr/local/bin/vlmcs
 

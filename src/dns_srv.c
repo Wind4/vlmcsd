@@ -22,7 +22,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <netdb.h>
-//#ifndef DNS_PARSER_INTERNAL
+ //#ifndef DNS_PARSER_INTERNAL
 #if __ANDROID__
 #include <netinet/in.h>
 #include "nameser.h"
@@ -46,7 +46,7 @@
 #include "ns_name.h"
 #include "ns_parse.h"
 
-// Define macros to redirect DNS parser functions to internal versions
+ // Define macros to redirect DNS parser functions to internal versions
 
 #undef ns_msg
 #undef ns_initparse
@@ -86,14 +86,14 @@ static unsigned int isqrt(unsigned int n)
 	unsigned int c = 0x8000;
 	unsigned int g = 0x8000;
 
-	for(;;)
+	for (;;)
 	{
-		if(g*g > n)
+		if (g*g > n)
 			g ^= c;
 
 		c >>= 1;
 
-		if(c == 0) return g;
+		if (c == 0) return g;
 
 		g |= c;
 	}
@@ -106,11 +106,11 @@ static unsigned int isqrt(unsigned int n)
  */
 static int kmsServerListCompareFunc1(const void* a, const void* b)
 {
-	if ( !a && !b) return 0;
-	if ( a && !b) return -1;
-	if ( !a && b) return 1;
+	if (!a && !b) return 0;
+	if (a && !b) return -1;
+	if (!a && b) return 1;
 
-	int priority_order =  (int)((*(kms_server_dns_ptr*)a)->priority) - ((int)(*(kms_server_dns_ptr*)b)->priority);
+	int priority_order = (int)((*(kms_server_dns_ptr*)a)->priority) - ((int)(*(kms_server_dns_ptr*)b)->priority);
 
 	if (priority_order) return priority_order;
 
@@ -154,12 +154,12 @@ static int getDnsRawAnswer(const char *restrict query, unsigned char** receive_b
 	if (*query == '.')
 	{
 #		if __ANDROID__ || __GLIBC__ /* including __UCLIBC__*/ || __APPLE__ || __CYGWIN__ || __FreeBSD__ || __NetBSD__ || __DragonFly__ || __OpenBSD__ || __sun__
-			bytes_received = res_querydomain("_vlmcs._tcp", query + 1, ns_c_in,	ns_t_srv, *receive_buffer, RECEIVE_BUFFER_SIZE);
+		bytes_received = res_querydomain("_vlmcs._tcp", query + 1, ns_c_in, ns_t_srv, *receive_buffer, RECEIVE_BUFFER_SIZE);
 #		else
-			char* querystring = (char*)alloca(strlen(query) + 12);
-			strcpy(querystring, "_vlmcs._tcp");
-			strcat(querystring, query);
-			bytes_received = res_query(querystring, ns_c_in, ns_t_srv, *receive_buffer, RECEIVE_BUFFER_SIZE);
+		char* querystring = (char*)alloca(strlen(query) + 12);
+		strcpy(querystring, "_vlmcs._tcp");
+		strcat(querystring, query);
+		bytes_received = res_query(querystring, ns_c_in, ns_t_srv, *receive_buffer, RECEIVE_BUFFER_SIZE);
 #		endif
 	}
 	else
@@ -169,7 +169,7 @@ static int getDnsRawAnswer(const char *restrict query, unsigned char** receive_b
 
 	if (bytes_received < 0)
 	{
-		errorout("Fatal: DNS query to %s%s failed: %s\n", "_vlmcs._tcp",	*query == '.' ? query : "", hstrerror(h_errno));
+		errorout("Fatal: DNS query to %s%s failed: %s\n", "_vlmcs._tcp", *query == '.' ? query : "", hstrerror(h_errno));
 		return 0;
 	}
 
@@ -236,9 +236,9 @@ int getKmsServerList(kms_server_dns_ptr** serverlist, const char *restrict query
 			continue;
 		}
 
-        sprintf(kms_server->serverName + strlen(kms_server->serverName), ":%hu", GET_UA16BE(&srvrecord->port));
-        kms_server->priority = GET_UA16BE(&srvrecord->priority);
-        kms_server->weight = GET_UA16BE(&srvrecord->weight);
+		sprintf(kms_server->serverName + strlen(kms_server->serverName), ":%hu", GET_UA16BE(&srvrecord->port));
+		kms_server->priority = GET_UA16BE(&srvrecord->priority);
+		kms_server->weight = GET_UA16BE(&srvrecord->weight);
 
 	}
 
@@ -254,7 +254,7 @@ int getKmsServerList(kms_server_dns_ptr** serverlist, const char *restrict query
 int getKmsServerList(kms_server_dns_ptr** serverlist, const char *const restrict query)
 {
 #	define MAX_DNS_NAME_SIZE 254
-	*serverlist = NULL;
+	* serverlist = NULL;
 	PDNS_RECORD receive_buffer;
 	char dnsDomain[MAX_DNS_NAME_SIZE];
 	char FqdnQuery[MAX_DNS_NAME_SIZE];

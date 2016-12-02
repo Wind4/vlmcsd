@@ -30,6 +30,7 @@ cd $BINDIR
 strip -s --strip-unneeded --remove-section=.eh_frame_hdr --remove-section=.eh_frame --remove-section=.note.gnu.gold-version --remove-section=.comment --remove-section=.note --remove-section=.note.gnu.build-id --remove-section=.note.ABI-tag vlmcs-* vlmcsd-* vlmcsdmulti-*
 #sstrip -z vlmcs-* vlmcsd-* vlmcsdmulti-*
 
+cp -f ../etc/vlmcsd.kmd /etc
 cp -f vlmcsd-OpenBSD-x64 /usr/local/sbin/vlmcsd
 cp -f vlmcs-OpenBSD-x64 /usr/local/bin/vlmcs
 

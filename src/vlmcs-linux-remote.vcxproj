@@ -36,6 +36,7 @@
     <ClCompile Include="endian.c" />
     <ClCompile Include="helpers.c" />
     <ClCompile Include="kms.c" />
+    <ClCompile Include="kmsdata-full.c" />
     <ClCompile Include="network.c" />
     <ClCompile Include="ns_name.c" />
     <ClCompile Include="ns_parse.c" />
@@ -54,6 +55,7 @@
     <ClInclude Include="endian.h" />
     <ClInclude Include="helpers.h" />
     <ClInclude Include="kms.h" />
+    <ClInclude Include="kmsdata.h" />
     <ClInclude Include="network.h" />
     <ClInclude Include="ns_name.h" />
     <ClInclude Include="ns_parse.h" />
@@ -84,7 +86,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -127,6 +135,15 @@
     <RemoteLdToolExe>gcc</RemoteLdToolExe>
     <IntDir>$(ProjectDir)vlmcs\obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <IncludePath>$(IncludePath);$(ISenseIncludePath);$(ProjectDir)VisualStudio-Linux-Remote\toolchains\gcc5-x86_64-linux-gnu\usr\include</IncludePath>
+    <TargetName>vlmcs</TargetName>
+    <TargetExt />
+    <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
+    <SourcePath />
+    <RemoteLdToolExe>gcc</RemoteLdToolExe>
+    <IntDir>$(ProjectDir)vlmcs\obj\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <TargetName>vlmcs-x86-glibc</TargetName>
     <TargetExt />
@@ -135,6 +152,14 @@
     <OutDir>$(SolutionDir)bin\</OutDir>
     <RemoteLdToolExe>gcc</RemoteLdToolExe>
     <IntDir>$(ProjectDir)vlmcs\obj\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <RemoteLdToolExe>gcc</RemoteLdToolExe>
+    <IntDir>$(ProjectDir)vlmcs\obj\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>vlmcs-x86-glibc</TargetName>
+    <TargetExt />
+    <RemoteCCompileToolExe>gcc</RemoteCCompileToolExe>
+    <IncludePath>$(IncludePath);$(ISenseIncludePath);$(ProjectDir)VisualStudio-Linux-Remote\toolchains\gcc5-x86_64-linux-gnu\usr\include</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -200,12 +225,38 @@
       <LibraryDependencies>resolv;pthread;%(LibraryDependencies)</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <ClCompile>
+      <PreprocessorDefinitions>USE_THREADS;_PEDANTIC</PreprocessorDefinitions>
+      <ThreadSafeStatics>
+      </ThreadSafeStatics>
+      <ExceptionHandling>Disabled</ExceptionHandling>
+      <RuntimeTypeInfo>
+      </RuntimeTypeInfo>
+      <AdditionalOptions>-Wno-sign-conversion -Wno-conversion -m32 -std=gnu89 %(AdditionalOptions)</AdditionalOptions>
+      <CLanguageStandard>gnu99</CLanguageStandard>
+      <CppLanguageStandard>c++98</CppLanguageStandard>
+    </ClCompile>
+    <Link>
+      <LibraryDependencies>resolv;pthread;%(LibraryDependencies)</LibraryDependencies>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <ClCompile>
       <Optimization>MinSize</Optimization>
     </ClCompile>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <ClCompile>
+      <Optimization>MinSize</Optimization>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <ClCompile>
+      <LinkTimeOptimization>true</LinkTimeOptimization>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
       <LinkTimeOptimization>true</LinkTimeOptimization>
     </ClCompile>
@@ -219,6 +270,30 @@
       <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
       <ExceptionHandling>Disabled</ExceptionHandling>
       <RuntimeTypeInfo />
+      <CLanguageStandard>c99</CLanguageStandard>
+      <CppLanguageStandard>c++98</CppLanguageStandard>
+      <AdditionalOptions>-Wno-sign-conversion -Wno-conversion -fno-stack-protector -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants -ffunction-sections -fdata-sections -pipe -std=gnu89 -m32 %(AdditionalOptions)</AdditionalOptions>
+      <DebugInformationFormat>None</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <LibraryDependencies>resolv;pthread;%(LibraryDependencies)</LibraryDependencies>
+      <DebuggerSymbolInformation>OmitAllSymbolInformation</DebuggerSymbolInformation>
+      <Relocation>false</Relocation>
+      <FunctionBinding>false</FunctionBinding>
+      <AdditionalOptions>-Wl,--gc-sections,-z,norelro -fwhole-program %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <ClCompile>
+      <NoCommonBlocks>true</NoCommonBlocks>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions);USE_THREADS</PreprocessorDefinitions>
+      <ThreadSafeStatics>
+      </ThreadSafeStatics>
+      <RelaxIEEE>true</RelaxIEEE>
+      <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
+      <ExceptionHandling>Disabled</ExceptionHandling>
+      <RuntimeTypeInfo>
+      </RuntimeTypeInfo>
       <CLanguageStandard>c99</CLanguageStandard>
       <CppLanguageStandard>c++98</CppLanguageStandard>
       <AdditionalOptions>-Wno-sign-conversion -Wno-conversion -fno-stack-protector -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants -ffunction-sections -fdata-sections -pipe -std=gnu89 -m32 %(AdditionalOptions)</AdditionalOptions>

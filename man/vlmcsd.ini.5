@@ -1,4 +1,4 @@
-.TH VLMCSD.INI 5 "October 2016" "Hotbird64" "KMS Activation Manual"
+.TH VLMCSD.INI 5 "November 2016" "Hotbird64" "KMS Activation Manual"
 .LO 8
 
 .SH NAME
@@ -92,6 +92,11 @@ Write a pid file. The \fIargument\fR is the full pathname of a pid file. The pid
 
 .IP "\fBLogFile\fR"
 Write a log file. The \fIargument\fR is the full pathname of a log file. On a unixoid OS and with Cygwin you can use the special filename 'syslog' to log to the syslog facility. This is the same as specifying \fB-l\fR on the command line.
+
+.IP "\fBKmsData\fR"
+Use a KMS data file. The \fIargument\fR is the full pathname of a KMS data file. By default vlmcsd only contains the minimum product data that is required to perform all operations correctly. You may use a more complete KMS data file that contains all detailed product names. This is especially useful if you are logging KMS requests. If you don't log, there is no need to load an external KMS data file.
+
+You may use \fBKmsData\ =\ \-\fR to prevent the default KMS data file to be loaded.
 
 .IP "\fBLogDateAndTime\fR"
 Can be TRUE or FALSE. The default is TRUE. If set to FALSE, logging output does not include date and time. This is useful if you log to \fBstdout\fR(3) which is redirected to another logging mechanism that already includes date and time in its output, for instance \fBsystemd-journald\fR(8). If you log to \fBsyslog\fR(3), \fBLogDateAndTime\fR is ignored and date and time will never be included in the output sent to \fBsyslog\fR(3). Using the command line you control this setting with options \fB-T0\fR and \fB-T1\fR.

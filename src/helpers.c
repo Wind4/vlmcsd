@@ -2,6 +2,10 @@
  * Helper functions used by other modules
  */
 
+ //#ifndef _GNU_SOURCE
+ //#define _GNU_SOURCE
+ //#endif
+
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif
@@ -13,6 +17,7 @@
 
 #ifndef _WIN32
 #include <errno.h>
+#include <libgen.h>
 #endif // _WIN32
 #ifndef _MSC_VER
 #include <getopt.h>
@@ -27,7 +32,25 @@
 #include "endian.h"
 #include "shared_globals.h"
 
+#ifndef NO_INTERNAL_DATA
+#include "kmsdata.h"
+#endif // NO_INTERNAL_DATA
 
+#ifdef _WIN32
+#include <shlwapi.h>
+#endif // _WIN32
+
+#if __APPLE__
+#include <mach-o/dyld.h>
+#endif // __APPLE__
+
+#if (__GLIBC__ || __linux__) && defined(USE_AUXV)
+#include <sys/auxv.h>
+#endif
+
+#if __FreeBSD__ || __FreeBSD_kernel__
+#include <sys/sysctl.h>
+#endif
 
  /*
   *  UCS2 <-> UTF-8 functions
@@ -134,7 +157,7 @@ size_t utf8_to_ucs2(WCHAR* const ucs2_le, const char* const utf8, const size_t m
 	return current_ucs2_le - ucs2_le;
 }
 
-// Converts UCS2 to UTF-8. Return TRUE or FALSE
+// Converts UCS2 to UTF-8. Returns TRUE or FALSE
 BOOL ucs2_to_utf8(const WCHAR* const ucs2_le, char* utf8, size_t maxucs2, size_t maxutf8)
 {
 	char utf8_char[4];
@@ -175,7 +198,7 @@ BOOL stringToInt(const char *const szValue, const unsigned int min, const unsign
 
 
 //Converts a String Guid to a host binary guid in host endianess
-int_fast8_t string2Uuid(const char *const restrict input, GUID *const restrict guid)
+int_fast8_t string2UuidLE(const char *const restrict input, GUID *const restrict guid)
 {
 	int i;
 
@@ -200,36 +223,12 @@ int_fast8_t string2Uuid(const char *const restrict input, GUID *const restrict g
 	hex2bin((BYTE*)&guid->Data3, inputCopy + 14, 4);
 	hex2bin(guid->Data4, input + 19, 16);
 
-	guid->Data1 = BE32(guid->Data1);
-	guid->Data2 = BE16(guid->Data2);
-	guid->Data3 = BE16(guid->Data3);
+	guid->Data1 = BS32(guid->Data1);
+	guid->Data2 = BS16(guid->Data2);
+	guid->Data3 = BS16(guid->Data3);
 	return TRUE;
 }
 
-
-// convert GUID to little-endian
-void LEGUID(GUID *const restrict out, const GUID* const restrict in)
-{
-#	if __BYTE_ORDER != __LITTLE_ENDIAN
-	out->Data1 = LE32(in->Data1);
-	out->Data2 = LE16(in->Data2);
-	out->Data3 = LE16(in->Data3);
-	memcpy(out->Data4, in->Data4, sizeof(out->Data4));
-#	else
-	memcpy(out, in, sizeof(GUID));
-#	endif
-}
-
-__pure int IsEqualGuidLE(const GUID *const restrict first, const GUID *const restrict second)
-{
-#	if __BYTE_ORDER != __LITTLE_ENDIAN
-	GUID guid;
-	LEGUID(&guid, first);
-	return IsEqualGUID(&guid, second);
-#	else
-	return IsEqualGUID(first, second);
-#	endif
-}
 
 #if !IS_LIBRARY
 //Checks a command line argument if it is numeric and between min and max. Returns the numeric value or exits on error
@@ -339,6 +338,18 @@ void* vlmcsd_malloc(size_t len)
 	return buf;
 }
 
+char* vlmcsd_strdup(const char* src)
+{
+#	if _MSC_VER
+	char* dst = _strdup(src);
+#	else // !_MSC_VER
+	char* dst = strdup(src);
+#	endif
+
+	if (!dst) OutOfMemory();
+	return dst;
+}
+
 
 /*
  * Converts hex digits to bytes in big-endian order.
@@ -390,6 +401,251 @@ __pure BOOL getArgumentBool(int_fast8_t *result, const char *const argument)
 	return FALSE;
 }
 
+#ifndef IS_LIBRARY
+#ifndef NO_EXTERNAL_DATA
+__noreturn static void dataFileReadError()
+{
+	int error = errno;
+	errorout("Fatal: Could not read %s: %s\n", fn_data, strerror(error));
+	exit(error);
+}
+
+__noreturn static void dataFileFormatError()
+{
+	errorout("Fatal: %s is not a KMS data file\n", fn_data);
+	exit(VLMCSD_EINVAL);
+}
+#endif // NO_EXTERNAL_DATA
+
+#if !defined(DATA_FILE) || !defined(NO_SIGHUP)
+void getExeName()
+{
+	if (fn_exe != NULL) return;
+
+#	if (__GLIBC__ || __linux__) && defined(USE_AUXV)
+
+	fn_exe = (char*)getauxval(AT_EXECFN);
+
+#	elif __UCLIBC__ && __UCLIBC_MAJOR__ < 1 && !defined(NO_PROCFS) // Workaround for older uclibc
+
+	char temp[PATH_MAX + 1];
+
+	if (realpath("/proc/self/exe", temp) == temp)
+	{
+		fn_exe = vlmcsd_strdup(temp);
+	}
+
+#	elif (__linux__ || __CYGWIN__) && !defined(NO_PROCFS)
+
+	fn_exe = realpath("/proc/self/exe", NULL);
+
+#	elif (__FreeBSD__ || __FreeBSD_kernel__)
+
+	int mib[4];
+	mib[0] = CTL_KERN;
+	mib[1] = KERN_PROC;
+	mib[2] = KERN_PROC_PATHNAME;
+	mib[3] = -1;
+	char path[PATH_MAX + 1];
+	size_t cb = sizeof(path);
+
+	if (!sysctl(mib, 4, path, &cb, NULL, 0))
+	{
+		fn_exe = vlmcsd_strdup(path);
+	}
+
+#	elif (__DragonFly__) && !defined(NO_PROCFS)
+
+	fn_exe = realpath("/proc/curproc/file", NULL);
+
+#	elif __NetBSD__ && !defined(NO_PROCFS)
+
+	fn_exe = realpath("/proc/curproc/exe", NULL);
+
+#	elif __sun__
+
+	fn_exe = getexecname();
+
+#	elif __APPLE__
+
+	char path[PATH_MAX + 1];
+	uint32_t size = sizeof(path);
+
+	if (_NSGetExecutablePath(path, &size) == 0)
+	{
+		fn_exe = vlmcsd_strdup(path);
+	}
+
+#	elif _WIN32
+
+	char path[512];
+	GetModuleFileName(GetModuleHandle(NULL), path, 512);
+	path[511] = 0;
+	fn_exe = vlmcsd_strdup(path);
+
+#	else
+	// Sorry no exe detection
+#	endif
+}
+#endif // defined(DATA_FILE) && defined(NO_SIGHUP)
+
+#if !defined(DATA_FILE) && !defined(NO_EXTERNAL_DATA)
+#ifdef _WIN32
+static void getDefaultDataFile()
+{
+	char fileName[512];
+	getExeName();
+	strcpy(fileName, fn_exe);
+	PathRemoveFileSpec(fileName);
+	strncat(fileName, "\\vlmcsd.kmd", 512);
+	fn_data = vlmcsd_strdup(fileName);
+}
+#else // !_WIN32
+static void getDefaultDataFile()
+{
+	char fileName[512];
+	getExeName();
+
+	if (!fn_exe)
+	{
+		fn_data = (char*)"/etc/vlmcsd.kmd";
+		return;
+	}
+
+	char* fn_exe_copy = vlmcsd_strdup(fn_exe);
+	strncpy(fileName, dirname(fn_exe_copy), 512);
+	free(fn_exe_copy);
+	strncat(fileName, "/vlmcsd.kmd", 512);
+	fn_data = vlmcsd_strdup(fileName);
+}
+#endif // !_WIN32
+#endif // !defined(DATA_FILE) && !defined(NO_EXTERNAL_DATA)
+
+void loadKmsData()
+{
+#	ifndef NO_INTERNAL_DATA
+	KmsData = (PVlmcsdHeader_t)DefaultKmsData;
+#	endif // NO_INTERNAL_DATA
+
+#	ifndef NO_EXTERNAL_DATA
+	long size;
+#	ifndef NO_INTERNAL_DATA
+	size = (long)getDefaultKmsDataSize();
+#	endif // NO_INTERNAL_DATA
+
+#	ifndef DATA_FILE
+	if (!fn_data) getDefaultDataFile();
+#	endif // DATA_FILE
+
+	if (strcmp(fn_data, "-"))
+	{
+		FILE *file = fopen(fn_data, "rb");
+
+		if (!file)
+		{
+#			ifndef NO_INTERNAL_DATA
+			if (ExplicitDataLoad)
+#			endif // NO_INTERNAL_DATA
+			{
+				dataFileReadError();
+			}
+		}
+		else
+		{
+			if (fseek(file, 0, SEEK_END)) dataFileReadError();
+			size = ftell(file);
+			if (size == -1L) dataFileReadError();
+
+			KmsData = (PVlmcsdHeader_t)vlmcsd_malloc(size);
+			if (fseek(file, 0, SEEK_SET)) dataFileReadError();
+
+			size_t bytesRead = fread(KmsData, 1, size, file);
+			if ((long)bytesRead != size) dataFileReadError();
+			fclose(file);
+
+#			if !defined(NO_LOG) && !defined(NO_SOCKETS)
+			if (!InetdMode) logger("Read KMS data file %s\n", fn_data);
+#			endif // NO_LOG
+		}
+	}
+#	endif // NO_EXTERNAL_DATA
+
+#	if !defined(NO_RANDOM_EPID) || !defined(NO_CL_PIDS) || !defined(NO_INI_FILE)
+	KmsResponseParameters = (KmsResponseParam_t*)realloc(KmsResponseParameters, KmsData->CsvlkCount * sizeof(KmsResponseParam_t));
+	if (!KmsResponseParameters) OutOfMemory();
+	memset(KmsResponseParameters + MIN_CSVLK, 0, (KmsData->CsvlkCount - MIN_CSVLK) * sizeof(KmsResponseParam_t));
+#	endif // !defined(NO_RANDOM_EPID) || !defined(NO_CL_PIDS) || !defined(NO_INI_FILE)
+
+#	ifndef UNSAFE_DATA_LOAD
+	if (((BYTE*)KmsData)[size - 1] != 0) dataFileFormatError();
+#	endif // UNSAFE_DATA_LOAD
+
+	KmsData->MajorVer = LE16(KmsData->MajorVer);
+	KmsData->MinorVer = LE16(KmsData->MinorVer);
+	KmsData->AppItemCount = LE32(KmsData->AppItemCount);
+	KmsData->KmsItemCount = LE32(KmsData->KmsItemCount);
+	KmsData->SkuItemCount = LE32(KmsData->SkuItemCount);
+
+	uint32_t i;
+
+	for (i = 0; i < vlmcsd_countof(KmsData->Datapointers); i++)
+	{
+		KmsData->Datapointers[i].Pointer = (BYTE*)KmsData + LE64(KmsData->Datapointers[i].Offset);
+#		ifndef UNSAFE_DATA_LOAD
+		if ((BYTE*)KmsData->Datapointers[i].Pointer > (BYTE*)KmsData + size) dataFileFormatError();
+#		endif // UNSAFE_DATA_LOAD
+	}
+
+	for (i = 0; i < KmsData->CsvlkCount; i++)
+	{
+		PCsvlkData_t csvlkData = &KmsData->CsvlkData[i];
+		csvlkData->EPid = (char*)KmsData + LE64(csvlkData->EPidOffset);
+#		ifndef UNSAFE_DATA_LOAD
+		if (csvlkData->EPid > (char*)KmsData + size) dataFileFormatError();
+#		endif // UNSAFE_DATA_LOAD
+
+#		ifndef NO_RANDOM_EPID
+		csvlkData->GroupId = LE32(csvlkData->GroupId);
+		csvlkData->MinKeyId = LE32(csvlkData->MinKeyId);
+		csvlkData->MaxKeyId = LE32(csvlkData->MaxKeyId);
+#		endif // NO_RANDOM_EPID
+	}
+
+	uint32_t totalItemCount = KmsData->AppItemCount + KmsData->KmsItemCount + KmsData->SkuItemCount;
+
+#	ifndef NO_EXTERNAL_DATA
+	if (
+		memcmp(KmsData->Magic, "KMD", sizeof(KmsData->Magic)) ||
+		KmsData->MajorVer != 1
+#		ifndef UNSAFE_DATA_LOAD
+		||
+		sizeof(VlmcsdHeader_t) + totalItemCount * sizeof(VlmcsdData_t) >= ((uint64_t)size)
+#		endif //UNSAFE_DATA_LOAD
+		)
+	{
+		dataFileFormatError();
+	}
+#	endif // NO_EXTERNAL_DATA
+
+	for (i = 0; i < totalItemCount; i++)
+	{
+		PVlmcsdData_t item = &KmsData->AppItemList[i];
+		item->Name = (char*)KmsData + LE64(item->NameOffset);
+
+#		ifndef UNSAFE_DATA_LOAD
+		if (
+			item->Name >= (char*)KmsData + (uint64_t)size ||
+			(KmsData->AppItemCount && item->AppIndex >= KmsData->AppItemCount) ||
+			item->KmsIndex >= KmsData->KmsItemCount
+			)
+		{
+			dataFileFormatError();
+		}
+#		endif // UNSAFE_DATA_LOAD
+	}
+}
+
+#endif // IS_LIBRARY
 #if __ANDROID__ && !defined(USE_THREADS) // Bionic does not wrap these syscalls (intentionally because Google fears, developers don't know how to use it)
 
 #ifdef __NR_shmget

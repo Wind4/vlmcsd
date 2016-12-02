@@ -23,6 +23,7 @@ cd $BINDIR
 
 sstrip -z vlmcs-* vlmcsd-* vlmcsdmulti-*
 
+cp -af ../etc/vlmcsd.kmd /usr/local/sbin
 cp -af vlmcsd-hurd-x86-glibc /usr/local/sbin/vlmcsd
 cp -af vlmcs-hurd-x86-glibc /usr/local/bin/vlmcs
 
