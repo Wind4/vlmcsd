@@ -230,6 +230,35 @@ int_fast8_t string2UuidLE(const char *const restrict input, GUID *const restrict
 }
 
 
+__pure DWORD timeSpanString2Seconds(const char *const restrict argument)
+{
+	char *unitId;
+
+	long long val = vlmcsd_strtoll(argument, &unitId, 10);
+
+	switch (toupper((int)*unitId))
+	{
+	case 'W':
+		val *= 7;
+	case 'D':
+		val *= 24;
+	case 'H':
+		val *= 60;
+	case 0:
+	case 'M':
+		val *= 60;
+	case 'S':
+		break;
+	default:
+		return 0;
+	}
+
+	if (*unitId && unitId[1]) return 0;
+	if (val < 1) val = 1;
+	return (DWORD)(val & UINT_MAX);
+}
+
+
 #if !IS_LIBRARY
 //Checks a command line argument if it is numeric and between min and max. Returns the numeric value or exits on error
 __pure unsigned int getOptionArgumentInt(const char o, const unsigned int min, const unsigned int max)
@@ -261,7 +290,7 @@ void optReset(void)
 }
 #endif // !IS_LIBRARY
 
-#if defined(_WIN32) || defined(USE_MSRPC)
+#if _WIN32 || __CYGWIN__
 
 // Returns a static message buffer containing text for a given Win32 error. Not thread safe (same as strerror)
 char* win_strerror(const int message)
@@ -273,7 +302,7 @@ char* win_strerror(const int message)
 	return buffer;
 }
 
-#endif // defined(_WIN32) || defined(USE_MSRPC)
+#endif // _WIN32 || __CYGWIN__
 
 
 /*
@@ -493,11 +522,11 @@ void getExeName()
 #ifdef _WIN32
 static void getDefaultDataFile()
 {
-	char fileName[512];
+	char fileName[MAX_PATH];
 	getExeName();
-	strcpy(fileName, fn_exe);
+	strncpy(fileName, fn_exe, MAX_PATH);
 	PathRemoveFileSpec(fileName);
-	strncat(fileName, "\\vlmcsd.kmd", 512);
+	strncat(fileName, "\\vlmcsd.kmd", MAX_PATH);
 	fn_data = vlmcsd_strdup(fileName);
 }
 #else // !_WIN32

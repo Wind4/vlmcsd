@@ -20,6 +20,8 @@
 BOOL stringToInt(const char *const szValue, const unsigned int min, const unsigned int max, unsigned int *const value);
 unsigned int getOptionArgumentInt(const char o, const unsigned int min, const unsigned int max);
 void optReset(void);
+__pure DWORD timeSpanString2Seconds(const char *const restrict argument);
+#define timeSpanString2Minutes(x) (timeSpanString2Seconds(x) / 60)
 char* win_strerror(const int message);
 int ucs2_to_utf8_char (const WCHAR ucs2_le, char *utf8);
 size_t utf8_to_ucs2(WCHAR* const ucs2_le, const char* const utf8, const size_t maxucs2, const size_t maxutf8);

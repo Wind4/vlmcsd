@@ -306,9 +306,11 @@
     <ClInclude Include="..\..\src\output.h" />
     <ClInclude Include="..\..\src\rpc.h" />
     <ClInclude Include="..\..\src\shared_globals.h" />
+    <ClInclude Include="..\..\src\tap-windows.h" />
     <ClInclude Include="..\..\src\types.h" />
     <ClInclude Include="..\..\src\vlmcsd.h" />
     <ClInclude Include="..\..\src\wingetopt.h" />
+    <ClInclude Include="..\..\src\wintap.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\crypto.c" />
@@ -324,6 +326,7 @@
     <ClCompile Include="..\..\src\shared_globals.c" />
     <ClCompile Include="..\..\src\vlmcsd.c" />
     <ClCompile Include="..\..\src\wingetopt.c" />
+    <ClCompile Include="..\..\src\wintap.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

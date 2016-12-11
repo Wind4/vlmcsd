@@ -854,7 +854,7 @@ int SendActivationRequest(const RpcCtx sock, RESPONSE *baseResponse, REQUEST *ba
 	else
 		request = CreateRequestV6(&requestSize, baseRequest);
 
-	if (!(status = rpcSendRequest(sock, request, requestSize, &response, &responseSize)))
+	if (!((status = rpcSendRequest(sock, request, requestSize, &response, &responseSize))))
 	{
 		if (LE16(((RESPONSE*)(response))->MajorVer) == 4)
 		{

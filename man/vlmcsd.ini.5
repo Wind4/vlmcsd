@@ -1,4 +1,4 @@
-.TH VLMCSD.INI 5 "November 2016" "Hotbird64" "KMS Activation Manual"
+.TH VLMCSD.INI 5 "December 2016" "Hotbird64" "KMS Activation Manual"
 .LO 8
 
 .SH NAME
@@ -65,6 +65,19 @@ Set the level of protection against KMS activations from public IP addresses.
 3\ =\ Combines 1 and 2
 
 For details on public IP protection levels see \fBvlmcsd\fR(8) command line option \fB-o\fR.
+
+.IP "\fBVPN\fR"
+Has to be in the form \fIvpn-adapter-name\fR[=\fIipv4-address\fR][/\fIcidr-mask\fR][:\fIdhcp-lease-duration\fR].
+
+Enables a compatible VPN adapter to create additional local IPv4 addresses (like 127.0.0.1) that appear as remote IPv4 addresses to the system. This allows product activation using a local instance of vlmcsd. This feature is only available in Windows and Cygwin builds of vlmcsd since it is not of any use on other operating systems. Compatible VPN adapters are Tap-windows version 8.2 or higher (from OpenVPN) and the TeamViewer VPN adapter. There is a special \fIvpn-adapter-name\fR. A single period (.) instructs vlmcsd to use the first available compatible VPN adapter. The \fIvpn-adapter-name\fR is \fBnot\fR case-sensitive. If the \fIvpn-adapter-name\fR contains spaces (e.g. Ethernet 3), do \fBnot\fR enclose it in quotes.
+
+The default \fIipv4-address\fR is 10.10.10.9 and the default \fIcidr-mask\fR is 30. If you are using the default values, your VPN adapter uses an IPv4 address of 10.10.10.9 and you can set your activation client to use the easy to remember address 10.10.10.10 (e.g. slmgr /skms 10.10.10.10 or cscript ospp.vbs /sethst:10.10.10.10).
+
+The \fIdhcp-lease-duration\fR is a number optionally followed by s, m, h, d or w to indicate seconds, minutes, hours, days or weeks. The default \fIdhcp-lease-duration\fR is 1d (one day). It is normally not required to change this value.
+
+It is advised not to manually configure your OpenVPN TAP or TeamViewer VPN adapter in "Network Connections". If you set the IPv4 configuration manually anyway, the IPv4 address and the subnet mask must match the \fBVPN=\fR directive. It is safe leave the IPv4 configuration to automatic (DHCP). vlmcsd will wait up to four seconds for the DHCP configuration to complete before binding to and listenin on any interfaces.
+
+You should be aware that only one program can use a VPN adapter at a time. If you use the TeamViewer VPN adapter for example, you will not be able to use the VPN feature of TeamViewer as long as vlmcsd is running. The same applies to OpenVPN TAP adapters that are in use by other programs (for example OpenVPN, QEMU, Ratiborus VM, aiccu, etc.). The best way to avoid conflicts is to install Tap-Windows from OpenVPN, cd to C:\\Program Files\\TAP-Windows\\bin and run addtap.bat to install an additional TAP adapter. Go to "Network Connections" and rename the new adapter to "vlmcsd" and specify \fBVPN=vlmcsd\fR to use it.
 
 .IP "\fBUseNDR64\fR"
 Can be TRUE or FALSE. Specifies whether you want to use the NDR64 transfer syntax. See options \fB-n0\fR and \fB-n1\fR in \fBvlmcsd\fR(8). The default is TRUE.

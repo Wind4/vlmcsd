@@ -172,6 +172,58 @@ OPTIONS
               ified before -L.
 
 
+       -O vpn-adapter-name[=ipv4-address][/cidr-mask][:dhcp-lease-duration]
+              Enables a compatible VPN adapter to create additional local IPv4
+              addresses  (like 127.0.0.1) that appear as remote IPv4 addresses
+              to the system. This allows  product  activation  using  a  local
+              instance  of  vlmcsd.  This feature is only available in Windows
+              and Cygwin builds of vlmcsd since it is not of any use on  other
+              operating  systems. Compatible VPN adapters are Tap-windows ver‐
+              sion 8.2  or  higher  (from  OpenVPN)  and  the  TeamViewer  VPN
+              adapter.  There  are  two  special  vpn-adapter-names.  A single
+              period (.) instructs vlmcsd to use the first available  compati‐
+              ble  VPN  adapter.  A  single dash (-) disables the use of a VPN
+              adapter if one has been configured in  vlmcsd.ini(5).  The  vpn-
+              adapter-name is not case-sensitive. If the vpn-adapter-name con‐
+              tains spaces (e.g. Ethernet 3), you must enclose it in quotes.
+
+              The default ipv4-address is 10.10.10.9 and the default cidr-mask
+              is  30.  If  you  are using the default values, your VPN adapter
+              uses an IPv4 address of 10.10.10.9 and you can set your  activa‐
+              tion  client  to  use  the  easy to remember address 10.10.10.10
+              (e.g.   slmgr   /skms   10.10.10.10    or    cscript    ospp.vbs
+              /sethst:10.10.10.10).
+
+              The dhcp-lease-duration is a number optionally followed by s, m,
+              h, d or w to indicate seconds, minutes, hours,  days  or  weeks.
+              The  default dhcp-lease-duration is 1d (one day). It is normally
+              not required to change this value.
+
+              It is advised not to manually  configure  your  OpenVPN  TAP  or
+              TeamViewer  VPN adapter in "Network Connections". If you set the
+              IPv4 configuration manually anyway, the  IPv4  address  and  the
+              subnet  mask  must  match the -O parameter. It is safe leave the
+              IPv4 configuration to automatic (DHCP). vlmcsd will wait  up  to
+              four seconds for the DHCP configuration to complete before bind‐
+              ing to and listenin on any interfaces.
+
+              You should be aware that only one program can use a VPN  adapter
+              at  a  time.  If you use the TeamViewer VPN adapter for example,
+              you will not be able to use the VPN  feature  of  TeamViewer  as
+              long  as  vlmcsd  is  running.  The  same applies to OpenVPN TAP
+              adapters that are in use by other programs (for example OpenVPN,
+              QEMU,  Ratiborus  VM,  aiccu,  etc.). The best way to avoid con‐
+              flicts is to install Tap-Windows from OpenVPN, cd to  C:\Program
+              Files\TAP-Windows\bin  and  run  addtap.bat  to install an addi‐
+              tional TAP adapter. Go to "Network Connections" and  rename  the
+              new adapter to "vlmcsd" and specify -O vlmcsd to use it.
+
+              Example: -O "Ethernet 7"=192.168.123.1/24 (uses VPN adapter Eth‐
+              ernet 7 with IPv4 address 192.168.123.1 and  have  192.168.123.2
+              to  192.168.123.254  as additional local (but apparently remote)
+              IPv4 addresses.
+
+
        -F0 and -F1
               Allow (-F1) or disallow (-F0) binding to IP addresses  that  are
               currently not configured on your system. The default is -F0. -F1
@@ -705,4 +757,4 @@ SEE ALSO
 
 
 
-Hotbird64                        November 2016                       VLMCSD(8)
+Hotbird64                        December 2016                       VLMCSD(8)

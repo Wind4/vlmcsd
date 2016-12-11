@@ -192,6 +192,12 @@ ifneq ($(NOLIBS),1)
   endif
 endif 
 
+ifneq ($(NOLIBS),1)
+  ifeq ($(CYGWIN),1)
+    BASELDFLAGS += -liphlpapi
+  endif
+endif 
+
 ifneq ($(NO_DNS),1)
   ifneq ($(ANDROID),1)
   ifneq ($(NOLRESOLV),1)
@@ -441,9 +447,9 @@ endif
 endif
 
 ifeq "$(WIN)" "1"
-	VLMCSD_SRCS += ntservice.c
-	MULTI_SRCS += ntservice.c
-	../build/MULTI_OBJS += ntservice.o
+	VLMCSD_SRCS += ntservice.c wintap.c
+	MULTI_SRCS += ntservice.c wintap.c
+	MULTI_OBJS += ../build/ntservice.o ../build/wintap.o
 endif
 
 ifeq ($(CRYPTO), openssl_with_aes)

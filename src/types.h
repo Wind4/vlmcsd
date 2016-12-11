@@ -227,6 +227,10 @@ typedef struct __packed
 
 #if (defined(_WIN32) || defined(__CYGWIN__)) && !defined(NO_SOCKETS)
 #define _NTSERVICE
+#else
+#ifndef NO_TAP
+#define NO_TAP
+#endif
 #endif
 
 #if (defined(__CYGWIN__) || defined(_WIN32) || defined(NO_SOCKETS)) && !defined(NO_SIGHUP)

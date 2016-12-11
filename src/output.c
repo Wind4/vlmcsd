@@ -643,6 +643,10 @@ void printServerFlags()
 		" SUPPORT_WINE"
 #		endif // (_WIN32 || __CYGWIN__) && (!defined(USE_MSRPC) || defined(SUPPORT_WINE))
 
+#		if (_WIN32 || __CYGWIN__) && defined(NO_TAP)
+		" NO_TAP"
+#		endif // (_WIN32 || __CYGWIN__) && defined(NO_TAP)
+
 #		if !HAVE_FREEBIND
 		" NO_FREEBIND"
 #		endif //!HAVE_FREEBIND
