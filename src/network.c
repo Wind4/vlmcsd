@@ -294,7 +294,6 @@ SOCKET connectToAddress(const char *const addr, const int AddressFamily, int_fas
 
 
 #ifndef NO_SOCKETS
-#ifdef SIMPLE_SOCKETS
 
 static int_fast8_t allowSocketReuse(SOCKET s)
 {
@@ -321,6 +320,8 @@ static int_fast8_t allowSocketReuse(SOCKET s)
 	return 0;
 }
 
+
+#ifdef SIMPLE_SOCKETS
 
 int listenOnAllAddresses()
 {
@@ -575,14 +576,7 @@ static int listenOnAddress(const struct addrinfo *const ai, SOCKET *s)
 	}
 #	endif
 
-#	if !_WIN32 && !__CYGWIN__
-	if (setsockopt(*s, SOL_SOCKET, SO_REUSEADDR, (sockopt_t)&socketOption, sizeof(socketOption)))
-	{
-#		ifdef _PEDANTIC
-		printerrorf("Warning: %s does not support socket option SO_REUSEADDR: %s\n", ipstr, vlmcsd_strerror(socket_errno));
-#		endif // _PEDANTIC
-	}
-#	endif // !_WIN32 && !__CYGWIN__
+	allowSocketReuse(*s);
 
 #	if HAVE_FREEBIND
 #	if (defined(IP_NONLOCALOK) || __FreeBSD_kernel__ || __FreeBSD__) && !defined(IPV6_BINDANY)

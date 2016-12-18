@@ -198,6 +198,7 @@ help:
 	@echo "    -DNO_SOCKETS                 Don't support standalone operation. Requires an internet superserver to start $(BASE_PROGRAM_NAME)."
 	@echo "    -DSIMPLE_SOCKETS             Compile $(BASE_PROGRAM_NAME) with basic socket support only. Removes -L option."
 	@echo "    -DSIMPLE_RPC                 Don't support RPC with NDR64 and BTFN in $(BASE_PROGRAM_NAME) (but do in $(BASE_CLIENT_NAME)). Makes emulator detection easy."
+	@echo "    -DNO_TAP                     Compile $(BASE_PROGRAM_NAME) without VPN support (Windows and Cygwin only)."
 	@echo "    -DNO_CL_PIDS                 Don't support specifying ePIDs and HwId from the command line in $(BASE_PROGRAM_NAME)."
 	@echo "    -DNO_LIMIT                   Don't support limiting concurrent clients in $(BASE_PROGRAM_NAME)."
 	@echo "    -DNO_SIGHUP                  Don't support SIGHUP handling in $(BASE_PROGRAM_NAME)."

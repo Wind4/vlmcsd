@@ -31,26 +31,6 @@
 
 
 
-   /*
-	* Define default ePIDs and HWID here. Preferrably grab ePIDs and HWID
-	* from a real KMS server.
-	*/
-
-//#ifndef EPID_WINDOWS
-//#define EPID_WINDOWS "03612-00206-471-452343-03-1033-14393.0000-2932016"
-//#endif
-//
-//#ifndef EPID_OFFICE2010
-//#define EPID_OFFICE2010 "03612-00096-199-303490-03-1033-14393.0000-2932016"
-//#endif
-//
-//#ifndef EPID_OFFICE2013
-//#define EPID_OFFICE2013 "03612-00206-234-394838-03-1033-14393.0000-2932016"
-//#endif
-//
-//#ifndef EPID_OFFICE2016
-//#define EPID_OFFICE2016 "03612-00206-437-938923-03-1033-14393.0000-2932016"
-//#endif
 
 #ifndef HWID // HwId from the Ratiborus VM
 #define HWID 0x3A, 0x1C, 0x04, 0x96, 0x00, 0xB6, 0x00, 0x76
@@ -67,21 +47,21 @@
 
 
 
-/*
- * -------------------------------
- * Defaults
- * -------------------------------
- */
+ /*
+  * -------------------------------
+  * Defaults
+  * -------------------------------
+  */
 
 
 
 #ifndef INI_FILE
-/*
- * Uncomment and customize the following line if you want vlmcsd to look for an ini file
- * at a default location.
- */
+  /*
+   * Uncomment and customize the following line if you want vlmcsd to look for an ini file
+   * at a default location.
+   */
 
-//#define INI_FILE "/etc/vlmcsd.ini"
+   //#define INI_FILE "/etc/vlmcsd.ini"
 
 #endif // INI_FILE
 
@@ -95,7 +75,7 @@
  * at a custom default location.
  */
 
-//#define DATA_FILE "/etc/vlmcsd.kmd"
+ //#define DATA_FILE "/etc/vlmcsd.kmd"
 
 #endif // DATA_FILE
 
@@ -353,7 +333,7 @@
  * Includes the full database in vlmcsd.
  */
 
-//#define FULL_INTERNAL_DATA
+ //#define FULL_INTERNAL_DATA
 #endif // FULL_INTERNAL_DATA
 
 
@@ -374,9 +354,21 @@
   * your system.
   */
 
-  //#define NO_FREEBIND
+//#define NO_FREEBIND
 
 #endif // NO_FREEBIND
+
+
+
+
+#ifndef NO_TAP
+ /*
+  * Do not compile support for using a VPN adapter under Windows. Disables -O command line option.
+  */
+
+//#define NO_TAP
+
+#endif // NO_TAP
 
 
 
@@ -493,7 +485,7 @@
  * and ini file parameter KmsData. Implies UNSAFE_DATA_LOAD.
  */
 
-//#define NO_EXTERNAL_DATA
+ //#define NO_EXTERNAL_DATA
 
 #endif // NO_EXTERNAL_DATA
 
@@ -507,7 +499,7 @@
  * the program exits with an error message.
  */
 
-//#define NO_INTERNAL_DATA
+ //#define NO_INTERNAL_DATA
 
 #endif // NO_INTERNAL_DATA
 
@@ -658,7 +650,7 @@
  * smaller binaries but makes emulator detection easier.
  */
 
-//#define SIMPLE_RPC
+ //#define SIMPLE_RPC
 #endif // !SIMPLE_RPC
 
 
@@ -670,7 +662,7 @@
  * It still supports IPv4 and IPv6.
  */
 
-//#define SIMPLE_SOCKETS
+ //#define SIMPLE_SOCKETS
 
 #endif // SIMPLE_SOCKETS
 

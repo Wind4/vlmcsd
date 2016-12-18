@@ -17,6 +17,10 @@
 #include "tap-windows.h"
 #include <iphlpapi.h>
 
+#if !_WIN32
+#include <arpa/inet.h>
+#endif // !_WIN32
+
 static char* szIpAddress = "10.10.10.9";
 static char* szMask = "30";
 static char* szTapName;
@@ -117,7 +121,7 @@ static void parseTapArgument(char* argument)
 		exit(VLMCSD_EINVAL);
 	}
 
-	Mask = (uint32_t)~(UINT_MAX >> Cidr);
+	Mask = (uint32_t)~(0xffffffff >> Cidr);
 	Network = IpAddress & Mask;
 	Broadcast = IpAddress | ~Mask;
 	DhcpServer = IpAddress + 1;

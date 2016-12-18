@@ -301,7 +301,7 @@ static void generateRandomPid(int index, char *const szPid, int serverType, int1
 	time(&maxTime);
 
 #	ifndef BUILD_TIME
-#	define BUILD_TIME 1479938320
+#	define BUILD_TIME 1481079869
 #   endif
 
 	if (maxTime < (time_t)BUILD_TIME) // Just in case the system time is < 10/17/2013 1:00 pm
