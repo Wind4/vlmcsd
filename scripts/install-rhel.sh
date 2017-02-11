@@ -41,7 +41,7 @@ TMP_DIR=`mktemp -d`
 cd ${TMP_DIR}
 
 echo 'Downloading vlmcsd ...'
-wget -q https://github.com/Wind4/vlmcsd/releases/download/svn1107/binaries.tar.gz -O binaries.tar.gz
+wget -q https://github.com/Wind4/vlmcsd/releases/download/svn1108/binaries.tar.gz -O binaries.tar.gz
 check_result $? 'Download vlmcsd failed.'
 
 echo 'Downloading startup script ...'
