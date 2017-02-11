@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Sun Dec 11 22:03:20 2016 -->
+<!-- CreationDate: Thu Jan 19 21:29:26 2017 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -336,6 +336,52 @@ it.</p>
 adapter Ethernet 7 with IPv4 address 192.168.123.1 and have
 192.168.123.2 to 192.168.123.254 as additional local (but
 apparently remote) IPv4 addresses.</p>
+
+<p style="margin-left:11%;"><b>-x0</b> and <b>-x1</b></p>
+
+<p style="margin-left:22%;">Controls under what
+circumstances vlmcsd will exit. Using the default of
+<b>-x0</b> vlmcsd stays active as long as it can perform
+some useful operations. If vlmcsd is run by any form of a
+watchdog, e.g. NT service manager (Windows), systemd (Linux)
+or launchd (Mac OS / iOS), it may be desirable to end vlmcsd
+and let the watchdog restart it. This is especially true if
+some pre-requisites are not yet met but will be some time
+later, e.g. network is not yet fully setup.</p>
+
+<p style="margin-left:22%; margin-top: 1em">By using
+<b>-x0</b> vlmcsd will</p>
+
+<p style="margin-left:29%; margin-top: 1em">exit if none of
+the listening sockets specified with <b>-L</b> can be used.
+It continues if at least one socket can be setup for
+listening.</p>
+
+<p style="margin-left:29%; margin-top: 1em">exit any TAP
+mirror thread (Windows version only) if there is an error
+condition while reading or writing from or to the VPN
+adapter but continue to work without utilizing a VPN
+adapter.</p>
+
+<p style="margin-left:22%; margin-top: 1em">By using
+<b>-x1</b> vlmcsd will</p>
+
+<p style="margin-left:29%; margin-top: 1em">exit if not all
+listening sockets specified with <b>-L</b> can be used.</p>
+
+<p style="margin-left:29%; margin-top: 1em">exit completely
+if there is a problem with a VPN adapter it is using. This
+can happen for instance if the VPN adapter has been disabled
+using &quot;Control Panel - Network - Adapter Settings&quot;
+while vlmcsd is using it.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Please note
+that <b>-x1</b> is kind of a workaround option. While it may
+help under some circumstances, it is better to solve the
+problem at its origin, e.g. properly implementing
+dependencies in your startup script to ensure all network
+interfaces and the VPN adapter you will use are completely
+setup before you start vlmcsd.</p>
 
 <p style="margin-left:11%;"><b>-F0</b> and <b>-F1</b></p>
 

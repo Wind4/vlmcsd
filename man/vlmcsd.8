@@ -1,5 +1,5 @@
 .mso www.tmac
-.TH VLMCSD 8 "December 2016" "Hotbird64" "KMS Activation Manual"
+.TH VLMCSD 8 "January 2017" "Hotbird64" "KMS Activation Manual"
 .LO 8
 
 .SH NAME
@@ -91,6 +91,28 @@ It is advised not to manually configure your OpenVPN TAP or TeamViewer VPN adapt
 You should be aware that only one program can use a VPN adapter at a time. If you use the TeamViewer VPN adapter for example, you will not be able to use the VPN feature of TeamViewer as long as vlmcsd is running. The same applies to OpenVPN TAP adapters that are in use by other programs (for example OpenVPN, QEMU, Ratiborus VM, aiccu, etc.). The best way to avoid conflicts is to install Tap-Windows from OpenVPN, cd to C:\\Program Files\\TAP-Windows\\bin and run addtap.bat to install an additional TAP adapter. Go to "Network Connections" and rename the new adapter to "vlmcsd" and specify \fB-O vlmcsd\fR to use it.
 
 Example: \fB-O "Ethernet 7"=192.168.123.1/24\fR (uses VPN adapter Ethernet 7 with IPv4 address 192.168.123.1 and have 192.168.123.2 to 192.168.123.254 as additional local (but apparently remote) IPv4 addresses.
+
+.IP "\fB-x0\fR and \fB-x1\fR"
+Controls under what circumstances vlmcsd will exit. Using the default of \fB-x0\fR vlmcsd stays active as long as it can perform some useful operations. If vlmcsd is run by any form of a watchdog, e.g. NT service manager (Windows), systemd (Linux) or launchd (Mac OS / iOS), it may be desirable to end vlmcsd and let the watchdog restart it. This is especially true if some pre-requisites are not yet met but will be some time later, e.g. network is not yet fully setup.
+
+By using \fB-x0\fR vlmcsd will
+
+.RS 12
+exit if none of the listening sockets specified with \fB-L\fR can be used. It continues if at least one socket can be setup for listening.
+
+exit any TAP mirror thread (Windows version only) if there is an error condition while reading or writing from or to the VPN adapter but continue to work without utilizing a VPN adapter.
+.RE
+.IP
+By using \fB-x1\fR vlmcsd will
+
+.RS 12
+exit if not all listening sockets specified with \fB-L\fR can be used.
+
+exit completely if there is a problem with a VPN adapter it is using. This can happen for instance if the VPN adapter has been disabled using "Control Panel - Network - Adapter Settings" while vlmcsd is using it.
+
+.RE
+.IP
+Please note that \fB-x1\fR is kind of a workaround option. While it may help under some circumstances, it is better to solve the problem at its origin, e.g. properly implementing dependencies in your startup script to ensure all network interfaces and the VPN adapter you will use are completely setup before you start vlmcsd.
 
 .IP "\fB-F0\fR and \fB-F1\fR"
 Allow (\fB-F1\fR) or disallow (\fB-F0\fR) binding to IP addresses that are currently not configured on your system. The default is \fB-F0\fR. \fB-F1\fR allows you to bind to an IP address that may be configured after you started \fBvlmcsd\fR. \fBvlmcsd\fR will listen on that address as soon as it becomes available. This feature is only available under Linux (IPv4 and IPv6) and FreeBSD (IPv4 only). FreeBSD allows this feature only for the root user (more correctly: processes that have the PRIV_NETINET_BINDANY privilege). Linux does not require a capability for this.

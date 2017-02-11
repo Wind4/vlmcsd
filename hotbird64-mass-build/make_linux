@@ -711,7 +711,7 @@ export PROGRAM_NAME=../binaries/Android/intel/bionic/vlmcsd-android23-x86
 export MULTI_NAME=../binaries/Android/intel/static/vlmcsdmulti-android23-x86
 export CC=/opt/toolchains/x86-android-9/bin/i686-linux-android-gcc
 export CFLAGS="$SMALLCC"
-export PLATFORMFLAGS="-flto=16 -fwhole-program -march=atom -m32"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=i386 -m32"
 export THREADS=1
 export LDFLAGS="$SMALLLD"
 
@@ -745,7 +745,7 @@ export PROGRAM_NAME=../binaries/Android/intel/bionic/vlmcsd-android41-x86
 export MULTI_NAME=../binaries/Android/intel/bionic/vlmcsdmulti-android41-x86
 export CC=/opt/toolchains/x86-android-16/bin/i686-linux-android-gcc
 export CFLAGS="$SMALLCC"
-export PLATFORMFLAGS="-flto=16 -fwhole-program -march=atom -m32 -fPIE -pie"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=i386 -m32 -fPIE -pie"
 export THREADS=1
 export LDFLAGS="$SMALLLD"
 
@@ -797,7 +797,7 @@ export PROGRAM_NAME=../binaries/Android/intel/bionic/vlmcsd-android50-x64
 export MULTI_NAME=../binaries/Android/intel/bionic/vlmcsdmulti-android50-x64
 export CC=/opt/toolchains/x86_64-android-21/bin/x86_64-linux-android-gcc
 export CFLAGS="$SMALLCC"
-export PLATFORMFLAGS="-flto=16 -fwhole-program -march=atom -m64 -fPIE -pie"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -m64 -fPIE -pie"
 export THREADS=0
 export LDFLAGS="$SMALLLD"
 
@@ -819,7 +819,7 @@ export PROGRAM_NAME=../binaries/Android/intel/static/vlmcsd-android50-x64-static
 export MULTI_NAME=../binaries/Android/intel/static/vlmcsdmulti-android50-x64-static
 export CC=/opt/toolchains/x86_64-android-21/bin/x86_64-linux-android-gcc
 export CFLAGS="$SMALLCC"
-export PLATFORMFLAGS="-flto=16 -fwhole-program -march=nocona -m64"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -m64"
 export THREADS=0
 export LDFLAGS="$SMALLLD -static"
 

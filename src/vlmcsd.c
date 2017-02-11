@@ -84,7 +84,7 @@
 #include "wintap.h"
 #endif
 
-static const char* const optstring = "N:B:m:t:w:0:3:6:H:A:R:u:g:L:p:i:P:l:r:U:W:C:c:F:O:o:T:K:E:M:j:SseDdVvqkZ";
+static const char* const optstring = "N:B:m:t:w:0:3:6:H:A:R:u:g:L:p:i:P:l:r:U:W:C:c:F:O:o:x:T:K:E:M:j:SseDdVvqkZ";
 
 #if !defined(NO_SOCKETS) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 static uint_fast8_t maxsockets = 0;
@@ -123,6 +123,9 @@ static IniFileParameter_t IniFileParameterList[] =
 		{ "Office2010", INI_PARAM_OFFICE2010 },
 		{ "Office2013", INI_PARAM_OFFICE2013 },
 		{ "Office2016", INI_PARAM_OFFICE2016 },
+#	ifndef NO_SOCKETS
+		{ "ExitLevel", INI_PARAM_EXIT_LEVEL },
+#	endif // NO_SOCKETS
 #	ifndef NO_TAP
 		{ "VPN", INI_PARAM_VPN },
 #   endif // NO_TAP
@@ -296,6 +299,7 @@ static __noreturn void usage()
 		"  -O <v>[=<a>][/<c>]\tuse VPN adapter <v> with IPv4 address <a> and CIDR <c>\n"
 #		endif
 #		ifndef NO_SOCKETS
+		"  -x <level>\t\texit if warning <level> reached (default 0)\n"
 #		if !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 		"  -L <address>[:<port>]\tlisten on IP address <address> with optional <port>\n"
 		"  -P <port>\t\tset TCP port <port> for subsequent -L statements (default 1688)\n"
@@ -725,6 +729,15 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 
 #	endif // USE_MSRPC
 
+#	ifndef NO_SOCKETS
+
+	case INI_PARAM_EXIT_LEVEL:
+		success = getIniFileArgumentInt(&result, iniarg, 0, 1);
+		if (success) ExitLevel = (int_fast8_t)result;
+		break;
+
+#	endif // NO_SOCKETS
+
 #	if HAVE_FREEBIND
 
 	case INI_PARAM_FREEBIND:
@@ -1130,6 +1143,11 @@ static void parseGeneralArguments() {
 #	endif // NO_EXTERNAL_DATA
 
 #	ifndef NO_SOCKETS
+
+	case 'x':
+		ignoreIniFileParameter(INI_PARAM_EXIT_LEVEL);
+		ExitLevel = getOptionArgumentInt((char)o, 0, 1);
+		break;
 
 	case 'P':
 		ignoreIniFileParameter(INI_PARAM_PORT);

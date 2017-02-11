@@ -133,6 +133,7 @@ extern int_fast8_t UseClientRpcBTFN;
 #endif // USE_MSRPC
 
 #ifndef NO_SOCKETS
+extern int_fast8_t ExitLevel;
 extern char *defaultport;
 #endif // NO_SOCKETS
 

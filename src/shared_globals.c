@@ -75,6 +75,8 @@ int_fast8_t logverbose = 0;
 #endif // NO_LOG
 
 #ifndef NO_SOCKETS
+int_fast8_t ExitLevel = 0;
+
 #ifndef _WIN32
 int_fast8_t nodaemon = 0;
 #endif // _WIN32
@@ -84,7 +86,7 @@ int_fast8_t InetdMode = 0;
 int_fast8_t nodaemon = 1;
 #endif // _WIN32
 int_fast8_t InetdMode = 1;
-#endif
+#endif // NO_SOCKETS
 
 PVlmcsdHeader_t KmsData = NULL;
 #ifndef NO_EXTERNAL_DATA
@@ -104,7 +106,7 @@ int_fast8_t RandomizationLevel = 1;
 uint16_t Lcid = 0;
 #endif
 
-#ifndef NO_SOCKETS
+#if !defined(NO_SOCKETS) && !defined(USE_MSRPC)
 #ifdef SIMPLE_SOCKETS
 SOCKET s_server;
 #else
@@ -120,7 +122,7 @@ HANDLE MaxTaskSemaphore;
 #endif // _WIN32
 
 #endif // !defined(NO_LIMIT) && !__minix__
-#endif // NO_SOCKETS
+#endif // !defined(NO_SOCKETS) && !defined(USE_MSRPC)
 
 #ifdef _NTSERVICE
 int_fast8_t IsNTService = TRUE;

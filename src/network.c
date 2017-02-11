@@ -570,8 +570,12 @@ static int listenOnAddress(const struct addrinfo *const ai, SOCKET *s)
 #		if defined(_WIN32) || defined(__CYGWIN__)
 		//		if (IsWindowsVistaOrGreater()) //Doesn't work with older version of MingW32-w64 toolchain
 		if ((GetVersion() & 0xff) > 5)
+		{
 #		endif // _WIN32
 			printerrorf("Warning: %s does not support socket option IPV6_V6ONLY: %s\n", ipstr, vlmcsd_strerror(socket_errno));
+#		if defined(_WIN32) || defined(__CYGWIN__)
+		}
+#		endif // _WIN32
 #		endif // _PEDANTIC
 	}
 #	endif
@@ -660,6 +664,10 @@ BOOL addListeningSocket(const char *const addr)
 			{
 				numsockets++;
 				result = TRUE;
+			}
+			else
+			{
+				exitOnWarningLevel(1);
 			}
 		}
 

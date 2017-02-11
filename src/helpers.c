@@ -674,7 +674,20 @@ void loadKmsData()
 	}
 }
 
+#ifndef NO_SOCKETS
+void exitOnWarningLevel(const int_fast8_t level)
+{
+	if (ExitLevel >= level)
+	{
+		printerrorf("Fatal: Exiting on warning level %i or greater\n", (int)ExitLevel);
+		exit(-1);
+	}
+}
+#endif // !NO_SOCKETS
+
 #endif // IS_LIBRARY
+
+
 #if __ANDROID__ && !defined(USE_THREADS) // Bionic does not wrap these syscalls (intentionally because Google fears, developers don't know how to use it)
 
 #ifdef __NR_shmget
