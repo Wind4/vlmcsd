@@ -1,0 +1,12 @@
+[Unit]
+Description=KMS Emulator in C
+After=syslog.target network.target
+
+[Service]
+User=nobody
+Group=nogroup
+Type=forking
+ExecStart=/usr/bin/vlmcsd -i /etc/vlmcsd/vlmcsd.ini -j /etc/vlmcsd/vlmcsd.kmd -l syslog -v
+
+[Install]
+WantedBy=multi-user.target.wants
