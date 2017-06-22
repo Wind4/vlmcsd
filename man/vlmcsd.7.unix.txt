@@ -19,7 +19,7 @@ DESCRIPTION
        KMS is a way to activate  Microsoft  products  that  was  designed  for
        medium and large businesses. In a standard SOHO environment you enter a
        product key during installation and then activate your product over the
-       Internet.  This  is  done  by  sending  a request to a server at micro‐
+       Internet.  This  is  done  by  sending  a request to a server at micro-
        soft.com which then either grants or refuses activation.
 
        By entering a special key called General  Volume  License  Key  (GVLK),
@@ -28,13 +28,13 @@ DESCRIPTION
        usually  resides in a company's intranet. vlmcsd is an independent open
        source implementation of a KMS server that is  available  for  everyone
        while Microsoft gives their KMS server only to corporations that signed
-       a so called "Select contract". In addition vlmcsd never refuses activa‐
+       a so called "Select contract". In addition vlmcsd never refuses activa-
        tion  while  the  Microsoft  KMS server only activates the products the
        customer has paid for.
 
        Product activation using vlmcsd is performed in three easy steps:
 
-       1) Run vlmcsd (or any other KMS emulator) on a computer  in  your  net‐
+       1) Run vlmcsd (or any other KMS emulator) on a computer  in  your  net-
           work.  This will be your KMS server. New users should simply run the
           program without any parameters. The defaults should fit the needs of
           most users.
@@ -47,11 +47,11 @@ DESCRIPTION
        However, when it comes to the details, some things turn out to be  more
        difficult than you might think.
 
-       The  most  important thing to know is that KMS activation is not perma‐
+       The  most  important thing to know is that KMS activation is not perma-
        nent. The computer remains activated for 180 days (30 or 45  days  with
        consumer-only  products).  KMS  activation however is not an evaluation
        license. You can repeat the activation anytime and as often as you like
-       to  extend  activation to another 180 days. This normally happens auto‐
+       to  extend  activation to another 180 days. This normally happens auto-
        matically. For this to work, you have to ensure that a  KMS  server  is
        always reachable for the clients on your network.
 
@@ -64,7 +64,7 @@ DESCRIPTION
 
 
    How to get a GVLK?
-       That is relatively simple. The GVLKs are published on Microsoft's Tech‐
+       That is relatively simple. The GVLKs are published on Microsoft's Tech-
        net web site.
 
        Windows: http://technet.microsoft.com/en-us/library/jj612867.aspx
@@ -86,7 +86,7 @@ DESCRIPTION
        7B9N3-D94CG-YTVHR-QBPX3-RJP64 - Windows 8.1 Core N
        BB6NG-PQ82V-VRDPW-8XVD2-V8P66 - Windows 8.1 Core Single Language
        NCTT7-2RGK8-WMHRF-RY7YQ-JTXG3 - Windows 8.1 Core Country Specific
-       GNBB8-YVD74-QJHX6-27H4K-8QHDG  - Windows 8 Professional with Media Cen‐
+       GNBB8-YVD74-QJHX6-27H4K-8QHDG  - Windows 8 Professional with Media Cen-
        ter
        BN3D2-R7TKB-3YPBD-8DRP2-27GG4 - Windows 8 Core
        8N2M2-HWPGY-7PGT9-HGDD8-GVGGY - Windows 8 Core N
@@ -103,7 +103,7 @@ DESCRIPTION
        section.
 
        These  are  two  Visual Basic script utilities that are used to control
-       Microsoft's Software Protection system. To use them open a Windows Com‐
+       Microsoft's Software Protection system. To use them open a Windows Com-
        mand  Prompt. slmgr.vbs is for Windows. ospp.vbs is for Office 2010 and
        2013. These utilities are installed with Windows  and  Office  and  you
        don't need to download them.
@@ -153,7 +153,7 @@ DESCRIPTION
        2) Type   "cscript   ospp.vbs /setprt:tcp-port".    Example:    cscript
           ospp.vbs /setprt:1688
 
-       tcp-port  is usually 1688 unless you instructed vlmcsd to use a differ‐
+       tcp-port  is usually 1688 unless you instructed vlmcsd to use a differ-
        ent port which is rarely necessary.
 
 

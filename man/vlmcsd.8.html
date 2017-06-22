@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Thu Jan 19 21:29:26 2017 -->
+<!-- CreationDate: Sat Jun 17 00:53:29 2017 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -108,8 +108,8 @@ maintain a client list (option <b>-M1</b>)</p>
 <p style="margin-left:22%; margin-top: 1em">EPID
 Randomization Level 1 (option <b>-r1</b>) works like Level 2
 (<b>-r2</b>). You may want to use Level 0 (<b>-r0</b>) or
-custom EPIDs (options <b>-w</b>, <b>-0</b>, <b>-3</b> and
-<b>-6</b>) instead.</p>
+custom EPIDs (options <b>-w</b>, <b>-G</b>, <b>-0</b>,
+<b>-3</b> and <b>-6</b>) instead.</p>
 
 <h2>OPTIONS
 <a name="OPTIONS"></a>
@@ -640,6 +640,13 @@ is disregarded for Office 2013.</p>
 ePID (including Project and Visio). If specified, <b>-r</b>
 is disregarded for Office 2016.</p>
 
+<p style="margin-left:11%;"><b>-G</b> <i>ePID</i></p>
+
+<p style="margin-left:22%;">Use <i>ePID</i> as Windows
+China Government ePID. If specified, <b>-r</b> is
+disregarded for Windows China Government Editions
+(Enterprise G/GN).</p>
+
 <p style="margin-left:11%;"><b>-H</b> <i>HwId</i></p>
 
 <p style="margin-left:22%;">Use <i>HwId</i> for all
@@ -729,8 +736,9 @@ if you send more than one activation request over the same
 TCP connection. This is simply due to the fact that vlmcsd
 is started upon a connection request and does not stay in
 memory after servicing a KMS request. Consider using
-<b>-r0</b> or <b>-w</b>, <b>-0</b>, <b>-3</b> and <b>-6 when
-starting vlmcsd by an internet superserver.</b></p>
+<b>-r0</b> or <b>-w</b>, <b>-G</b>, <b>-0</b>, <b>-3</b> and
+<b>-6</b> when starting vlmcsd by an internet
+superserver.</p>
 
 <p style="margin-left:22%; margin-top: 1em"><b>-r2</b>
 behaves like most other KMS server emulators with random
@@ -1073,7 +1081,7 @@ else would be a severe security flaw in the OS.</p></td></tr>
 
 <p style="margin-left:11%; margin-top: 1em">Signaling is
 not available in the native Windows version and in the
-Cygwin version when it runs as Windows service.</p>
+Cygwin version when vlmcsd runs as a Windows service.</p>
 
 <h2>SUPPORTED OPERATING SYSTEMS
 <a name="SUPPORTED OPERATING SYSTEMS"></a>
@@ -1095,11 +1103,11 @@ sources or may require minor porting efforts.</p>
 <p style="margin-left:11%; margin-top: 1em"><b>vlmcsd</b>
 can answer activation requests for the following products:
 Windows Vista, Windows 7, Windows 8, Windows 8.1, Windows 10
-(up to 1607), Windows Server 2008, Windows Server 2008 R2,
+(up to 1703), Windows Server 2008, Windows Server 2008 R2,
 Windows Server 2012, Windows Server 2012 R2, Windows Server
 2016, Office 2010, Project 2010, Visio 2010, Office 2013,
 Project 2013, Visio 2013, Office 2016, Project 2016, Visio
-2016. Newer version may work as long as the KMS protocol
+2016. Newer products may work as long as the KMS protocol
 does not change. A complete list of fully supported products
 can be obtained using the <b>-x</b> option of
 <b>vlmcs</b>(1).</p>

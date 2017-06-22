@@ -4,7 +4,7 @@ cd "$( dirname "$0" )"
 
 export VLMCSD_VERSION=$(git describe)
 
-msbuild='/cygdrive/c/Program Files (x86)/MSBuild/14.0/bin/MSBuild.exe'
+msbuild='/cygdrive/c/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/MSBuild/15.0/Bin/amd64/msbuild.exe'
 version="$VLMCSD_VERSION, built $(date -u '+%Y-%m-%d %H:%M:%S') UTC"
 
 make -C .. clean
@@ -41,7 +41,7 @@ make $MAKEFLAGS MSRPC=1 THREADS=1 DNS_PARSER=internal CLIENT_NAME=../bin/vlmcs-c
 make $MAKEFLAGS vlmcsdmulti MSRPC=1 THREADS=1 DNS_PARSER=internal MULTI_NAME=../bin/vlmcsdmulti-cygwin-msrpc-x64 CC=x86_64-pc-cygwin-gcc.exe CFLAGS="$CFMSRPC -flto=jobserver" PLATFORMFLAGS="$PF64" LDFLAGS="$LFCYG64"
 make $MAKEFLAGS vlmcsdmulti MSRPC=1 THREADS=1 DNS_PARSER=internal MULTI_NAME=../bin/vlmcsdmulti-cygwin-msrpc-x86 CC=i686-pc-cygwin-gcc.exe CFLAGS="$CFMSRPC -flto=jobserver" PLATFORMFLAGS="$PF32" LDFLAGS="$LFCYG32"
 
-make $MAKEFLAGS THREADS=1 MSRPC=1 DNS_PARSER=internal CLIENT_NAME=../bin/vlmcs-cygwin-msrpc-x86-openssl-EXPERIMENTAL CRYPTO=openssl_with_aes PROGRAM_NAME=../bin/vlmcsd-cygwin-x86-openssl-EXPERIMENTAL CC=i686-pc-cygwin-gcc.exe CFLAGS="$CFMSRPC" PLATFORMFLAGS="$PF32" LDFLAGS="$LFCYG32"
+#make $MAKEFLAGS THREADS=1 MSRPC=1 DNS_PARSER=internal CLIENT_NAME=../bin/vlmcs-cygwin-msrpc-x86-openssl-EXPERIMENTAL CRYPTO=openssl_with_aes PROGRAM_NAME=../bin/vlmcsd-cygwin-x86-openssl-EXPERIMENTAL CC=i686-pc-cygwin-gcc.exe CFLAGS="$CFMSRPC" PLATFORMFLAGS="$PF32" LDFLAGS="$LFCYG32"
 make $MAKEFLAGS THREADS=1 MSRPC=1 DNS_PARSER=internal CLIENT_NAME=../bin/vlmcs-cygwin-msrpc-x64-openssl-EXPERIMENTAL CRYPTO=openssl_with_aes PROGRAM_NAME=../bin/vlmcsd-cygwin-x64-openssl-EXPERIMENTAL CC=x86_64-pc-cygwin-gcc.exe CFLAGS="$CFMSRPC" PLATFORMFLAGS="$PF64" LDFLAGS="$LFCYG64"
 
 export CAT=2

@@ -17,9 +17,9 @@ DESCRIPTION
        the combined binary is significantly  smaller  than  the  sum  of  both
        files.
 
-       vlmcsdmulti should not be called directly. Instead you may want to cre‐
+       vlmcsdmulti should not be called directly. Instead you may want to cre-
        ate symbolic links named vlmcs and vlmcsd which point  to  vlmcsdmulti.
-       You  then  use these links to call the respective program. You may how‐
+       You  then  use these links to call the respective program. You may how-
        ever call vlmcsdmulti followed by a complete  command  line  of  either
        vlmcs(1) or vlmcsd(8).
 
@@ -51,7 +51,7 @@ DESCRIPTION
    Memory considerations
        While you definitely save disk space by using vlmcsdmulti you will need
        more  RAM  when you run vlmcsdmulti as a daemon (KMS server) instead of
-       vlmcsd. You should consider running vlmcsdmulti via an internet  super‐
+       vlmcsd. You should consider running vlmcsdmulti via an internet  super-
        server like inetd(8) or xinetd(8).
 
 
@@ -64,7 +64,7 @@ AUTHOR
 
 
 CREDITS
-       Thanks  to  CODYQX4,  crony12,  deagles, DougQaid, eIcn, mikmik38, nos‐
+       Thanks  to  CODYQX4,  crony12,  deagles, DougQaid, eIcn, mikmik38, nos-
        ferati87, qad, vityan666, ...
 
 

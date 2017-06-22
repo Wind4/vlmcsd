@@ -17,7 +17,6 @@ SERVICE_STATUS_HANDLE   gSvcStatusHandle;
 VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl)
 {
 	// Handle the requested control code.
-
 	switch (dwCtrl)
 	{
 	case SERVICE_CONTROL_STOP:

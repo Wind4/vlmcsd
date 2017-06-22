@@ -1,5 +1,5 @@
 .mso www.tmac
-.TH VLMCSD 8 "January 2017" "Hotbird64" "KMS Activation Manual"
+.TH VLMCSD 8 "June 2017" "Hotbird64" "KMS Activation Manual"
 .LO 8
 
 .SH NAME
@@ -27,7 +27,7 @@ The followong features that require that vlmcsd is permanently loaded will not w
 You cannot maintain a client list (option \fB-M1\fR)
 
 .IP
-EPID Randomization Level 1 (option \fB-r1\fR) works like Level 2 (\fB-r2\fR). You may want to use Level 0 (\fB-r0\fR) or custom EPIDs (options \fB-w\fR, \fB-0\fR, \fB-3\fR and \fB-6\fR) instead.
+EPID Randomization Level 1 (option \fB-r1\fR) works like Level 2 (\fB-r2\fR). You may want to use Level 0 (\fB-r0\fR) or custom EPIDs (options \fB-w\fR, \fB-G\fR, \fB-0\fR, \fB-3\fR and \fB-6\fR) instead.
 
 .SH OPTIONS
 Since vlmcsd can be configured at compile time, some options may not be available on your system.
@@ -185,6 +185,9 @@ Use \fIePID\fR as Office 2013 ePID (including Project and Visio). If specified, 
 .IP "\fB-6\fR \fIePID\fR"
 Use \fIePID\fR as Office 2016 ePID (including Project and Visio). If specified, \fB-r\fR is disregarded for Office 2016.
 
+.IP "\fB-G\fR \fIePID\fR"
+Use \fIePID\fR as Windows China Government ePID. If specified, \fB-r\fR is disregarded for Windows China Government Editions (Enterprise G/GN).
+
 .IP "\fB-H\fR \fIHwId\fR"
 Use \fIHwId\fR for all products. All HWIDs in the ini file (see \fB-i\fR) will not be used. In an ini file you can specify a seperate HWID for each \fIapplication-guid\fR. This is not possible when entering a HWID from the command line.
 
@@ -221,7 +224,7 @@ These options determine how ePIDs are generated if
 
 \fB-r1\fR instructs vlmcsd to generate random ePIDs when the program starts or receives a SIGHUP signal and uses these ePIDs until it is stopped or receives another SIGHUP. Most other KMS emulators generate a new ePID on every KMS request. This is easily detectable. Microsoft could just modify sppsvc.exe in a way that it always sends two identical KMS requests in two RPC requests but over the same TCP connection. If both KMS responses contain the different ePIDs, the KMS server is not genuine. \fB-r1\fR is the default mode. \fB-r1\fR also ensures that all three ePIDs (Windows, Office 2010 and Office 2013) use the same OS build number and LCID (language id).
 
-If vlmcsd has been started by an internet superserver, \fB-r1\fR works almost identically to \fB-r2\fR. The only exception occurs if you send more than one activation request over the same TCP connection. This is simply due to the fact that vlmcsd is started upon a connection request and does not stay in memory after servicing a KMS request. Consider using \fB-r0\fR or \fB-w\fR, \fB-0\fR, \fB-3\fR and \fB-6\fB when starting vlmcsd by an internet superserver.
+If vlmcsd has been started by an internet superserver, \fB-r1\fR works almost identically to \fB-r2\fR. The only exception occurs if you send more than one activation request over the same TCP connection. This is simply due to the fact that vlmcsd is started upon a connection request and does not stay in memory after servicing a KMS request. Consider using \fB-r0\fR or \fB-w\fR, \fB-G\fR, \fB-0\fR, \fB-3\fR and \fB-6\fR when starting vlmcsd by an internet superserver.
 
 \fB-r2\fR behaves like most other KMS server emulators with random support and generates a new random ePID on every request. \fB-r2\fR should be treated as debugging option only because it allows very easy emulator detection.
 
@@ -321,13 +324,13 @@ If you used a pid file, it is not deleted and recreated because the process id s
 If you used the 'user' and/or 'group' directive in an ini file these are ignored. This is because once you switched to lower privileged users and groups, there is no way back. Anything else would be a severe security flaw in the OS.
 .RE
 
-Signaling is not available in the native Windows version and in the Cygwin version when it runs as Windows service.
+Signaling is not available in the native Windows version and in the Cygwin version when vlmcsd runs as a Windows service.
 
 .SH SUPPORTED OPERATING SYSTEMS
 \fBvlmcsd\fR compiles and runs on Linux, Windows (no Cygwin required but explicitly supported), Mac OS X, FreeBSD, NetBSD, OpenBSD, Dragonfly BSD, Minix, Solaris, OpenIndiana, Android and iOS. Other POSIX or unixoid OSses may work with unmodified sources or may require minor porting efforts.
 
 .SH SUPPORTED PRODUCTS
-\fBvlmcsd\fR can answer activation requests for the following products: Windows Vista, Windows 7, Windows 8, Windows 8.1, Windows 10 (up to 1607), Windows Server 2008, Windows Server 2008 R2, Windows Server 2012, Windows Server 2012 R2, Windows Server 2016, Office 2010, Project 2010, Visio 2010, Office 2013, Project 2013, Visio 2013, Office 2016, Project 2016, Visio 2016. Newer version may work as long as the KMS protocol does not change. A complete list of fully supported products can be obtained using the \fB-x\fR option of \fBvlmcs\fR(1).
+\fBvlmcsd\fR can answer activation requests for the following products: Windows Vista, Windows 7, Windows 8, Windows 8.1, Windows 10 (up to 1703), Windows Server 2008, Windows Server 2008 R2, Windows Server 2012, Windows Server 2012 R2, Windows Server 2016, Office 2010, Project 2010, Visio 2010, Office 2013, Project 2013, Visio 2013, Office 2016, Project 2016, Visio 2016. Newer products may work as long as the KMS protocol does not change. A complete list of fully supported products can be obtained using the \fB-x\fR option of \fBvlmcs\fR(1).
 .PP
 Office, Project and Visio must be volume license versions.
 

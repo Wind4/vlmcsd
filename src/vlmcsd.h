@@ -59,6 +59,7 @@ int server_main(int argc, CARGV argv);
 #define INI_PARAM_DATA_FILE 28
 #define INI_PARAM_VPN 29
 #define INI_PARAM_EXIT_LEVEL 30
+#define INI_PARAM_WINCHINAGOV 31
 
 #define INI_FILE_PASS_1 1
 #define INI_FILE_PASS_2 2

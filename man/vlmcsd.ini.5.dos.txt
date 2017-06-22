@@ -17,7 +17,7 @@ DESCRIPTION
        option on the vlmcsd command line to use  an  ini  file.  There  is  no
        default name or default location for the ini file.
 
-       Everything,  that can be configured in the ini file, may also be speci‐
+       Everything,  that can be configured in the ini file, may also be speci-
        fied on the command line. Any configuration  option  specified  on  the
        command line takes precedence over the respective configuration line in
        the ini file.
@@ -33,16 +33,16 @@ DESCRIPTION
        Differences between command line and configuration file
 
        If you specify an illegal option or  option  argument  on  the  command
-       line,  vlmcsd displays help and exits. If you specify an incorrect key‐
+       line,  vlmcsd displays help and exits. If you specify an incorrect key-
        word or argument in the ini file, vlmcsd displays a warning  with  some
-       information,  ignores the respective line and continues. This is inten‐
-       tional and prevents vlmcsd from aborting after a SIGHUP if the configu‐
+       information,  ignores the respective line and continues. This is inten-
+       tional and prevents vlmcsd from aborting after a SIGHUP if the configu-
        ration was modified incorrectly.
 
 
 SYNTAX
        vlmcsd.ini  is  a  UTF-8  encoded text file with each line being in the
-       format keyword = argument. The keyword is not case-sensitive. The argu‐
+       format keyword = argument. The keyword is not case-sensitive. The argu-
        ment  is  treated  literally.  It  is  neither  required nor allowed to
        enclose the argument in any form of quote characters except when  quote
        characters  are  part of the argument itself. Whitespace characters are
@@ -54,14 +54,14 @@ SYNTAX
 
        Lines, that start with '#' or ';' are treated as comments. Empty  lines
        are  ignored  as well. If a keyword is repeated in another line, vlmcsd
-       will use the argument of the last occurence of the keyword.  An  excep‐
+       will use the argument of the last occurence of the keyword.  An  excep-
        tion  to  this  is  the  Listen keyword which can be specified multiple
        times and causes vlmcsd to listen on more than one  IP  address  and/or
        port.
 
        Some  arguments  are  binary  arguments  that need to be either TRUE or
        FALSE. You can use "Yes", "On" or "1" as an alias for  TRUE  and  "No",
-       "Off"  or "0" as an alias for FALSE. Binary arguments are case-insensi‐
+       "Off"  or "0" as an alias for FALSE. Binary arguments are case-insensi-
        tive.
 
 
@@ -71,7 +71,7 @@ KEYWORDS
        was compiled):
 
 
-       Listen This defines on what combinations of IP addresses and ports vlm‐
+       Listen This defines on what combinations of IP addresses and ports vlm-
               csd  should  listen. Listen can be specified more than once. The
               argument has the form ipaddress[:port]. If you  omit  the  port,
               the  default  port  of  1688  is used. If the ipaddress contains
@@ -80,7 +80,7 @@ KEYWORDS
               which means listen to all IPv4 and all IPv6 addresses.  See  the
               -L  option  in  vlmcsd(8) for more info about the syntax. If you
               use -L or -P on the command line, all Listen keywords in the ini
-              file  will be ignored. The Listen keyword cannot be used if vlm‐
+              file  will be ignored. The Listen keyword cannot be used if vlm-
               csd has been compiled to use Microsoft RPC (Windows  and  Cygwin
               only) or simple sockets.
 
@@ -91,7 +91,7 @@ KEYWORDS
               Listen = [fe80::1721:12ff:fe81:d36b%eth0]:1688
 
 
-       Port   Can only be used if vlmcsd has been compiled to use simple sock‐
+       Port   Can only be used if vlmcsd has been compiled to use simple sock-
               ets or on Windows and Cygwin if vlmcsd(8) has been  compiled  to
               use Microsoft RPC. Otherwise you must use Listen instead. Causes
               vlmcsd to listen on that port instead of 1688.
@@ -115,7 +115,7 @@ KEYWORDS
               0 = No protection (default)
               1 = Listen on private IP addresses only (plus those specified by
               one or more Listen statements)
-              2 = Disconnect clients with public IP addresses without activat‐
+              2 = Disconnect clients with public IP addresses without activat-
               ing
               3 = Combines 1 and 2
 
@@ -131,7 +131,7 @@ KEYWORDS
               to the system. This allows  product  activation  using  a  local
               instance  of  vlmcsd.  This feature is only available in Windows
               and Cygwin builds of vlmcsd since it is not of any use on  other
-              operating  systems. Compatible VPN adapters are Tap-windows ver‐
+              operating  systems. Compatible VPN adapters are Tap-windows ver-
               sion 8.2  or  higher  (from  OpenVPN)  and  the  TeamViewer  VPN
               adapter.  There  is  a special vpn-adapter-name. A single period
               (.) instructs vlmcsd to use the first available  compatible  VPN
@@ -141,7 +141,7 @@ KEYWORDS
 
               The default ipv4-address is 10.10.10.9 and the default cidr-mask
               is 30. If you are using the default  values,  your  VPN  adapter
-              uses  an IPv4 address of 10.10.10.9 and you can set your activa‐
+              uses  an IPv4 address of 10.10.10.9 and you can set your activa-
               tion client to use the  easy  to  remember  address  10.10.10.10
               (e.g.    slmgr    /skms    10.10.10.10   or   cscript   ospp.vbs
               /sethst:10.10.10.10).
@@ -156,7 +156,7 @@ KEYWORDS
               IPv4  configuration  manually  anyway,  the IPv4 address and the
               subnet mask must match the VPN= directive. It is safe leave  the
               IPv4  configuration  to automatic (DHCP). vlmcsd will wait up to
-              four seconds for the DHCP configuration to complete before bind‐
+              four seconds for the DHCP configuration to complete before bind-
               ing to and listenin on any interfaces.
 
               You  should be aware that only one program can use a VPN adapter
@@ -164,17 +164,17 @@ KEYWORDS
               you  will  not  be  able to use the VPN feature of TeamViewer as
               long as vlmcsd is running.  The  same  applies  to  OpenVPN  TAP
               adapters that are in use by other programs (for example OpenVPN,
-              QEMU, Ratiborus VM, aiccu, etc.). The best  way  to  avoid  con‐
+              QEMU, Ratiborus VM, aiccu, etc.). The best  way  to  avoid  con-
               flicts  is to install Tap-Windows from OpenVPN, cd to C:\Program
-              Files\TAP-Windows\bin and run addtap.bat  to  install  an  addi‐
+              Files\TAP-Windows\bin and run addtap.bat  to  install  an  addi-
               tional  TAP  adapter. Go to "Network Connections" and rename the
               new adapter to "vlmcsd" and specify VPN=vlmcsd to use it.
 
 
        ExitLevel
-              Can be either 0 (the default) or 1. Controls under what  circum‐
+              Can be either 0 (the default) or 1. Controls under what  circum-
               stances  vlmcsd  will  exit. Using the default of 0 vlmcsd stays
-              active as long as it can perform some useful operations. If vlm‐
+              active as long as it can perform some useful operations. If vlm-
               csd  is  run  by any form of a watchdog, e.g. NT service manager
               (Windows), systemd (Linux) or launchd (Mac OS / iOS), it may  be
               desirable to end vlmcsd and let the watchdog restart it. This is
@@ -206,7 +206,7 @@ KEYWORDS
               Please note that ExitLevel = 1 is kind of a  workaround  option.
               While  it  may  help  under  some circumstances, it is better to
               solve the problem at  its  origin,  e.g.  properly  implementing
-              dependencies in your startup script to ensure all network inter‐
+              dependencies in your startup script to ensure all network inter-
               faces and the VPN adapter you  will  use  are  completely  setup
               before you start vlmcsd.
 
@@ -219,12 +219,12 @@ KEYWORDS
 
        UseBTFN
               Can  be  TRUE  or  FALSE. Specifies whether you want to use bind
-              time feature negotiation in RPC. See options -b0 and -b1 in vlm‐
+              time feature negotiation in RPC. See options -b0 and -b1 in vlm-
               csd(8). The default is TRUE.
 
 
        RandomizationLevel
-              The  argument must 0, 1 or 2. This specifies the ePID randomiza‐
+              The  argument must 0, 1 or 2. This specifies the ePID randomiza-
               tion level. See options -r0,  -r1  and  -r2  in  vlmcsd(8).  The
               default  randomization  level is 1. A RandomizationLevel of 2 is
               not recommended and should be treated as a debugging level.
@@ -233,14 +233,14 @@ KEYWORDS
        LCID   Use a specific culture id (LCID) even if the ePID is randomized.
               The  argument  must  be  a number between 1 and 32767. While any
               number in that range is valid, you should use an offcial LCID. A
-              list  of  assigned  LCIDs  can  be  found  at http://msdn.micro‐
+              list  of  assigned  LCIDs  can  be  found  at http://msdn.micro-
               soft.com/en-us/goglobal/bb964664.aspx. On the command  line  you
               control this setting with option -C.
 
 
        MaxWorkers
               The argument specifies the maximum number of worker processes or
-              threads that will be used to serve activation  requests  concur‐
+              threads that will be used to serve activation  requests  concur-
               rently.  This  is the same as specifying -m on the command line.
               Minimum is 1. The maximum is platform specific and is  at  least
               32767  but  is likely to be greater on most systems. The default
@@ -248,13 +248,13 @@ KEYWORDS
 
 
        ConnectionTimeout
-              Used to control when the vlmcsd  disconnects  idle  TPC  connec‐
+              Used to control when the vlmcsd  disconnects  idle  TPC  connec-
               tions. The default is 30 seconds. This is the same setting as -t
               on the command line.
 
 
        DisconnectClientsImmediately
-              Set this to TRUE to disconnect a client after it got an  activa‐
+              Set this to TRUE to disconnect a client after it got an  activa-
               tion  response  regardless whether a timeout has occured or not.
               The default is FALSE.  Setting  this  to  TRUE  is  non-standard
               behavior.  Use only if you are experiencing DoS or DDoS attacks.
@@ -291,11 +291,11 @@ KEYWORDS
 
 
        LogDateAndTime
-              Can be TRUE or FALSE. The default is TRUE. If set to FALSE, log‐
+              Can be TRUE or FALSE. The default is TRUE. If set to FALSE, log-
               ging output does not include date and time. This  is  useful  if
               you  log  to  stdout(3)  which  is redirected to another logging
               mechanism that already includes date and time in its output, for
-              instance  systemd-journald(8). If you log to syslog(3), LogDate‐
+              instance  systemd-journald(8). If you log to syslog(3), LogDate-
               AndTime is ignored and date and time will never be  included  in
               the output sent to syslog(3). Using the command line you control
               this setting with options -T0 and -T1.
@@ -304,7 +304,7 @@ KEYWORDS
        LogVerbose
               Set this to either TRUE or FALSE. The default is FALSE.  If  set
               to TRUE, more details of each activation will be logged. You use
-              -v and -q in the command line to control this  setting.  LogVer‐
+              -v and -q in the command line to control this  setting.  LogVer-
               bose  has  an  effect only if you specify a log file or redirect
               logging to stdout(3).
 
@@ -325,22 +325,22 @@ KEYWORDS
 
               The  SKU  ID  is  not  checked. Like a genuine KMS server vlmcsd
               activates a product that has a random or unknown SKU ID. If  you
-              select  1  or  3, vlmcsd also checks the Application ID for cor‐
-              rectness. If Microsoft introduces a new KMS ID for a  new  prod‐
-              uct,  you cannot activate it if you used 1 or 3 until a new ver‐
+              select  1  or  3, vlmcsd also checks the Application ID for cor-
+              rectness. If Microsoft introduces a new KMS ID for a  new  prod-
+              uct,  you cannot activate it if you used 1 or 3 until a new ver-
               sion of vlmcsd is available.
 
 
        CheckClientTime
               Can be TRUE or FALSE. The default is FALSE. If you set  this  to
               TRUE  vlmcsd(8)  checks  if the client time differs no more than
-              four hours from the system time. This is useful to prevent  emu‐
+              four hours from the system time. This is useful to prevent  emu-
               lator detection. A client that tries to detect an emulator could
               simply send two subsequent request with  two  time  stamps  that
               differ  more  than  four hours from each other. If both requests
               succeed, the server is an emulator. If you set this to TRUE on a
               system  with  no reliable time source, activations will fail. It
-              is ok to set the correct system  time  after  you  started  vlm‐
+              is ok to set the correct system  time  after  you  started  vlm-
               csd(8).
 
 
@@ -361,22 +361,22 @@ KEYWORDS
               about 50 kB in size. On hardware with few memory  resources  use
               it only if you really need it.
 
-              If  you  start vlmcsd(8) from an internet superserver, this set‐
-              ting cannot be used. Since vlmcsd(8) exits  after  each  activa‐
+              If  you  start vlmcsd(8) from an internet superserver, this set-
+              ting cannot be used. Since vlmcsd(8) exits  after  each  activa-
               tion, it cannot maintain any state in memory.
 
 
        StartEmpty
-              This  setting  is  ignored  if you do not also specify Maintain‐
+              This  setting  is  ignored  if you do not also specify Maintain-
               Clients = TRUE. If you specify FALSE  (the  default),  vlmcsd(8)
               starts  up  as  a  fully  "charged" KMS server. Clients activate
               immediately. StartEmpty = TRUE lets you start up vlmcsd(8)  with
-              an empty CMID list. Activation will start when the required min‐
+              an empty CMID list. Activation will start when the required min-
               imum clients (25 for Windows Client OSses, 5 for Windows  Server
               OSses  and  Office) have registered with the KMS server. As long
               as the minimum client count has not been reached, clients end up
               in HRESULT 0xC004F038 "The count reported by your Key Management
-              Service (KMS) is insufficient. Please contact your system admin‐
+              Service (KMS) is insufficient. Please contact your system admin-
               istrator".  You  may use vlmcs(1) or another KMS client emulator
               to "charge" vlmcsd(8). Setting this parameter to TRUE  does  not
               improve  emulator  detection prevention. It's primary purpose is
@@ -385,16 +385,16 @@ KEYWORDS
 
 
        ActivationInterval
-              This  is the same as specifying -A on the command line. See vlm‐
-              csd(8) for details. The default is 2 hours. Example: Activation‐
+              This  is the same as specifying -A on the command line. See vlm-
+              csd(8) for details. The default is 2 hours. Example: Activation-
               Interval = 1h
 
 
        RenewalInterval
-              This  is the same as specifying -R on the command line. See vlm‐
-              csd(8) for details. The default is 7 days.  Example:  RenewalIn‐
+              This  is the same as specifying -R on the command line. See vlm-
+              csd(8) for details. The default is 7 days.  Example:  RenewalIn-
               terval = 3d. Please note that the KMS client decides itself when
-              to renew activation. Even though vlmcsd sends the renewal inter‐
+              to renew activation. Even though vlmcsd sends the renewal inter-
               val  you specify, it is no more than some kind of recommendation
               to the client. Older KMS clients did follow  the  recommendation
               from a KMS server or emulator. Newer clients do not.
@@ -414,9 +414,9 @@ KEYWORDS
        Group  Run  vlmcsd  as another, preferrably less privileged, group. The
               argument can be a group name or a numeric  group  id.  You  must
               have  the  required privileges (capabilities on Linux) to change
-              the security context of a process without providing any  creden‐
+              the security context of a process without providing any  creden-
               tials  (a  password in most cases). On most unixoid OSses 'root'
-              is the only user who has these privileges in the default config‐
+              is the only user who has these privileges in the default config-
               uration.  This  setting  is  not available in the native Windows
               version of vlmcsd. See -g in vlmcsd(8). This setting  cannot  be
               changed on the fly by sending SIGHUP to vlmcsd.
@@ -430,42 +430,49 @@ KEYWORDS
 
        Office2010
               The  argument  has the form ePID [ / HwId ]. Always use ePID and
-              HwId for Office 2010 activations. If  specified,  Randomization‐
+              HwId for Office 2010 activations. If  specified,  Randomization-
               Level for Office 2010 activitations will be ignored.
 
 
        Office2013
               The  argument  has the form ePID [ / HwId ]. Always use ePID and
-              HwId for Office 2013 activations. If  specified,  Randomization‐
+              HwId for Office 2013 activations. If  specified,  Randomization-
               Level for Office 2013 activitations will be ignored.
 
 
        Office2016
               The  argument  has the form ePID [ / HwId ]. Always use ePID and
-              HwId for Office 2016 activations. If  specified,  Randomization‐
+              HwId for Office 2016 activations. If  specified,  Randomization-
               Level for Office 2016 activitations will be ignored.
 
 
+       WinChinaGov
+              The  argument  has the form ePID [ / HwId ]. Always use ePID and
+              HwId for China Government Editions of Windows (Enterprise G/GN).
+              If  specified,  RandomizationLevel  for Windows China Government
+              activitations will be ignored.
+
+
 VALID EPIDS
-       The  ePID is currently a comment only. You can specify any string up to
-       63 bytes. In Windows 7 Microsoft has blacklisted few (  <  10  )  ePIDs
-       that  were  used  in KMSv5 versions of the "Ratiborus Virtual Machine".
-       Microsoft has given up on blacklisting when KMS emulators  appeared  in
+       The ePID is currently a comment only. You can specify any string up  to
+       63  bytes.  In  Windows  7 Microsoft has blacklisted few ( < 10 ) ePIDs
+       that were used in KMSv5 versions of the  "Ratiborus  Virtual  Machine".
+       Microsoft  has  given up on blacklisting when KMS emulators appeared in
        the wild.
 
        Even if you can use "Activated by cool hacker guys" as an ePID, you may
        wish to use ePIDs that cannot be detected as non-MS ePIDs. If you don't
-       know  how  these  "valid"  ePIDs look like exactly, do not use GUIDS in
-       vlmcsd.ini. vlmcsd  provides  internal  mechanisms  to  generate  valid
+       know how these "valid" ePIDs look like exactly, do  not  use  GUIDS  in
+       vlmcsd.ini.  vlmcsd  provides  internal  mechanisms  to  generate valid
        ePIDs.
 
        If you use non-ASCII characters in your ePID (you shouldn't do anyway),
-       these must be in UTF-8 format. This is especially  important  when  you
-       run vlmcsd on Windows or cygwin because UTF-8 is not the default encod‐
+       these  must  be  in UTF-8 format. This is especially important when you
+       run vlmcsd on Windows or cygwin because UTF-8 is not the default encod-
        ing for most editors.
 
        If you are specifying an optional HWID it follows the same syntax as in
-       the  -H  option in vlmcsd(8) ecxept that you must not enclose a HWID in
+       the -H option in vlmcsd(8) ecxept that you must not enclose a  HWID  in
        quotes even if it contains spaces.
 
 
@@ -474,12 +481,12 @@ FILES
 
 
 AUTHOR
-       vlmcsd(8) was written by crony12, Hotbird64 and vityan666. With contri‐
+       vlmcsd(8) was written by crony12, Hotbird64 and vityan666. With contri-
        butions from DougQaid.
 
 
 CREDITS
-       Thanks  to  CODYQX4,  deagles,  eIcn, mikmik38, nosferati87, qad, Rati‐
+       Thanks to CODYQX4, deagles, eIcn,  mikmik38,  nosferati87,  qad,  Rati-
        borus, ...
 
 
@@ -488,4 +495,4 @@ SEE ALSO
 
 
 
-Hotbird64                        January 2017                    VLMCSD.INI(5)
+Hotbird64                          May 2017                      VLMCSD.INI(5)

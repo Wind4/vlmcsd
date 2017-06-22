@@ -52,8 +52,8 @@ OPTIONS
               Show help.
 
 
-       -V     Displays extended version information. This  includes  the  com‐
-              piler used to build vlmcs, the intended platform and flags (com‐
+       -V     Displays extended version information. This  includes  the  com-
+              piler used to build vlmcs, the intended platform and flags (com-
               pile time options) to build vlmcs. If you have the  source  code
               of vlmcsd, you can type make help (or gmake help on systems that
               do not use the GNU version of make(1) by  default)  to  see  the
@@ -72,7 +72,7 @@ OPTIONS
 
 
        -l application
-              Request  activation  for a specific application.  Valid applica‐
+              Request  activation  for a specific application.  Valid applica-
               tions can be displayed by using -x.  The default application  is
               Windows  Vista  Business.  The list of available applications is
               not complete. You may supply GUIDs with -a, -k and -s to specify
@@ -91,7 +91,7 @@ OPTIONS
               vlmcs ignores the minor protocol number (e.g. sends a v4 request
               for version 4.1). If the major version number is less then 4, it
               sends  a  v4 request. If the major version is greater then 6, it
-              sends a v6 request. In any case the protocol-version  as  speci‐
+              sends a v6 request. In any case the protocol-version  as  speci-
               fied by -K is put in the version fields of the request.
 
 
@@ -115,10 +115,10 @@ OPTIONS
               this flag.
 
 
-       -d     Use NetBIOS names instead of DNS names. By default vlmcsd gener‐
-              ates  some random DNS names for each request. If you prefer Net‐
+       -d     Use NetBIOS names instead of DNS names. By default vlmcsd gener-
+              ates  some random DNS names for each request. If you prefer Net-
               BIOS names, you may use -d.  A real Microsoft activation  client
-              uses  DNS names or NetBIOS depending on the client name configu‐
+              uses  DNS names or NetBIOS depending on the client name configu-
               ration. KMS servers treat the workstation name as a comment that
               affects  logging only. Clients will be identified by a GUID that
               can be specified using -c. -d has no effect if you also  specify
@@ -126,7 +126,7 @@ OPTIONS
 
 
        -a application-guid
-              Send  requests with a specific application-guid.  There are cur‐
+              Send  requests with a specific application-guid.  There are cur-
               rently only three known valid application-guids:
 
 
@@ -135,7 +135,7 @@ OPTIONS
               0ff1ce15-a989-479d-af46-f275c6370663 (Office 2013)
 
 
-              A Microsoft KMS server uses these GUIDs to have  seperate  coun‐
+              A Microsoft KMS server uses these GUIDs to have  seperate  coun-
               ters  for  the already activated clients. A client that does not
               contact the KMS server within 30 days will be deleted  from  the
               database. Emulated KMS servers are always fully charged.
@@ -153,8 +153,8 @@ OPTIONS
               The  activation-guid  defines  the actual product, e.g. "Windows
               8.1 Professional WMC KMSCLIENT edition". A activation-guid  maps
               1:1  to  a product key.  However, neither a Microsoft KMS server
-              nor emulated servers check this id.  The activation-guid is use‐
-              ful  in logging to get a specific product description like "Win‐
+              nor emulated servers check this id.  The activation-guid is use-
+              ful  in logging to get a specific product description like "Win-
               dows 8.1 Professional WMC". A list of  current  activation-guids
               can be found in kms.c (table ExtendedProductList).
 
@@ -171,7 +171,7 @@ OPTIONS
               test an emulated KMS  server  whether  it  suffers  from  memory
               leaks.  To  test  for memory leaks use -n with a large number of
               requests (> 100000) and then test twice (with and  without  -T).
-              This  option may become neccessary for future versions of Micro‐
+              This  option may become neccessary for future versions of Micro-
               soft's KMS  server  because  multiple  requests  with  different
               clients-guids  for the same kms-id-guid are impossible in a real
               KMS szenario over the same TCP connection.
@@ -195,9 +195,9 @@ OPTIONS
 
 
        -G filename
-              Grabs  ePIDs and HWIDs from a KMS server and writes the informa‐
-              tion to filename in format suitable to be used as  a  configura‐
-              tion file (aka ini file) for vlmcsd(8).  This is especially use‐
+              Grabs  ePIDs and HWIDs from a KMS server and writes the informa-
+              tion to filename in format suitable to be used as  a  configura-
+              tion file (aka ini file) for vlmcsd(8).  This is especially use-
               ful if you have access to a genuine KMS server and want  to  use
               the same data with vlmcsd(8).
 
@@ -229,8 +229,8 @@ OPTIONS
               Reports a specific license status to the KMS server. status is a
               number  that can be from 0 to 6. 0=unlicensed, 1=licensed, 2=OOB
               grace,  3=OOT  grace,  4=Non-genuinue   grace,   5=notification,
-              6=extended grace. Refer to TechNet ⟨http://
-              technet.microsoft.com/en-us/library/ff686879.aspx#_Toc257201371⟩
+              6=extended grace. Refer to TechNet <http://
+              technet.microsoft.com/en-us/library/ff686879.aspx#_Toc257201371>
               for  more  information.  A  Microsoft  KMS  server collects this
               information for statistics only.
 
@@ -262,7 +262,7 @@ OPTIONS
               Disables (-N0) or enables (-N1) the NDR64 transfer syntax in the
               RPC  protocol.  Disable NDR64 only in case of problems. If NDR64
               is not used, vlmcs cannot detect many RPC protocol errors in KMS
-              emulators. If you want to test whether a KMS emulator fully sup‐
+              emulators. If you want to test whether a KMS emulator fully sup-
               ports NDR64, you must use the -n option to  send  at  least  two
               requests.  This  is  because Microsoft's client always sends the
               first request using NDR32 syntax and subsequent  requests  using
@@ -271,7 +271,7 @@ OPTIONS
 
        -B0 and -B1
               Disables  (-B0)  or  enables (-B1) bind time feature negotiation
-              (BTFN) in the RPC protocol. Disable BTFN only in case  of  prob‐
+              (BTFN) in the RPC protocol. Disable BTFN only in case  of  prob-
               lems. If BTFN is not used, vlmcs cannot detect many RPC protocol
               errors in KMS emulators.
 
@@ -314,7 +314,7 @@ EXAMPLES
 
 BUGS
        Some platforms (e.g. Solaris) may have a man(7) system  that  does  not
-       handle  URLs.  URLs  may be omitted in the documentation on those plat‐
+       handle  URLs.  URLs  may be omitted in the documentation on those plat-
        forms. Cygwin, Linux, FreeBSD and Mac OS X are known to work correctly.
 
 
@@ -323,7 +323,7 @@ AUTHOR
 
 
 CREDITS
-       Thanks to CODYQX4, crony12, deagles,  DougQaid,  eIcn,  mikmik38,  nos‐
+       Thanks to CODYQX4, crony12, deagles,  DougQaid,  eIcn,  mikmik38,  nos-
        ferati87, qad, Ratiborus, vityan666, ...
 
 

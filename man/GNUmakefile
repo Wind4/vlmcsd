@@ -19,7 +19,7 @@ DOSDOCS = $(PDFDOCS:.pdf=.dos.txt)
 	groff -Thtml -mandoc -c $< > $@ 
 
 %.unix.txt : %
-	groff -P -c -Tutf8 -mandoc -c $< | col -bx > $@
+	groff -P -c -Tascii -mandoc -c $< | col -bx > $@
 
 %.dos.txt : %.unix.txt
 #	unix2dos -n $< $@
