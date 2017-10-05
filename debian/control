@@ -1,0 +1,13 @@
+Source: vlmcsd
+Section: net
+Priority: extra
+Maintainer: Simon Shi <simonsmh@gmail.com>
+Build-Depends: debhelper (>=9)
+Standards-Version: 3.9.8
+Homepage: http://wind4.github.io/vlmcsd/
+
+Package: vlmcsd
+Architecture: any
+Multi-Arch: foreign
+Depends: ${misc:Depends}
+Description: KMS Emulator in C
