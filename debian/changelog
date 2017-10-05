@@ -1,0 +1,6 @@
+vlmcsd (1111) UNRELEASED; urgency=low
+
+  * Initial release. Closes: #nnnn
+    <nnnn is the bug number of your ITP>
+
+ -- Simon Shi <simonsmh@gmail.com>  Sat, 30 Sep 2017 20:13:26 +0800

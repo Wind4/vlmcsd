@@ -1,0 +1,11 @@
+[Unit]
+Description=Vlmcsd (KMS Emulator in C)
+After=network.target
+
+[Service]
+Type=simple
+User=nobody
+ExecStart=/usr/bin/vlmcsd -D -e
+
+[Install]
+WantedBy=multi-user.target
