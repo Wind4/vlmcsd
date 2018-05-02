@@ -8,12 +8,12 @@ NAME
 
 DESCRIPTION
        floppy144.vfd  is an image of a bootable floppy that contains a minimal
-       version of Linux and vlmcsd(8). It requires only 16 MB of RAM. Its pri‐
+       version of Linux and vlmcsd(8). It requires only 16 MB of RAM. Its pri-
        mary purpose is to run vlmcsd(8) in a small virtual machine which makes
-       it easy to use vlmcsd(8) to activate the virtual  machine's  host  com‐
+       it easy to use vlmcsd(8) to activate the virtual  machine's  host  com-
        puter  which is not possible in Windows 8.1 and up. The floppy image is
        a standard 3,5" floppy with 1.44 MB storage. It  is  formatted  with  a
-       FAT12 filesystem. The floppy can be mounted to apply several customiza‐
+       FAT12 filesystem. The floppy can be mounted to apply several customiza-
        tions.
 
 
@@ -32,7 +32,7 @@ SETUP
        has  floppy  boot  disabled  by  default). If possible, setup a virtual
        machine with plain old BIOS (not UEFI). If you created an UEFI  virtual
        machine,  enable  the  compatibility support mode (CSM) to allow a BIOS
-       compatible boot. Set number of CPUs to 1. The Linux kernel is not capa‐
+       compatible boot. Set number of CPUs to 1. The Linux kernel is not capa-
        ble  of  SMP.  Remove  IDE, SATA, SCSI and USB support if possible. The
        Linux kernel can't handle this and ignores  any  devices  connected  to
        these buses.
@@ -49,10 +49,10 @@ SETUP
        Most hypervisors emulate an Intel PRO/1000 or AMD PCNET32  by  default.
        Selecting  a  paravirtualized  driver slightly improves performance. In
        VirtualBox you can simply select virtio in  the  network  configuration
-       dialog.  VMWare requires that you add or change the VMX file. Use 'eth‐
+       dialog.  VMWare requires that you add or change the VMX file. Use 'eth-
        ernet0.virtualDev = "vmxnet3"' in your VMWare config file.
 
-       If you are using QEMU, you must also setup a TAP  adapter.  Port  redi‐
+       If you are using QEMU, you must also setup a TAP  adapter.  Port  redi-
        rection does not work to activate your own computer.
 
 
@@ -62,7 +62,7 @@ CONFIGURATION
        must  be  mounted. Under Linux you can simply attach floppy144.vfd to a
        loop device which is mountable like any other block device. For Windows
        you must use some software that allows mounting a floppy image, e.g.
-       OSFMount ⟨http://www.osforensics.com/tools/mount-disk-images.html⟩
+       OSFMount <http://www.osforensics.com/tools/mount-disk-images.html>
 
        OSFMount works under all Windows versions beginning with Windows XP  up
        to Windows 10 (32- and 64-bit).
@@ -75,7 +75,7 @@ CONFIGURATION
 
               LABEL dhcp
                 KERNEL bzImage
-                APPEND     vga=773    quiet    initrd=initrd    KBD=us    LIS‐
+                APPEND     vga=773    quiet    initrd=initrd    KBD=us    LIS-
               TEN=[::]:1688,0.0.0.0:1688       TZ=UTC0        IPV4_CONFIG=DHCP
               NTP_SERVER=pool.ntp.org   HOST_NAME=vlmcsd  ROOT_PASSWORD=vlmcsd
               USER_NAME=user    USER_PASSWORD=vlmcsd     GUEST_PASSWORD=vlmcsd
@@ -86,9 +86,9 @@ CONFIGURATION
 
               LABEL static
                 KERNEL bzImage
-                APPEND    vga=773    quiet    initrd=initrd    KBD=fr     LIS‐
+                APPEND    vga=773    quiet    initrd=initrd    KBD=fr     LIS-
               TEN=[::]:1688,0.0.0.0:1688         TZ=CET-1CEST,M3.5.0,M10.5.0/3
-              IPV4_CONFIG=STATIC   IPV4_ADDRESS=192.168.20.123/24   IPV4_GATE‐
+              IPV4_CONFIG=STATIC   IPV4_ADDRESS=192.168.20.123/24   IPV4_GATE-
               WAY=192.168.20.2      IPV4_DNS1=192.168.20.2      IPV4_DNS2=NONE
               NTP_SERVER=pool.ntp.org  HOST_NAME=vlmcsd   ROOT_PASSWORD=vlmcsd
               USER_NAME=user     USER_PASSWORD=vlmcsd    GUEST_PASSWORD=vlmcsd
@@ -98,7 +98,7 @@ CONFIGURATION
        There are two configurations in this files: dhcp (for  configuring  the
        IPv4  network  via  DHCP) and static (for a static IPv4 configuration).
        The kernel always boots the dhcp configuration  without  asking  (lines
-       'prompt  0' and 'default dhcp'). You can simply change the default con‐
+       'prompt  0' and 'default dhcp'). You can simply change the default con-
        figuration to static and then customize the APPEND line in  the  static
        configuration.  For more details how to customize the syslinux.cfg file
        see syslinux(1).
@@ -108,11 +108,11 @@ CONFIGURATION
 
 
        vga=vesa-video-mode
-              Sets  the VESA display mode for the virtual machine. The parame‐
+              Sets  the VESA display mode for the virtual machine. The parame-
               ter is not optional. If you ommit it, you will not see  anything
               on the screen. 773 means 1024x768 with 256 colors. See Wikipedia
-              ⟨https://en.wikipedia.org/wiki/
-              VESA_BIOS_Extensions#Linux_video_mode_numbers⟩  for  more  video
+              <https://en.wikipedia.org/wiki/
+              VESA_BIOS_Extensions#Linux_video_mode_numbers>  for  more  video
               modes. Note that all 16 color (4-bit) modes will not  work.  Use
               8-bit  (256 colors), 16-bit (65536 colors), 24-bit and 32-bit (>
               16 Million colors) only. All modes above 1280x1024 are non-VESA-
@@ -123,14 +123,14 @@ CONFIGURATION
               may omit quiet but it doesn't make much sense. The boot  log  is
               actually  very  verbose and scrolls away from screen quickly. If
               any errors occur during boot, they will  be  displayed  even  if
-              quiet  is  present in the APPEND line. You may evaluate the com‐
+              quiet  is  present in the APPEND line. You may evaluate the com-
               plete boot log later by using the dmesg command or the  menu  on
               /dev/tty8.
 
 
        initrd=initial-ram-disk-file
               This  defines  the  initial  ram disk that the kernel will read.
-              There is only one initial ram disk on the floppy thus leave ini‐
+              There is only one initial ram disk on the floppy thus leave ini-
               trd=initrd as it is.
 
 
@@ -176,9 +176,21 @@ CONFIGURATION
 
 
        OFFICE2013=epid
-              Defines the ePID that is used  for  Office  (versions  2013  and
-              greater)  activations.  If  you  ommit this parameter, vlmcsd(8)
-              generates a random ePID when it is started.
+              Defines the ePID that is used for Office  2016  activations.  If
+              you ommit this parameter, vlmcsd(8) generates a random ePID when
+              it is started.
+
+
+       OFFICE2016=epid
+              Defines the ePID that is used for Office  2016  activations.  If
+              you ommit this parameter, vlmcsd(8) generates a random ePID when
+              it is started.
+
+
+       WINCHINAGOV=epid
+              Defines the ePID that is used for Windows China Government  Edi-
+              tion activations (Enterprise G/GN). If you ommit this parameter,
+              vlmcsd(8) generates a random ePID when it is started.
 
 
        HWID=hwid
@@ -190,8 +202,8 @@ CONFIGURATION
 
        TZ=posix-time-zone-string
               Set  the time zone to posix-time-zone-string. It must conform to
-              the POSIX ⟨http://pubs.opengroup.org/onlinepubs/009695399/
-              basedefs/xbd_chap08.html⟩  specification.  Simplified  time zone
+              the POSIX <http://pubs.opengroup.org/onlinepubs/009695399/
+              basedefs/xbd_chap08.html>  specification.  Simplified  time zone
               strings  like  "Europe/London"  or  "America/Detroit"  are   not
               allowed.  This has the very simple reason that there is no space
               on the floppy to store the time zone database.
@@ -201,7 +213,7 @@ CONFIGURATION
 
               CET       The standard (winter) time zone has the name CET.
 
-              -1        The  standard time zone is one hour east of UTC. Nega‐
+              -1        The  standard time zone is one hour east of UTC. Nega-
                         tive numbers are east of  UTC.  Positive  numbers  are
                         west of UTC.
 
@@ -228,12 +240,12 @@ CONFIGURATION
 
        IPV4_CONFIG=DHCP | STATIC
               This  determines  how  you want to configure IPv4 networking. If
-              you use IPV4_CONFIG=STATIC, you  must  supply  additional  para‐
+              you use IPV4_CONFIG=STATIC, you  must  supply  additional  para-
               maters to the APPEND command line.
 
 
        IPV4_ADDRESS=ipv4-address/CIDR-mask
-              Use ipv4-address with netmask CIDR-mask for static IPv4 configu‐
+              Use ipv4-address with netmask CIDR-mask for static IPv4 configu-
               ration. The netmask must  not  be  ommitted.  For  IPv4  address
               192.168.12.17    with    a    netmask   of   255.255.255.0   use
               192.168.12.17/24. For IPv4 address 10.4.0.8 with  a  netmask  of
@@ -245,7 +257,7 @@ CONFIGURATION
               Use ipv4-address as the default gateway.  This  is  usually  the
               IPv4 address of your router. You may specify NONE explicitly for
               no gateway. In this case your virtual machine is only visible on
-              its  local LAN. This paramater is ignored, if you used IPV4_CON‐
+              its  local LAN. This paramater is ignored, if you used IPV4_CON-
               FIG=DHCP.
 
 
@@ -262,9 +274,9 @@ CONFIGURATION
 
        IPV4_DNS2=ipv4-address | NONE
               Use  ipv4-address  as  the secondary name server. It serves as a
-              backup if the primary name server is not  available.  Home  net‐
+              backup if the primary name server is not  available.  Home  net-
               works often don't have a secondary name server. In this case set
-              this to NONE. This paramater is ignored, if you  used  IPV4_CON‐
+              this to NONE. This paramater is ignored, if you  used  IPV4_CON-
               FIG=DHCP.
 
 
@@ -282,7 +294,7 @@ CONFIGURATION
               IPV4_CONFIG=DHCP and your DHCP server returns a domain name, the
               domain part of an FQDN will be replaced by that name. This  host
               name  or  host  part of an FQDN will not replaced by a host name
-              returned via DHCP. The host name is not important for the opera‐
+              returned via DHCP. The host name is not important for the opera-
               tion of floppy144.vfd.
 
 
@@ -319,10 +331,10 @@ CONFIGURATION
 OPERATION
    Diskless System
        The  floppy144.vfd  virtual  machine  is  a  diskless system that works
-       entirely from RAM. The file system is actually a RAM disk that is  cre‐
+       entirely from RAM. The file system is actually a RAM disk that is  cre-
        ated from the initrd(4) file on the floppy image.
 
-       Anything  you'll do from inside the virtual machine, for instance edit‐
+       Anything  you'll do from inside the virtual machine, for instance edit-
        ing a config file, will be lost when you reboot the machine. So, if you
        ever  asked  yourself  if  rm  -fr  / (root privileges required) really
        deletes all files from all mounted partitions, the floppy144.vfd VM  is
@@ -338,7 +350,7 @@ OPERATION
        The kernel boots up very quickly and the init script (/sbin/init) waits
        5 seconds. In these 5 seconds you can:
 
-              Press  'm'  to manually enter the time zone and the IPv4 parame‐
+              Press  'm'  to manually enter the time zone and the IPv4 parame-
               ters. These will be queried interactively.
               Press 't' to manually enter the time zone only.
               Press 's' to escape to a shell.
@@ -351,7 +363,7 @@ OPERATION
 
    Logging into the system
        There  are 5 local logins provided on /dev/tty2 to /dev/tty6. To switch
-       to these logins, simply press ALT-F2 to ALT-F6. To return to  the  con‐
+       to these logins, simply press ALT-F2 to ALT-F6. To return to  the  con-
        sole  on  /dev/tty1,  press ALT-F1. If inetd(8) is running you can also
        use telnet(1). This allows you use a terminal program (e.g. putty) that
        can  utilize  your  keyboard  layout, can be resized and has full UTF-8
@@ -369,7 +381,7 @@ OPERATION
    The menu system
        You'll find a menu system on /dev/tty8 (press ALT-F8  to  see  it).  It
        allows  you  performing  some  administrative tasks and to view various
-       system information. It is mainly for users that do not have much  expe‐
+       system information. It is mainly for users that do not have much  expe-
        rience with Unix commands.
 
 
@@ -419,7 +431,7 @@ OPERATION
 
        8) Show TCP/IP configuration
               Shows  the  TCP/IP  configuration, listening sockets and current
-              TCP and UDP connections. Useful, if you problems with  net  con‐
+              TCP and UDP connections. Useful, if you problems with  net  con-
               nectivity.  The output is piped through less(1). So press 'q' to
               return to the menu.
 
@@ -431,7 +443,7 @@ OPERATION
 
        s) Shutdown
               Shuts down the floppy144.vfd virtual machine. Proper shutdown is
-              not required. It is ok to use a hard power off in your  virtual‐
+              not required. It is ok to use a hard power off in your  virtual-
               ization program.
 
 
@@ -476,7 +488,7 @@ PERMANENT CHANGES OF INITRD
        works on almost any unix-like OS, it does not work on Windows even  not
        with  Cygwin. The reason is that the NTFS file system can't handle uids
        and gids. These cannot be preserved when unpacking the cpio(1)  archive
-       to  NTFS. If you use the WSL subsystem of Windows 10 Redstone (Anniver‐
+       to  NTFS. If you use the WSL subsystem of Windows 10 Redstone (Anniver-
        sary Update) and later, you must make sure to unpack the initrd(4) file
        to  a directory on VolFs (normally everything that is not mounted under
        /mnt). The initrd(4) file can be on a VolFs or DriveFs.
@@ -484,7 +496,7 @@ PERMANENT CHANGES OF INITRD
 
 FAQ
    On what distro is the floppy image based?
-       None. Besides the boot loader ldlinux.sys, there are only  three  bina‐
+       None. Besides the boot loader ldlinux.sys, there are only  three  bina-
        ries:  The  Linux  kernel bzImage, busybox(1) and vlmcsdmulti-x86-musl-
        static. bzImage  and  busybox(1)  have  been  compiled  with  carefully
        selected  configuration  parameters  not  found in any distro. This was
@@ -494,7 +506,7 @@ FAQ
    Why is a rather old Linux kernel (3.12) used?
        Linux 3.12 is the last kernel that can be booted with  16  MB  of  RAM.
        Beginning with Linux 3.13 it requires much more memory (about 80 MB) to
-       boot. The floppy image is regularly tested with newer  kernels.  Every‐
+       boot. The floppy image is regularly tested with newer  kernels.  Every-
        thing works except that you need to assign much more main memory to the
        virtual machine.
 
@@ -513,7 +525,7 @@ FILES
 BUGS
        IPv6 cannot be configured with static or manual parameters.
        DHCPv6 is not supported.
-       ´ip route add ...' does not work. Use 'route add ...' instead.
+       'ip route add ...' does not work. Use 'route add ...' instead.
 
 
 AUTHOR
@@ -533,4 +545,4 @@ SEE ALSO
 
 
 
-Hotbird64                        October 2016                 VLMCSD-FLOPPY(7)
+Hotbird64                          May 2017                   VLMCSD-FLOPPY(7)

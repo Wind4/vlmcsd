@@ -406,7 +406,7 @@ static void CheckRpcBindRequest(const RPC_BIND_REQUEST *const Request, const uns
 /*
  * Check, if we receive enough bytes to return a valid RPC bind response
  */
-static unsigned int checkRpcBindSize(const RPC_BIND_REQUEST *const Request, const unsigned int RequestSize, WORD* NdrCtx, WORD* Ndr64Ctx)
+static unsigned int checkRpcBindSize(const RPC_BIND_REQUEST *const Request, const unsigned int RequestSize, WORD* NdrCtx_unused, WORD* Ndr64Ctx_unused)
 {
 	if (RequestSize < sizeof(RPC_BIND_REQUEST)) return FALSE;
 

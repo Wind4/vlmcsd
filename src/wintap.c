@@ -271,7 +271,7 @@ static int DevCtl(DWORD code, void* data, DWORD len)
 }
 
 
-static DWORD WINAPI TapMirror(LPVOID data)
+static DWORD WINAPI TapMirror(LPVOID data_unused)
 {
 	while (TRUE)
 	{

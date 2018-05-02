@@ -84,7 +84,7 @@
 #include "wintap.h"
 #endif
 
-static const char* const optstring = "N:B:m:t:w:0:3:6:H:A:R:u:g:L:p:i:P:l:r:U:W:C:c:F:O:o:x:T:K:E:M:j:SseDdVvqkZ";
+static const char* const optstring = "N:B:m:t:w:0:3:6:H:A:R:u:G:g:L:p:i:P:l:r:U:W:C:c:F:O:o:x:T:K:E:M:j:SseDdVvqkZ";
 
 #if !defined(NO_SOCKETS) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 static uint_fast8_t maxsockets = 0;
@@ -123,6 +123,7 @@ static IniFileParameter_t IniFileParameterList[] =
 		{ "Office2010", INI_PARAM_OFFICE2010 },
 		{ "Office2013", INI_PARAM_OFFICE2013 },
 		{ "Office2016", INI_PARAM_OFFICE2016 },
+		{ "WinChinaGov", INI_PARAM_WINCHINAGOV },
 #	ifndef NO_SOCKETS
 		{ "ExitLevel", INI_PARAM_EXIT_LEVEL },
 #	endif // NO_SOCKETS
@@ -274,6 +275,7 @@ static __noreturn void usage()
 		"  -0 <ePID>\t\talways use <ePID> for Office2010\n"
 		"  -3 <ePID>\t\talways use <ePID> for Office2013\n"
 		"  -6 <ePID>\t\talways use <ePID> for Office2016\n"
+		"  -G <ePID>\t\talways use <ePID> for Win China Gov\n"
 		"  -H <HwId>\t\talways use hardware Id <HwId>\n"
 #		endif // NO_CL_PIDS
 #		if !defined(_WIN32) && !defined(NO_USER_SWITCH)
@@ -404,9 +406,9 @@ __pure static BOOL getTimeSpanFromIniFile(DWORD* result, const char *const restr
 #endif // NO_INI_FILE
 
 
-__pure static DWORD getTimeSpanFromCommandLine(const char *const restrict optarg, const char optchar)
+__pure static DWORD getTimeSpanFromCommandLine(const char *const restrict arg, const char optchar)
 {
-	DWORD val = timeSpanString2Minutes(optarg);
+	DWORD val = timeSpanString2Minutes(arg);
 
 	if (!val)
 	{
@@ -551,6 +553,11 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 	case INI_PARAM_OFFICE2016:
 		setEpidFromIniFileLine(&s, EPID_INDEX_OFFICE2016);
 		setHwIdFromIniFileLine(&s, EPID_INDEX_OFFICE2016);
+		break;
+
+	case INI_PARAM_WINCHINAGOV:
+		setEpidFromIniFileLine(&s, EPID_INDEX_WINCHINAGOV);
+		setHwIdFromIniFileLine(&s, EPID_INDEX_WINCHINAGOV);
 		break;
 
 #	ifndef NO_TAP
@@ -1050,14 +1057,14 @@ static DWORD daemonizeAndSetSignalAction()
 // Workaround for Cygwin fork problem (only affects cygwin processes that are Windows services)
 // Best is to compile for Cygwin with threads. fork() is slow and unreliable on Cygwin
 #if !defined(NO_INI_FILE) || !defined(NO_LOG) || !defined(NO_CL_PIDS) || !defined(NO_EXTERNAL_DATA)
-__pure static char* getCommandLineArg(char *const restrict optarg)
+__pure static char* getCommandLineArg(char *const restrict arg)
 {
 #	if !__CYGWIN__ || defined(USE_THREADS) || defined(NO_SOCKETS)
-	return optarg;
+	return arg;
 #	else
-	if (!IsNTService) return optarg;
+	if (!IsNTService) return arg;
 
-	return vlmcsd_strdup(optarg);
+	return vlmcsd_strdup(arg);
 #	endif
 }
 #endif // !defined(NO_INI_FILE) || !defined(NO_LOG) || !defined(NO_CL_PIDS) || !defined(NO_EXTERNAL_DATA)
@@ -1118,6 +1125,13 @@ static void parseGeneralArguments() {
 #		endif // NO_LOG
 		break;
 
+	case 'G':
+		KmsResponseParameters[EPID_INDEX_WINCHINAGOV].Epid = getCommandLineArg(optarg);
+#		ifndef NO_LOG
+		KmsResponseParameters[EPID_INDEX_WINCHINAGOV].EpidSource = "command line";
+#		endif // NO_LOG
+		break;
+
 	case 'H':
 		HwId = (BYTE*)vlmcsd_malloc(sizeof(((RESPONSE_V6 *)0)->HwId));
 		hex2bin(HwId, optarg, sizeof(((RESPONSE_V6 *)0)->HwId));
@@ -1125,6 +1139,7 @@ static void parseGeneralArguments() {
 		KmsResponseParameters[EPID_INDEX_WINDOWS].HwId =
 			KmsResponseParameters[EPID_INDEX_OFFICE2010].HwId =
 			KmsResponseParameters[EPID_INDEX_OFFICE2013].HwId =
+			KmsResponseParameters[EPID_INDEX_WINCHINAGOV].HwId =
 			KmsResponseParameters[EPID_INDEX_OFFICE2016].HwId = HwId;
 		break;
 
@@ -1146,7 +1161,7 @@ static void parseGeneralArguments() {
 
 	case 'x':
 		ignoreIniFileParameter(INI_PARAM_EXIT_LEVEL);
-		ExitLevel = getOptionArgumentInt((char)o, 0, 1);
+		ExitLevel = (int_fast8_t)getOptionArgumentInt((char)o, 0, 1);
 		break;
 
 	case 'P':
@@ -1581,7 +1596,7 @@ int setupListeningSockets()
 	char** privateIPList = NULL;
 	int numPrivateIPs = 0;
 	if (PublicIPProtectionLevel & 1) getPrivateIPAddresses(&numPrivateIPs, &privateIPList);
-	uint_fast8_t allocsockets = maxsockets ? (maxsockets + numPrivateIPs) : ((PublicIPProtectionLevel & 1) ? numPrivateIPs : 2);
+	uint_fast8_t allocsockets = (uint_fast8_t)(maxsockets ? (maxsockets + numPrivateIPs) : ((PublicIPProtectionLevel & 1) ? numPrivateIPs : 2));
 #	else // !HAVE_GETIFADDR
 	uint_fast8_t allocsockets = maxsockets ? maxsockets : 2;
 #	endif // !HAVE_GETIFADDR

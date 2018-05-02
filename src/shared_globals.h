@@ -48,7 +48,7 @@
 #include "types.h"
 #include "kms.h"
 
-#define MIN_CSVLK 4
+#define MIN_CSVLK 5
 typedef struct
 {
 	const char* Epid;

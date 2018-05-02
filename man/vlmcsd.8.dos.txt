@@ -36,7 +36,7 @@ DESCRIPTION
        client on stdin that wants to be activated.
 
        All  options  that control setting up listening sockets will be ignored
-       when in inetd mode. The sockets will be set up by your internet  super‐
+       when in inetd mode. The sockets will be set up by your internet  super-
        server. You also cannot limit the number of simultanous clients (option
        -m). You need to configure the limit in your internet superserver.
 
@@ -49,14 +49,14 @@ DESCRIPTION
 
               EPID  Randomization  Level  1  (option  -r1)  works like Level 2
               (-r2). You may want  to  use  Level  0  (-r0)  or  custom  EPIDs
-              (options -w, -0, -3 and -6) instead.
+              (options -w, -G, -0, -3 and -6) instead.
 
 
 OPTIONS
        Since vlmcsd can be configured at compile time, some options may not be
        available on your system.
 
-       All options that do no require an argument may be combined with a  sin‐
+       All options that do no require an argument may be combined with a  sin-
        gle dash, for instance "vlmcsd -D -e" is identical to "vlmcsd -De". For
        all options that require an argument a space between the option and the
        option  argument  is  optional. Thus "vlmcsd -r 2" and "vlmcsd -r2" are
@@ -67,7 +67,7 @@ OPTIONS
               Displays help.
 
 
-       -V     Displays extended version information. This  includes  the  com‐
+       -V     Displays extended version information. This  includes  the  com-
               piler  used  to  build  vlmcsd,  the intended platform and flags
               (compile time options) to build vlmcsd. If you have  the  source
               code of vlmcsd, you can type make help (or gmake help on systems
@@ -103,7 +103,7 @@ OPTIONS
               Sets  the level of protection against activations from public IP
               addresses. The default is -o0 for no protection.
 
-              -o1 causes vlmcsd not to listen on all IP addresses but on  pri‐
+              -o1 causes vlmcsd not to listen on all IP addresses but on  pri-
               vate  IP  addresses  only.  IPv4  addresses in the 100.64.0.0/10
               range (see RFC6598) are not treated as private since they can be
               reached from other users of your ISP. Private IPv4 addresses are
@@ -129,7 +129,7 @@ OPTIONS
               a  single  byte  sent over the connection. This protects against
               clients with public IP addresses even if NAT port forwarding  is
               used.  While  -o2  offers a higher level of protection than -o1,
-              the client sees that the KMS TCP port (1688 by default) is actu‐
+              the client sees that the KMS TCP port (1688 by default) is actu-
               ally accepting connections.
 
               If  vlmcsd  is  compiled  to use MS RPC, -o2 can only offer very
@@ -153,12 +153,12 @@ OPTIONS
 
               -o1 (and thus -o3) is not (yet) available in some scenarios:
 
-                   FreeBSD: There is a longtime unfixed bug ⟨https://
-                   bugs.freebsd.org/bugzilla/show_bug.cgi?id=178881⟩   in  the
-                   32-bit ABI of the 64-bit kernel. If you have a 64-bit Free‐
+                   FreeBSD: There is a longtime unfixed bug <https://
+                   bugs.freebsd.org/bugzilla/show_bug.cgi?id=178881>   in  the
+                   32-bit ABI of the 64-bit kernel. If you have a 64-bit Free-
                    BSD  kernel,  you  must run the 64-bit version of vlmcsd if
                    you use -o1 or -o3. The  32-bit  version  causes  undefined
-                   behavior  up  to crashing vlmcsd. Other BSDs (NetBSD, Open‐
+                   behavior  up  to crashing vlmcsd. Other BSDs (NetBSD, Open-
                    BSD, Dragonfly and Mac OS X) work correctly.
 
                    If vlmcsd was started by an  internet  superserver  or  was
@@ -168,7 +168,7 @@ OPTIONS
 
        -P port
               Use TCP port for  all  subsequent  -L  statements  that  do  not
-              include an optional port. If you use -P and -L, -P must be spec‐
+              include an optional port. If you use -P and -L, -P must be spec-
               ified before -L.
 
 
@@ -178,18 +178,18 @@ OPTIONS
               to the system. This allows  product  activation  using  a  local
               instance  of  vlmcsd.  This feature is only available in Windows
               and Cygwin builds of vlmcsd since it is not of any use on  other
-              operating  systems. Compatible VPN adapters are Tap-windows ver‐
+              operating  systems. Compatible VPN adapters are Tap-windows ver-
               sion 8.2  or  higher  (from  OpenVPN)  and  the  TeamViewer  VPN
               adapter.  There  are  two  special  vpn-adapter-names.  A single
-              period (.) instructs vlmcsd to use the first available  compati‐
+              period (.) instructs vlmcsd to use the first available  compati-
               ble  VPN  adapter.  A  single dash (-) disables the use of a VPN
               adapter if one has been configured in  vlmcsd.ini(5).  The  vpn-
-              adapter-name is not case-sensitive. If the vpn-adapter-name con‐
+              adapter-name is not case-sensitive. If the vpn-adapter-name con-
               tains spaces (e.g. Ethernet 3), you must enclose it in quotes.
 
               The default ipv4-address is 10.10.10.9 and the default cidr-mask
               is  30.  If  you  are using the default values, your VPN adapter
-              uses an IPv4 address of 10.10.10.9 and you can set your  activa‐
+              uses an IPv4 address of 10.10.10.9 and you can set your  activa-
               tion  client  to  use  the  easy to remember address 10.10.10.10
               (e.g.   slmgr   /skms   10.10.10.10    or    cscript    ospp.vbs
               /sethst:10.10.10.10).
@@ -204,7 +204,7 @@ OPTIONS
               IPv4 configuration manually anyway, the  IPv4  address  and  the
               subnet  mask  must  match the -O parameter. It is safe leave the
               IPv4 configuration to automatic (DHCP). vlmcsd will wait  up  to
-              four seconds for the DHCP configuration to complete before bind‐
+              four seconds for the DHCP configuration to complete before bind-
               ing to and listenin on any interfaces.
 
               You should be aware that only one program can use a VPN  adapter
@@ -212,13 +212,13 @@ OPTIONS
               you will not be able to use the VPN  feature  of  TeamViewer  as
               long  as  vlmcsd  is  running.  The  same applies to OpenVPN TAP
               adapters that are in use by other programs (for example OpenVPN,
-              QEMU,  Ratiborus  VM,  aiccu,  etc.). The best way to avoid con‐
+              QEMU,  Ratiborus  VM,  aiccu,  etc.). The best way to avoid con-
               flicts is to install Tap-Windows from OpenVPN, cd to  C:\Program
-              Files\TAP-Windows\bin  and  run  addtap.bat  to install an addi‐
+              Files\TAP-Windows\bin  and  run  addtap.bat  to install an addi-
               tional TAP adapter. Go to "Network Connections" and  rename  the
               new adapter to "vlmcsd" and specify -O vlmcsd to use it.
 
-              Example: -O "Ethernet 7"=192.168.123.1/24 (uses VPN adapter Eth‐
+              Example: -O "Ethernet 7"=192.168.123.1/24 (uses VPN adapter Eth-
               ernet 7 with IPv4 address 192.168.123.1 and  have  192.168.123.2
               to  192.168.123.254  as additional local (but apparently remote)
               IPv4 addresses.
@@ -227,7 +227,7 @@ OPTIONS
        -x0 and -x1
               Controls under what circumstances vlmcsd will  exit.  Using  the
               default  of  -x0  vlmcsd  stays active as long as it can perform
-              some useful operations. If vlmcsd is run by any form of a watch‐
+              some useful operations. If vlmcsd is run by any form of a watch-
               dog,  e.g.  NT  service  manager  (Windows),  systemd (Linux) or
               launchd (Mac OS / iOS), it may be desirable to  end  vlmcsd  and
               let  the  watchdog  restart  it. This is especially true if some
@@ -277,12 +277,12 @@ OPTIONS
 
 
        -t seconds
-              Timeout  the  TCP  connection with the client after seconds sec‐
+              Timeout  the  TCP  connection with the client after seconds sec-
               onds. After sending an activation request.  RPC  keeps  the  TCP
-              connection for a while. The default is 30 seconds. You may spec‐
+              connection for a while. The default is 30 seconds. You may spec-
               ify a shorter period to free ressources on your  device  faster.
               This  is  useful  for devices with limited main memory or if you
-              used -m to limit the concurrent clients that may request activa‐
+              used -m to limit the concurrent clients that may request activa-
               tion.  Microsoft  RPC  clients  disconnect  after  30 seconds by
               default. Setting seconds to a greater value does not  make  much
               sense.
@@ -293,7 +293,7 @@ OPTIONS
               This is useful for devices with limited ressources or if you are
               experiencing  DoS  attacks  that  spawn  thousands of threads or
               forked processes. If additional clients connect to vlmcsd,  they
-              need  to  wait until another client disconnects. If you set con‐
+              need  to  wait until another client disconnects. If you set con-
               current-clients to a small value ( <10 ), you should also select
               a  reasonable  timeout of 2 or 3 seconds with -t. The default is
               no limit.
@@ -317,7 +317,7 @@ OPTIONS
               Disables (-N0) or enables (-N1) the use of  the  NDR64  transfer
               syntax  in  the  RPC  protocol. Unlike Microsoft vlmcsd supports
               NDR64 on 32-bit operating systems. Microsoft introduced NDR64 in
-              Windows  Vista  but their KMS servers started using it with Win‐
+              Windows  Vista  but their KMS servers started using it with Win-
               dows 8. Thus if you choose  random  ePIDs,  vlmcsd  will  select
               ePIDs  with  build numbers 9200 and 9600 if you enable NDR64 and
               build numbers 6002 and 7601 if you disable NDR64. The default is
@@ -326,10 +326,10 @@ OPTIONS
 
        -B0 and -B1
               Disables  (-B0)  or  enables (-B1) bind time feature negotiation
-              (BTFN) in the RPC protocol. All Windows operating systems start‐
-              ing  with Vista support BTFN and try to negotiate it when initi‐
+              (BTFN) in the RPC protocol. All Windows operating systems start-
+              ing  with Vista support BTFN and try to negotiate it when initi-
               ating an RPC connection. Thus consider turning it off as a debug
-              / troubleshooting feature only. Some older firewalls that selec‐
+              / troubleshooting feature only. Some older firewalls that selec-
               tively block or redirect RPC traffic may get confused when  they
               detect NDR64 or BTFN.
 
@@ -343,7 +343,7 @@ OPTIONS
 
               If  you use the special filename "syslog", vlmcsd uses syslog(3)
               for logging. If your system has  no  syslog  service  (/dev/log)
-              installed,  logging  output will go to /dev/console. Syslog log‐
+              installed,  logging  output will go to /dev/console. Syslog log-
               ging is not available in the native Windows version. The  Cygwin
               version does support syslog logging.
 
@@ -351,7 +351,7 @@ OPTIONS
        -T0 and -T1
               Disable  (-T0) or enable (-T1) the inclusion of date and time in
               each line of the log. The default is -T1. -T0 is useful  if  you
-              log  to  stdout(3) which is redirected to another logging mecha‐
+              log  to  stdout(3) which is redirected to another logging mecha-
               nism that already includes date and  time  in  its  output,  for
               instance  systemd-journald(8).  If  you log to syslog(3), -T1 is
               ignored and date and time will never be included in  the  output
@@ -376,15 +376,15 @@ OPTIONS
        -v     Use verbose logging. Logs every parameter of  the  base  request
               and  the  base response. It also logs the HWID of the KMS server
               if KMS protocol version 6 is used. This  option  is  mainly  for
-              debugging  purposes.  It only has an effect if some form of log‐
+              debugging  purposes.  It only has an effect if some form of log-
               ging is used. Thus -v does not make sense if not used  with  -l,
               -e or -f.
 
 
-       -q     Do  not use verbose logging. This is actually the default behav‐
+       -q     Do  not use verbose logging. This is actually the default behav-
               ior. It only makes sense if you use vlmcsd with an ini file (see
               -i  and  vlmcsd.ini(5)).  If  the  ini  file  contains  the line
-              "LogVerbose = true" you can use -q to restore the default behav‐
+              "LogVerbose = true" you can use -q to restore the default behav-
               ior.
 
 
@@ -434,6 +434,12 @@ OPTIONS
               specified, -r is disregarded for Office 2016.
 
 
+       -G ePID
+              Use  ePID  as Windows China Government ePID. If specified, -r is
+              disregarded for Windows China  Government  Editions  (Enterprise
+              G/GN).
+
+
        -H HwId
               Use  HwId  for  all products. All HWIDs in the ini file (see -i)
               will not be used. In an ini file you can specify a seperate HWID
@@ -451,7 +457,7 @@ OPTIONS
 
 
        -i filename
-              Use  configuration file (aka ini file) filename. Most configura‐
+              Use  configuration file (aka ini file) filename. Most configura-
               tion parameters can be set either via the command line or an ini
               file.  The command line always has precedence over configuration
               items in the ini file. See vlmcsd.ini(5) for the format  of  the
@@ -465,7 +471,7 @@ OPTIONS
        -j filename
               Use  KMS data file filename. By default vlmcsd only contains the
               minimum product data that is required to perform all  operations
-              correctly.  You  may use a more complete KMS data file that con‐
+              correctly.  You  may use a more complete KMS data file that con-
               tains all detailed product names. This is especially  useful  if
               you are logging KMS requests. If you don't log, there is no need
               to load an external KMS data file.
@@ -506,8 +512,8 @@ OPTIONS
               more than one activation request over the same  TCP  connection.
               This  is  simply  due  to the fact that vlmcsd is started upon a
               connection request and does not stay in memory after servicing a
-              KMS request. Consider using -r0 or -w, -0, -3 and -6 when start‐
-              ing vlmcsd by an internet superserver.
+              KMS  request.  Consider  using -r0 or -w, -G, -0, -3 and -6 when
+              starting vlmcsd by an internet superserver.
 
               -r2 behaves like most other KMS  server  emulators  with  random
               support  and  generates  a new random ePID on every request. -r2
@@ -526,8 +532,8 @@ OPTIONS
               by .NET Framework 4.0. This may lead to a  locale  id  which  is
               unlikely to occur in your country, for instance 2155 for "Quecha
               - Ecuador". You may want to select the locale id of your country
-              instead. See MSDN ⟨http://msdn.microsoft.com/en-us/goglobal/
-              bb964664.aspx⟩ for a list of valid LCIDs. Please note that  some
+              instead. See MSDN <http://msdn.microsoft.com/en-us/goglobal/
+              bb964664.aspx> for a list of valid LCIDs. Please note that  some
               of them are not recognized by .NET Framework 4.0.
 
               Most  other  KMS  emulators  use a fixed LCID of 1033 (English -
@@ -570,29 +576,29 @@ OPTIONS
 
        -M0 and -M1
               Disables (-M0) or enables (-M1) maintaining  a  list  of  client
-              machine  IDs  (CMIDs). The default is -M0. -M1 is useful to pre‐
+              machine  IDs  (CMIDs). The default is -M0. -M1 is useful to pre-
               vent emulator  detection.  By  maintaing  a  CMID  list,  vlmcsd
-              reports current active clients exactly like a genuine KMS emula‐
+              reports current active clients exactly like a genuine KMS emula-
               tor. This includes bug compatibility to the extent that you  can
-              permanently  kill  a  genuine  KMS emulator by sending an "over‐
+              permanently  kill  a  genuine  KMS emulator by sending an "over-
               charge request" with a required client count of 376 or more  and
               then  request  activation  for  671 clients. vlmcsd can be reset
               from this condition by restarting it. If  -M0  is  used,  vlmcsd
               reports current active clients as good as possible. If no client
-              sends an "overcharge request", it is not possible to detect vlm‐
+              sends an "overcharge request", it is not possible to detect vlm-
               csd  as  an  emulator with -M0. -M1 requires the allocation of a
               buffer that is about 50 kB in size. On hardware with few  memory
               resources use it only if you really need it.
 
               If  you start vlmcsd from an internet superserver, -M1 cannot be
-              used. Since vlmcsd exits after each activation, it cannot  main‐
+              used. Since vlmcsd exits after each activation, it cannot  main-
               tain any state in memory.
 
 
        -E0 and -E1
               These options are ignored if you do not also specify -M1. If you
               use -E0 (the default), vlmcsd starts up as a fully "charged" KMS
-              server. Clients activate immediately. -E1 lets you start up vlm‐
+              server. Clients activate immediately. -E1 lets you start up vlm-
               csd with an empty CMID list.  Activation  will  start  when  the
               required  minimum  clients  (25  for Windows Client OSses, 5 for
               Windows Server OSses and Office) have registered  with  the  KMS
@@ -609,7 +615,7 @@ OPTIONS
        -R renewal-interval
               Instructs clients to renew  activation  every  renewal-interval.
               The renewal-interval is a number optionally immediately followed
-              by a letter indicating the unit. Valid unit letters are s  (sec‐
+              by a letter indicating the unit. Valid unit letters are s  (sec-
               onds), m (minutes), h (hours), d (days) and w (weeks). If you do
               not specify a letter, minutes is assumed.
 
@@ -623,14 +629,14 @@ OPTIONS
               before your activation expires (usually 180 days).
 
               Even  though  you  can  specify seconds, the granularity of this
-              option is 1 minute. Seconds are rounded down to the next  multi‐
+              option is 1 minute. Seconds are rounded down to the next  multi-
               ple of 60.
 
 
        -A activation-interval
               Instructs  clients to retry activation every activation-interval
               if it was unsuccessful, e.g. because  it  could  not  reach  the
-              server.  The default is 120 (identical to 2h). activation-inter‐
+              server.  The default is 120 (identical to 2h). activation-inter-
               val follows the  same  syntax  as  renewal-interval  in  the  -R
               option.
 
@@ -639,7 +645,7 @@ OPTIONS
               with the native Windows version  and  Cygwin.  Combine  -s  with
               other  command  line  options.  These will be in effect when you
               start the service. The service  automatically  starts  when  you
-              reboot  your machine. To start it manually, type "net start vlm‐
+              reboot  your machine. To start it manually, type "net start vlm-
               csd".
 
               If you use Cygwin, you  must  include  your  Cygwin  system  DLL
@@ -656,35 +662,35 @@ OPTIONS
               on your system.
 
 
-       -S     Uninstalls  the  vlmcsd service. Works only with the native Win‐
+       -S     Uninstalls  the  vlmcsd service. Works only with the native Win-
               dows version and Cygwin. All other options will  be  ignored  if
               you include -S in the command line.
 
 
        -U [domain\]username
-              Can  only be used together with -s. Starts the service as a dif‐
+              Can  only be used together with -s. Starts the service as a dif-
               ferent user than the local SYSTEM account. This is used  to  run
               the  service  under  an account with low privileges. If you omit
               the domain, an account from the local computer will be used.
 
               You may use "NT AUTHORITY\NetworkService". This is a pseudo user
-              with  low  privileges.  You may also use "NT AUTHORITY\LocalSer‐
-              vice" which has more privileges but these are of no use for run‐
+              with  low  privileges.  You may also use "NT AUTHORITY\LocalSer-
+              vice" which has more privileges but these are of no use for run-
               ning vlmcsd.
 
-              Make sure that the user you specify has at least execute permis‐
+              Make sure that the user you specify has at least execute permis-
               sion for your executable. "NT AUTHORITY\NetworkService" normally
               has no permission to run binaries from your home directory.
 
               For  your convenience you can use the special username "/l" as a
               shortcut  for  "NT  AUTHORITY\LocalService"  and  "/n"  for  "NT
-              AUTHORITY\NetworkService".  "vlmcsd -s -U /n"  installs the ser‐
+              AUTHORITY\NetworkService".  "vlmcsd -s -U /n"  installs the ser-
               vice to run as "NT AUTHORITY\NetworkService".
 
 
        -W password
               Can only be used together with -s. Specifies a password for  the
-              corresponding  username  you  use  with  -U. SYSTEM, "NT AUTHOR‐
+              corresponding  username  you  use  with  -U. SYSTEM, "NT AUTHOR-
               ITY\NetworkService", "NT AUTHORITY\LocalService" do not  require
               a password.
 
@@ -698,7 +704,7 @@ SIGNALS
 
 
        SIGTERM, SIGINT
-              These  signals cause vlmcsd to exit gracefully. All global sema‐
+              These  signals cause vlmcsd to exit gracefully. All global sema-
               phores and shared memory pages will be released,  the  pid  file
               will  be  unlinked  (deleted)  and  a  shutdown  message will be
               logged.
@@ -707,7 +713,7 @@ SIGNALS
        SIGHUP Causes vlmcsd to be restarted completely. This is useful if  you
               started  vlmcsd  with  an  ini file. You can modify the ini file
               while vlmcsd is running and then sending SIGHUP, e.g. by  typing
-              "killall  -SIGHUP  vlmcsd"  or  "kill -SIGHUP `cat /var/run/vlm‐
+              "killall  -SIGHUP  vlmcsd"  or  "kill -SIGHUP `cat /var/run/vlm-
               csd.pid`".
 
               The SIGHUP handler has been implemented relatively simple. It is
@@ -715,18 +721,18 @@ SIGNALS
               immediately with the following exceptions:
 
 
-              —  The new process does not get a new process id.
+              -- The new process does not get a new process id.
 
-              —  If you used a pid file,  it  is  not  deleted  and  recreated
+              -- If you used a pid file,  it  is  not  deleted  and  recreated
                  because the process id stays the same.
 
-              —  If  you  used  the  'user' and/or 'group' directive in an ini
+              -- If  you  used  the  'user' and/or 'group' directive in an ini
                  file these are ignored. This is because once you switched  to
-                 lower privileged users and groups, there is no way back. Any‐
+                 lower privileged users and groups, there is no way back. Any-
                  thing else would be a severe security flaw in the OS.
 
        Signaling is not available in the native Windows  version  and  in  the
-       Cygwin version when it runs as Windows service.
+       Cygwin version when vlmcsd runs as a Windows service.
 
 
 SUPPORTED OPERATING SYSTEMS
@@ -738,12 +744,12 @@ SUPPORTED OPERATING SYSTEMS
 
 
 SUPPORTED PRODUCTS
-       vlmcsd  can answer activation requests for the following products: Win‐
-       dows Vista, Windows 7, Windows 8, Windows 8.1, Windows 10 (up to 1607),
-       Windows  Server 2008, Windows Server 2008 R2, Windows Server 2012, Win‐
+       vlmcsd  can answer activation requests for the following products: Win-
+       dows Vista, Windows 7, Windows 8, Windows 8.1, Windows 10 (up to 1703),
+       Windows  Server 2008, Windows Server 2008 R2, Windows Server 2012, Win-
        dows Server 2012 R2, Windows Server 2016, Office  2010,  Project  2010,
        Visio 2010, Office 2013, Project 2013, Visio 2013, Office 2016, Project
-       2016, Visio 2016. Newer version may work as long as  the  KMS  protocol
+       2016, Visio 2016. Newer products may work as long as the  KMS  protocol
        does  not  change.  A  complete list of fully supported products can be
        obtained using the -x option of vlmcs(1).
 
@@ -762,13 +768,13 @@ EXAMPLES
 
 
        vlmcsd -l /var/log/vlmcsd.log
-              Starts vlmcsd as a daemon and logs everything  to  /var/log/vlm‐
+              Starts vlmcsd as a daemon and logs everything  to  /var/log/vlm-
               csd.log.
 
 
        vlmcsd -L 192.168.1.17
               Starts vlmcsd as a daemon and listens on IP address 192.168.1.17
-              only. This is useful for routers that have a public and  a  pri‐
+              only. This is useful for routers that have a public and  a  pri-
               vate IP address to prevent your KMS server from becoming public.
 
 
@@ -788,7 +794,7 @@ AUTHOR
 
 
 CREDITS
-       Thanks to CODYQX4, deagles, eIcn,  mikmik38,  nosferati87,  qad,  Rati‐
+       Thanks to CODYQX4, deagles, eIcn,  mikmik38,  nosferati87,  qad,  Rati-
        borus, ...
 
 
@@ -797,4 +803,4 @@ SEE ALSO
 
 
 
-Hotbird64                        January 2017                        VLMCSD(8)
+Hotbird64                          June 2017                         VLMCSD(8)

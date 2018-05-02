@@ -91,13 +91,13 @@ static const uint16_t LcidList[] = {
 
 
 #ifdef _PEDANTIC
-uint16_t IsValidLcid(const uint16_t Lcid)
+uint16_t IsValidLcid(const uint16_t lcid)
 {
 	uint16_t i;
 
 	for (i = 0; i < vlmcsd_countof(LcidList); i++)
 	{
-		if (Lcid == LcidList[i]) return Lcid;
+		if (lcid == LcidList[i]) return lcid;
 	}
 
 	return 0;
@@ -297,7 +297,7 @@ static void generateRandomPid(int index, char *const szPid, int serverType, int1
 
 #	define minTime ((time_t)1470175200) /* Release Date Win 2016 */
 
-	time_t maxTime, kmsTime;
+	time_t maxTime;
 	time(&maxTime);
 
 #	ifndef BUILD_TIME
@@ -307,10 +307,8 @@ static void generateRandomPid(int index, char *const szPid, int serverType, int1
 	if (maxTime < (time_t)BUILD_TIME) // Just in case the system time is < 10/17/2013 1:00 pm
 		maxTime = (time_t)BUILD_TIME;
 
-	kmsTime = (rand32() % (maxTime - minTime)) + minTime;
-
-	struct tm *pidTime;
-	pidTime = gmtime(&kmsTime);
+	time_t kmsTime = (rand32() % (maxTime - minTime)) + minTime;
+	struct tm *pidTime = gmtime(&kmsTime);
 
 	strcat(szPid, itoc(numberBuffer, pidTime->tm_yday, 3));
 	strcat(szPid, itoc(numberBuffer, pidTime->tm_year + 1900, 4));
@@ -516,7 +514,7 @@ long long int llabs(long long int j);
  * Creates the unencrypted base response
  */
 #ifndef IS_LIBRARY
-static HRESULT __stdcall CreateResponseBaseCallback(const REQUEST *const baseRequest, RESPONSE *const baseResponse, BYTE *const hwId, const char* const ipstr)
+static HRESULT __stdcall CreateResponseBaseCallback(const REQUEST *const baseRequest, RESPONSE *const baseResponse, BYTE *const hwId, const char* const ipstr_unused)
 {
 	const char* EpidSource;
 #ifndef NO_LOG
@@ -730,8 +728,7 @@ __pure static uint64_t TimestampInterval(void *ts)
 static int_fast8_t CreateV6Hmac(BYTE *const encrypt_start, const size_t encryptSize, int_fast8_t tolerance)
 {
 	BYTE hash[32];
-#	define halfHashSize (sizeof(hash) >> 1)
-	uint64_t timeSlot;
+	const uint8_t halfHashSize = sizeof(hash) >> 1;
 	BYTE *responseEnd = encrypt_start + encryptSize;
 
 	// This is the time from the response
@@ -742,7 +739,7 @@ static int_fast8_t CreateV6Hmac(BYTE *const encrypt_start, const size_t encryptS
 	// When generating a response tolerance must be 0.
 	// If verifying the hash, try tolerance -1, 0 and +1. One of them must match.
 
-	timeSlot = LE64((GET_UA64LE(ft) / TIME_C1 * TIME_C2 + TIME_C3) + (tolerance * TIME_C1));
+	uint64_t timeSlot = LE64((GET_UA64LE(ft) / TIME_C1 * TIME_C2 + TIME_C3) + (tolerance * TIME_C1));
 
 	// The time slot is hashed with SHA256 so it is not so obvious that it is time
 	Sha256((BYTE*)&timeSlot, sizeof(timeSlot), hash);
@@ -761,7 +758,6 @@ static int_fast8_t CreateV6Hmac(BYTE *const encrypt_start, const size_t encryptS
 
 	memcpy(responseEnd - sizeof(((RESPONSE_V6*)0)->HMAC), hash + halfHashSize, halfHashSize);
 	return TRUE;
-#	undef halfHashSize
 }
 
 
@@ -782,7 +778,7 @@ size_t CreateResponseV6(REQUEST_V6 *restrict request_v6, BYTE *const responseBuf
 
 #ifdef _DEBUG
 	// ReSharper disable once CppEntityNeverUsed
-	RESPONSE_V6_DEBUG* xxx = (RESPONSE_V6_DEBUG*)responseBuffer;
+	RESPONSE_V6_DEBUG* xxx_unused = (RESPONSE_V6_DEBUG*)responseBuffer;
 #endif
 
 	static const BYTE DefaultHwid[8] = { HWID };
@@ -955,7 +951,7 @@ RESPONSE_RESULT DecryptResponseV4(RESPONSE_V4* response_v4, const int responseSi
 }
 
 
-static RESPONSE_RESULT VerifyResponseV6(RESPONSE_RESULT result, const AesCtx* Ctx, RESPONSE_V6* response_v6, REQUEST_V6* request_v6, BYTE* const rawResponse)
+static RESPONSE_RESULT VerifyResponseV6(RESPONSE_RESULT result, RESPONSE_V6* response_v6, REQUEST_V6* request_v6, BYTE* const rawResponse)
 {
 	// Check IVs
 	result.IVsOK = !memcmp // In V6 the XoredIV is actually the request IV
@@ -1029,7 +1025,7 @@ static RESPONSE_RESULT VerifyResponseV5(RESPONSE_RESULT result, REQUEST_V5* requ
 RESPONSE_RESULT DecryptResponseV6(RESPONSE_V6* response_v6, int responseSize, BYTE* const response, const BYTE* const rawRequest, BYTE* hwid)
 {
 	RESPONSE_RESULT result;
-	result.mask = ~0; // Set all bits in the results mask to 1. Assume success first.
+	result.mask = (DWORD)~0; // Set all bits in the results mask to 1. Assume success first.
 	result.effectiveResponseSize = responseSize;
 
 	int copySize1 =
@@ -1126,7 +1122,7 @@ RESPONSE_RESULT DecryptResponseV6(RESPONSE_V6* response_v6, int responseSize, BY
 		memcpy(hwid, response_v6->HwId, sizeof(response_v6->HwId));
 
 		// Verify the V6 specific part of the response
-		result = VerifyResponseV6(result, &Ctx, response_v6, request_v6, response);
+		result = VerifyResponseV6(result, response_v6, request_v6, response);
 	}
 	else // V5
 	{

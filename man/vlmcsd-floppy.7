@@ -1,5 +1,5 @@
 .mso www.tmac
-.TH "VLMCSD-FLOPPY" 7 "October 2016" "Hotbird64" "KMS Activation Manual"
+.TH "VLMCSD-FLOPPY" 7 "May 2017" "Hotbird64" "KMS Activation Manual"
 .LO 8
 
 .SH NAME
@@ -102,7 +102,13 @@ Defines the ePID that is used for Windows activations. If you ommit this paramet
 Defines the ePID that is used for Office 2010 activations. If you ommit this parameter, \fBvlmcsd\fR(8) generates a random ePID when it is started.
 
 .IP "\fBOFFICE2013=\fIepid\fR"
-Defines the ePID that is used for Office (versions 2013 and greater) activations. If you ommit this parameter, \fBvlmcsd\fR(8) generates a random ePID when it is started.
+Defines the ePID that is used for Office 2016 activations. If you ommit this parameter, \fBvlmcsd\fR(8) generates a random ePID when it is started.
+
+.IP "\fBOFFICE2016=\fIepid\fR"
+Defines the ePID that is used for Office 2016 activations. If you ommit this parameter, \fBvlmcsd\fR(8) generates a random ePID when it is started.
+
+.IP "\fBWINCHINAGOV=\fIepid\fR"
+Defines the ePID that is used for Windows China Government Edition activations (Enterprise G/GN). If you ommit this parameter, \fBvlmcsd\fR(8) generates a random ePID when it is started.
 
 .IP "\fBHWID=\fIhwid\fR"
 Defines the HwId that is sent to clients. \fIhwid\fR must be specified as 16 hex digits that are interpreted as a series of 8 bytes (big endian). Any character that is not a hex digit will be ignored. This is for better readability.

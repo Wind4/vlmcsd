@@ -63,7 +63,7 @@ WCHAR utf8_to_ucs2_char(const unsigned char *input, const unsigned char **end_pt
 {
 	*end_ptr = input;
 	if (input[0] == 0)
-		return ~0;
+		return (WCHAR)~0;
 
 	if (input[0] < 0x80) {
 		*end_ptr = input + 1;
@@ -73,7 +73,7 @@ WCHAR utf8_to_ucs2_char(const unsigned char *input, const unsigned char **end_pt
 	if ((input[0] & 0xE0) == 0xE0) {
 
 		if (input[1] == 0 || input[2] == 0)
-			return ~0;
+			return (WCHAR)~0;
 
 		*end_ptr = input + 3;
 
@@ -85,7 +85,7 @@ WCHAR utf8_to_ucs2_char(const unsigned char *input, const unsigned char **end_pt
 
 	if ((input[0] & 0xC0) == 0xC0) {
 		if (input[1] == 0)
-			return ~0;
+			return (WCHAR)~0;
 
 		*end_ptr = input + 2;
 
@@ -93,7 +93,7 @@ WCHAR utf8_to_ucs2_char(const unsigned char *input, const unsigned char **end_pt
 			LE16((input[0] & 0x1F) << 6 |
 			(input[1] & 0x3F));
 	}
-	return ~0;
+	return (WCHAR)~0;
 }
 
 // Convert one character from UCS2 to UTF-8
@@ -110,8 +110,8 @@ int ucs2_to_utf8_char(const WCHAR ucs2_le, char *utf8)
 	}
 
 	if (ucs2 >= 0x80 && ucs2 < 0x800) {
-		utf8[0] = (ucs2 >> 6) | 0xC0;
-		utf8[1] = (ucs2 & 0x3F) | 0x80;
+		utf8[0] = (char)((ucs2 >> 6) | 0xC0);
+		utf8[1] = (char)((ucs2 & 0x3F) | 0x80);
 		utf8[2] = '\0';
 		return 2;
 	}
@@ -596,13 +596,25 @@ void loadKmsData()
 			if (!InetdMode) logger("Read KMS data file %s\n", fn_data);
 #			endif // NO_LOG
 		}
+
+		if (KmsData->CsvlkCount < MIN_CSVLK)
+		{
+			printerrorf("Warning: Legacy database: Some products are missing.\n");
+		}
 	}
+
+
 #	endif // NO_EXTERNAL_DATA
 
 #	if !defined(NO_RANDOM_EPID) || !defined(NO_CL_PIDS) || !defined(NO_INI_FILE)
-	KmsResponseParameters = (KmsResponseParam_t*)realloc(KmsResponseParameters, KmsData->CsvlkCount * sizeof(KmsResponseParam_t));
-	if (!KmsResponseParameters) OutOfMemory();
-	memset(KmsResponseParameters + MIN_CSVLK, 0, (KmsData->CsvlkCount - MIN_CSVLK) * sizeof(KmsResponseParam_t));
+
+	if (KmsData->CsvlkCount > MIN_CSVLK)
+	{
+		KmsResponseParameters = (KmsResponseParam_t*)realloc(KmsResponseParameters, KmsData->CsvlkCount * sizeof(KmsResponseParam_t));
+		if (!KmsResponseParameters) OutOfMemory();
+		memset(KmsResponseParameters + MIN_CSVLK, 0, (KmsData->CsvlkCount - MIN_CSVLK) * sizeof(KmsResponseParam_t));
+	}
+
 #	endif // !defined(NO_RANDOM_EPID) || !defined(NO_CL_PIDS) || !defined(NO_INI_FILE)
 
 #	ifndef UNSAFE_DATA_LOAD

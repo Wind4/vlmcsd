@@ -258,12 +258,6 @@ typedef struct VlmcsdData
 		char* Name;
 	};
 
-	//union
-	//{
-	//	uint64_t X_EPidOffset;
-	//	char* X_EPid;
-	//};
-
 	uint8_t AppIndex;
 	uint8_t KmsIndex;
 	uint8_t ProtocolVersion;
@@ -337,6 +331,7 @@ typedef struct VlmcsdHeader
 #define EPID_INDEX_OFFICE2010 1
 #define EPID_INDEX_OFFICE2013 2
 #define EPID_INDEX_OFFICE2016 3
+#define EPID_INDEX_WINCHINAGOV 4
 
 typedef HRESULT(__stdcall *RequestCallback_t)(const REQUEST *const baseRequest, RESPONSE *const baseResponse, BYTE *const hwId, const char* const ipstr);
 
