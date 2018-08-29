@@ -20,7 +20,7 @@ cscript ospp.vbs /act
 ```
 
 ## GVLKs
-Authoritative source on Microsoft's [TechNet](https://technet.microsoft.com/en-us/library/jj612867)
+Authoritative source on Microsoft's [TechNet](https://technet.microsoft.com/en-us/library/jj612867) and [Windows Server Activation Guide](https://docs.microsoft.com/en-us/windows-server/get-started/kmsclientkeys).
 
 ### Windows 10
 | Operating system edition          | KMS Client Setup Key          |
