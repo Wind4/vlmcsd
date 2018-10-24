@@ -262,7 +262,7 @@ static int DevCtl(DWORD code, void* data, DWORD len)
 {
 	if (!DeviceIoControl(TapHandle, code, data, len, data, len, &len, NULL))
 	{
-		DWORD error = GetLastError();
+		const DWORD error = GetLastError();
 		printerrorf("Fatal: VPN adapter error: %s\n", win_strerror(error));
 		exit(error);
 	}
@@ -278,7 +278,7 @@ static DWORD WINAPI TapMirror(LPVOID data_unused)
 		DWORD bytesRead, bytesWritten;
 		if (!ReadFile(TapHandle, IpPacket, Mtu, &bytesRead, NULL)) break;
 
-		uint32_t temp = IpPacket->ip_src;
+		const uint32_t temp = IpPacket->ip_src;
 		IpPacket->ip_src = IpPacket->ip_dst;
 		IpPacket->ip_dst = temp;
 
@@ -289,7 +289,7 @@ static DWORD WINAPI TapMirror(LPVOID data_unused)
 #		endif // !defined(NO_LOG) && defined(_PEDANTIC)
 	}
 
-	DWORD error = GetLastError();
+	const DWORD error = GetLastError();
 
 #	ifndef NO_LOG
 	logger("Warning: VPN thread for device \"%s\" exiting: %s\n", ActiveTapName, win_strerror(error));

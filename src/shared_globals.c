@@ -104,7 +104,13 @@ const char *fn_exe = NULL;
 #ifndef NO_RANDOM_EPID
 int_fast8_t RandomizationLevel = 1;
 uint16_t Lcid = 0;
+uint16_t HostBuild = 0;
 #endif
+
+#if !defined(USE_MSRPC) && !defined(SIMPLE_RPC)
+uint8_t IsNDR64Defined = FALSE;
+#endif // !defined(USE_MSRPC) && !defined(SIMPLE_RPC)
+
 
 #if !defined(NO_SOCKETS) && !defined(USE_MSRPC)
 #ifdef SIMPLE_SOCKETS

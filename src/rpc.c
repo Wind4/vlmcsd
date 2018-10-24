@@ -29,7 +29,7 @@
 
 /* Forwards */
 
-static int checkRpcHeader(const RPC_HEADER *const Header, const BYTE desiredPacketType, const PRINTFUNC p);
+static int checkRpcHeader(const RPC_HEADER *const header, const BYTE desiredPacketType, const PRINTFUNC p);
 
 
 /* Data definitions */
@@ -254,7 +254,7 @@ static int rpcRequest(const RPC_REQUEST64 *const Request, RPC_RESPONSE64 *const 
 
 #	ifndef SIMPLE_RPC
 
-	WORD Ctx = LE16(Request->ContextId);
+	const WORD Ctx = LE16(Request->ContextId);
 
 	if (Ctx == *NdrCtx)
 	{
@@ -282,7 +282,7 @@ static int rpcRequest(const RPC_REQUEST64 *const Request, RPC_RESPONSE64 *const 
 
 	if (isValid)
 	{
-		uint16_t majorIndex = LE16(((WORD*)requestData)[1]) - 4;
+		const uint16_t majorIndex = LE16(((WORD*)requestData)[1]) - 4;
 		if (!((ResponseSize = _Versions[majorIndex].CreateResponse(requestData, responseData, ipstr)))) ResponseSize = 0x8007000D;
 	}
 
@@ -329,7 +329,7 @@ static int rpcRequest(const RPC_REQUEST64 *const Request, RPC_RESPONSE64 *const 
 	len += sizeof(DWORD);
 
 	// Pad zeros to 32-bit align (seems not neccassary but Windows RPC does it this way)
-	int pad = ((~len & 3) + 1) & 3;
+	const int pad = ((~len & 3) + 1) & 3;
 	memset(pRpcReturnCode + sizeof(DWORD), 0, pad);
 	len += pad;
 
@@ -348,8 +348,8 @@ static void CheckRpcBindRequest(const RPC_BIND_REQUEST *const Request, const uns
 	uint_fast8_t i, HasTransferSyntaxNDR32 = FALSE;
 	char guidBuffer1[GUID_STRING_LENGTH + 1], guidBuffer2[GUID_STRING_LENGTH + 1];
 
-	uint32_t CapCtxItems = (len - sizeof(*Request) + sizeof(Request->CtxItems)) / sizeof(Request->CtxItems);
-	DWORD NumCtxItems = LE32(Request->NumCtxItems);
+	const uint32_t CapCtxItems = (len - sizeof(*Request) + sizeof(Request->CtxItems)) / sizeof(Request->CtxItems);
+	const DWORD NumCtxItems = LE32(Request->NumCtxItems);
 
 	if (NumCtxItems < CapCtxItems) // Can't be too small because already handled by RpcBindSize
 		logger("Warning: Excess bytes in RPC bind request.\n");
@@ -410,7 +410,7 @@ static unsigned int checkRpcBindSize(const RPC_BIND_REQUEST *const Request, cons
 {
 	if (RequestSize < sizeof(RPC_BIND_REQUEST)) return FALSE;
 
-	unsigned int numCtxItems = LE32(Request->NumCtxItems);
+	const unsigned int numCtxItems = LE32(Request->NumCtxItems);
 
 	if (RequestSize < sizeof(RPC_BIND_REQUEST) - sizeof(Request->CtxItems[0]) + numCtxItems * sizeof(Request->CtxItems[0])) return FALSE;
 
@@ -432,7 +432,7 @@ static unsigned int checkRpcBindSize(const RPC_BIND_REQUEST *const Request, cons
 static int rpcBind(const RPC_BIND_REQUEST *const Request, RPC_BIND_RESPONSE* Response, const DWORD RpcAssocGroup, const SOCKET sock, WORD* NdrCtx, WORD* Ndr64Ctx, BYTE packetType, const char* const ipstr_unused)
 {
 	unsigned int i;
-	DWORD numCtxItems = LE32(Request->NumCtxItems);
+	const DWORD numCtxItems = LE32(Request->NumCtxItems);
 	int_fast8_t IsNDR64possible = FALSE;
 	uint_fast8_t portNumberSize;
 
@@ -504,7 +504,7 @@ static int rpcBind(const RPC_BIND_REQUEST *const Request, RPC_BIND_RESPONSE* Res
 		memset(&result->TransferSyntax, 0, sizeof(GUID));
 
 #		ifndef SIMPLE_RPC
-		int isInterfaceUUID = IsEqualGUID(&Request->CtxItems[i].InterfaceUUID, (GUID*)InterfaceUuid);
+		const int isInterfaceUUID = IsEqualGUID(&Request->CtxItems[i].InterfaceUUID, (GUID*)InterfaceUuid);
 		if (isInterfaceUUID) nackReason = RPC_SYNTAX_UNSUPPORTED;
 #		else // SIMPLE_RPC
 #		define isInterfaceUUID TRUE
@@ -809,7 +809,7 @@ RpcStatus rpcSendRequest(const RpcCtx sock, const BYTE *const kmsRequest, const 
 	RPC_REQUEST64 *RpcRequest;
 	RPC_RESPONSE64 _Response;
 	int status;
-	int_fast8_t useNdr64 = RpcFlags.HasNDR64 && UseClientRpcNDR64 && firstPacketSent;
+	const int_fast8_t useNdr64 = RpcFlags.HasNDR64 && UseClientRpcNDR64 && firstPacketSent;
 	size_t size = sizeof(RPC_HEADER) + (useNdr64 ? sizeof(RPC_REQUEST64) : sizeof(RPC_REQUEST)) + requestSize;
 	size_t responseSize2;
 
@@ -949,8 +949,8 @@ RpcStatus rpcSendRequest(const RpcCtx sock, const BYTE *const kmsRequest, const 
 
 		DWORD *pReturnCode;
 
-		size_t len = *responseSize + (useNdr64 ? sizeof(_Response.Ndr64) : sizeof(_Response.Ndr)) + sizeof(*pReturnCode);
-		size_t pad = ((~len & 3) + 1) & 3;
+		const size_t len = *responseSize + (useNdr64 ? sizeof(_Response.Ndr64) : sizeof(_Response.Ndr)) + sizeof(*pReturnCode);
+		const size_t pad = ((~len & 3) + 1) & 3;
 
 		if (len + pad != LE32(_Response.AllocHint))
 		{
@@ -982,7 +982,7 @@ RpcStatus rpcSendRequest(const RpcCtx sock, const BYTE *const kmsRequest, const 
 }
 
 
-static int_fast8_t IsNullGuid(BYTE* guidPtr)
+static int_fast8_t IsNullGuid(const BYTE* guidPtr)
 {
 	int_fast8_t i;
 
@@ -1005,8 +1005,8 @@ static RpcStatus rpcBindOrAlterClientContext(const RpcCtx sock, const BYTE packe
 	RPC_BIND_REQUEST *bindRequest;
 	RPC_BIND_RESPONSE *bindResponse;
 	int status;
-	WORD ctxItems = 1 + (packetType == RPC_PT_BIND_REQ ? UseClientRpcNDR64 + UseClientRpcBTFN : 0);
-	size_t rpcBindSize = (sizeof(RPC_HEADER) + sizeof(RPC_BIND_REQUEST) + (ctxItems - 1) * sizeof(bindRequest->CtxItems[0]));
+	const WORD ctxItems = 1 + (packetType == RPC_PT_BIND_REQ ? UseClientRpcNDR64 + UseClientRpcBTFN : 0);
+	const size_t rpcBindSize = (sizeof(RPC_HEADER) + sizeof(RPC_BIND_REQUEST) + (ctxItems - 1) * sizeof(bindRequest->CtxItems[0]));
 	WORD ctxIndex = 0;
 	WORD i;
 	WORD CtxBTFN = RPC_INVALID_CTX, CtxNDR64 = RPC_INVALID_CTX;

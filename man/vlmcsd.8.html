@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Sat Jun 17 00:53:29 2017 -->
+<!-- CreationDate: Sat Oct 20 09:49:39 2018 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -616,55 +616,22 @@ unprivileged user has access to these files. You can always
 log to <b>syslog</b>(3) from an unprivileged account on most
 platforms (see <b>-l</b>).</p>
 
-<p style="margin-left:11%;"><b>-w</b> <i>ePID</i></p>
+<p style="margin-left:11%;"><b>-a</b> <i>CSVLK</i> =
+<i>ePID</i> [ / <i>HwId</i> ]</p>
 
-<p style="margin-left:22%;">Use <i>ePID</i> as Windows
-ePID. If specified, <b>-r</b> is disregarded for
-Windows.</p>
-
-<p style="margin-left:11%;"><b>-0</b> <i>ePID</i></p>
-
-<p style="margin-left:22%;">Use <i>ePID</i> as Office 2010
-ePID (including Project and Visio). If specified, <b>-r</b>
-is disregarded for Office 2010.</p>
-
-<p style="margin-left:11%;"><b>-3</b> <i>ePID</i></p>
-
-<p style="margin-left:22%;">Use <i>ePID</i> as Office 2013
-ePID (including Project and Visio). If specified, <b>-r</b>
-is disregarded for Office 2013.</p>
-
-<p style="margin-left:11%;"><b>-6</b> <i>ePID</i></p>
-
-<p style="margin-left:22%;">Use <i>ePID</i> as Office 2016
-ePID (including Project and Visio). If specified, <b>-r</b>
-is disregarded for Office 2016.</p>
-
-<p style="margin-left:11%;"><b>-G</b> <i>ePID</i></p>
-
-<p style="margin-left:22%;">Use <i>ePID</i> as Windows
-China Government ePID. If specified, <b>-r</b> is
-disregarded for Windows China Government Editions
-(Enterprise G/GN).</p>
-
-<p style="margin-left:11%;"><b>-H</b> <i>HwId</i></p>
-
-<p style="margin-left:22%;">Use <i>HwId</i> for all
-products. All HWIDs in the ini file (see <b>-i</b>) will not
-be used. In an ini file you can specify a seperate HWID for
-each <i>application-guid</i>. This is not possible when
-entering a HWID from the command line.</p>
+<p style="margin-left:22%;">Use <i>ePID</i> and <i>HwId</i>
+for a specific <i>CSVLK</i>. When you use it, <b>-r</b> is
+disregarded for this <i>CSVLK</i>. If vlmcsd uses the
+default vlmcsd.kmd database, you can use the following
+<i>CSVLK</i>s: Windows, WinChinaGov, Office2010, Office2013,
+Office2016 and Office2019. The <b>-a</b> option requires
+that database version 1.6 or later is used.</p>
 
 <p style="margin-left:22%; margin-top: 1em"><i>HwId</i>
 must be specified as 16 hex digits that are interpreted as a
 series of 8 bytes (big endian). Any character that is not a
-hex digit will be ignored. This is for better readability.
-The following commands are identical:</p>
-
-<p style="margin-left:22%; margin-top: 1em">vlmcsd -H
-0123456789ABCDEF <br>
-vlmcsd -H 01:23:45:67:89:ab:cd:ef <br>
-vlmcsd -H &quot;01 23 45 67 89 AB CD EF&quot;</p>
+hex digit will be ignored. This is for better
+readability.</p>
 
 <p style="margin-left:11%;"><b>-i</b> <i>filename</i></p>
 
@@ -768,6 +735,13 @@ them are not recognized by .NET Framework 4.0.</p>
 <p style="margin-left:22%; margin-top: 1em">Most other KMS
 emulators use a fixed <i>LCID</i> of 1033 (English - US). To
 achive the same behavior in vlmcsd use <b>-C 1033</b>.</p>
+
+<p style="margin-left:11%;"><b>-H</b> <i>HostBuild</i></p>
+
+<p style="margin-left:22%;">Do not randomize the host build
+number in the ePID and use <i>HostBuild</i> instead, for
+instance 17763 for Windows Server 2019 / Windows 10
+1809.</p>
 
 <p style="margin-left:11%;"><b>-K0</b>, <b>-K1</b>,
 <b>-K2</b> and <b>-K3</b></p>
@@ -1181,8 +1155,8 @@ DougQaid.</p>
 
 
 <p style="margin-left:11%; margin-top: 1em">Thanks to
-CODYQX4, deagles, eIcn, mikmik38, nosferati87, qad,
-Ratiborus, ...</p>
+abbodi1406, CODYQX4, deagles, eIcn, mikmik38, nosferati87,
+qad, Ratiborus, ...</p>
 
 <h2>SEE ALSO
 <a name="SEE ALSO"></a>

@@ -1,0 +1,69 @@
+#!/bin/sh
+
+export VLMCSD_VERSION=$(git describe)
+export VERBOSE=3
+#export CAT=2
+
+if [ `uname -s` != "SunOS" ]; then
+  echo "This is no SunOS operating system."
+  exit 3
+fi
+
+cd "$( dirname "$0" )"
+make -C .. clean
+
+
+SOLARIS_VERSION=`uname -v`
+
+MAKEFLAGS="-Bj"
+REUSEOBJFLAGS="-j"
+
+cd ../src
+BINDIR="../bin"
+MANDIR="../man"
+
+CF="-flto=12 -fno-common -fno-exceptions -fno-stack-protector -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants -Wno-char-subscripts"
+LF="-static-libgcc -fwhole-program -Wl,--hash-style=sysv,--build-id=none,-z,norelro"
+
+export PROGRAM_NAME=$BINDIR/vlmcsd-Solaris-x64
+export CLIENT_NAME=$BINDIR/vlmcs-Solaris-x64
+export MULTI_NAME=$BINDIR/vlmcsdmulti-Solaris-x64
+
+make $MAKEFLAGS DNS_PARSER=OS CFLAGS="$CF" CC=gcc LDFLAGS="$LF" allmulti
+
+export PROGRAM_NAME=$BINDIR/vlmcsd-Solaris-x64-threads
+make $MAKEFLAGS DNS_PARSER=OS CFLAGS="$CF" CC=gcc LDFLAGS="$LF" THREADS=1 vlmcsd
+
+export PROGRAM_NAME=$BINDIR/vlmcsd-Solaris-x86
+export CLIENT_NAME=$BINDIR/vlmcs-Solaris-x86
+export MULTI_NAME=$BINDIR/vlmcsdmulti-Solaris-x86
+
+make $MAKEFLAGS DNS_PARSER=OS CFLAGS="$CF" PLATFORMFLAGS="-m32" CC=gcc LDFLAGS="$LF" allmulti
+
+export PROGRAM_NAME=$BINDIR/vlmcsd-Solaris-x86-threads
+make $MAKEFLAGS DNS_PARSER=OS CFLAGS="$CF" PLATFORMFLAGS="-m32" CC=gcc LDFLAGS="$LF" THREADS=1 vlmcsd
+
+scp -p $BINDIR/* root@ubuntu64.internal:x/binaries/Solaris/intel
+
+cd ..
+BINDIR="./bin"
+MANDIR="./man"
+
+mkdir /tmp/vlmcsd
+cp -af $MANDIR/*.1 $MANDIR/*.5 $MANDIR/*.7 $MANDIR/*.8 /tmp/vlmcsd
+xz /tmp/vlmcsd/*
+
+sudo mkdir -p /usr/local/man/man1
+sudo mkdir -p /usr/local/man/man5
+sudo mkdir -p /usr/local/man/man7
+sudo mkdir -p /usr/local/man/man8
+
+sudo cp -af /tmp/vlmcsd/*.1.xz /usr/local/man/man1
+sudo cp -af /tmp/vlmcsd/*.5.xz /usr/local/man/man5
+sudo cp -af /tmp/vlmcsd/*.7.xz /usr/local/man/man7
+sudo cp -af /tmp/vlmcsd/*.8.xz /usr/local/man/man8
+
+rm -fr /tmp/vlmcsd
+
+sudo cp -af $BINDIR/vlmcsd-Solaris-x86 /usr/local/bin/vlmcsd
+sudo cp -af $BINDIR/vlmcs-Solaris-x86 /usr/local/bin/vlmcs

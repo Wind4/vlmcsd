@@ -414,69 +414,40 @@ OPTIONS
               (see -l).
 
 
-       -w ePID
-              Use  ePID  as  Windows ePID. If specified, -r is disregarded for
-              Windows.
-
-
-       -0 ePID
-              Use ePID as Office 2010 ePID (including Project and  Visio).  If
-              specified, -r is disregarded for Office 2010.
-
-
-       -3 ePID
-              Use  ePID  as Office 2013 ePID (including Project and Visio). If
-              specified, -r is disregarded for Office 2013.
-
-
-       -6 ePID
-              Use ePID as Office 2016 ePID (including Project and  Visio).  If
-              specified, -r is disregarded for Office 2016.
-
-
-       -G ePID
-              Use  ePID  as Windows China Government ePID. If specified, -r is
-              disregarded for Windows China  Government  Editions  (Enterprise
-              G/GN).
-
-
-       -H HwId
-              Use  HwId  for  all products. All HWIDs in the ini file (see -i)
-              will not be used. In an ini file you can specify a seperate HWID
-              for  each application-guid. This is not possible when entering a
-              HWID from the command line.
+       -a CSVLK = ePID [ / HwId ]
+              Use  ePID  and HwId for a specific CSVLK. When you use it, -r is
+              disregarded for this CSVLK. If  vlmcsd  uses  the  default  vlm-
+              csd.kmd  database,  you  can  use the following CSVLKs: Windows,
+              WinChinaGov, Office2010, Office2013, Office2016 and  Office2019.
+              The  -a  option  requires  that database version 1.6 or later is
+              used.
 
               HwId must be specified as 16 hex digits that are interpreted  as
               a  series  of  8 bytes (big endian). Any character that is not a
-              hex digit will be ignored. This is for better  readability.  The
-              following commands are identical:
-
-              vlmcsd -H 0123456789ABCDEF
-              vlmcsd -H 01:23:45:67:89:ab:cd:ef
-              vlmcsd -H "01 23 45 67 89 AB CD EF"
+              hex digit will be ignored. This is for better readability.
 
 
        -i filename
-              Use  configuration file (aka ini file) filename. Most configura-
+              Use configuration file (aka ini file) filename. Most  configura-
               tion parameters can be set either via the command line or an ini
-              file.  The command line always has precedence over configuration
-              items in the ini file. See vlmcsd.ini(5) for the format  of  the
+              file. The command line always has precedence over  configuration
+              items  in  the ini file. See vlmcsd.ini(5) for the format of the
               configuration file.
 
-              If  vlmcsd has been compiled to use a default configuration file
-              (often /etc/vlmcsd.ini), you may use -i- to ignore  the  default
+              If vlmcsd has been compiled to use a default configuration  file
+              (often  /etc/vlmcsd.ini),  you may use -i- to ignore the default
               configuration file.
 
 
        -j filename
-              Use  KMS data file filename. By default vlmcsd only contains the
-              minimum product data that is required to perform all  operations
-              correctly.  You  may use a more complete KMS data file that con-
-              tains all detailed product names. This is especially  useful  if
+              Use KMS data file filename. By default vlmcsd only contains  the
+              minimum  product data that is required to perform all operations
+              correctly. You may use a more complete KMS data file  that  con-
+              tains  all  detailed product names. This is especially useful if
               you are logging KMS requests. If you don't log, there is no need
               to load an external KMS data file.
 
-              If vlmcsd has been compiled to use a default KMS data file,  you
+              If  vlmcsd has been compiled to use a default KMS data file, you
               may use -j- to ignore the default configuration file.
 
 
@@ -486,112 +457,118 @@ OPTIONS
               - you did not sprecify an ePID in the command line and
               - you haven't used -i or
               - the file specified by -i cannot be opened or
-              -  the file specified by -i does not contain an ePID for the KMS
+              - the file specified by -i does not contain an ePID for the  KMS
               request
 
-              -r0 means there  are  no  random  ePIDs.  vlmcsd  simply  issues
-              default  ePIDs  that  are built into the binary at compile time.
-              Pro: behaves like real KMS server that also  always  issues  the
-              same  ePID.  Con: Microsoft may start blacklisting again and the
+              -r0  means  there  are  no  random  ePIDs.  vlmcsd simply issues
+              default ePIDs that are built into the binary  at  compile  time.
+              Pro:  behaves  like  real KMS server that also always issues the
+              same ePID. Con: Microsoft may start blacklisting again  and  the
               default ePID may not work any longer.
 
-              -r1 instructs vlmcsd to generate random ePIDs when  the  program
+              -r1  instructs  vlmcsd to generate random ePIDs when the program
               starts or receives a SIGHUP signal and uses these ePIDs until it
-              is stopped or receives another SIGHUP. Most other KMS  emulators
-              generate  a  new  ePID  on  every  KMS  request.  This is easily
+              is  stopped or receives another SIGHUP. Most other KMS emulators
+              generate a new  ePID  on  every  KMS  request.  This  is  easily
               detectable. Microsoft could just modify sppsvc.exe in a way that
-              it  always  sends two identical KMS requests in two RPC requests
-              but over the same TCP connection. If both KMS responses  contain
-              the  different  ePIDs, the KMS server is not genuine. -r1 is the
-              default mode. -r1 also ensures that all  three  ePIDs  (Windows,
-              Office  2010  and  Office 2013) use the same OS build number and
+              it always sends two identical KMS requests in two  RPC  requests
+              but  over the same TCP connection. If both KMS responses contain
+              the different ePIDs, the KMS server is not genuine. -r1  is  the
+              default  mode.  -r1  also ensures that all three ePIDs (Windows,
+              Office 2010 and Office 2013) use the same OS  build  number  and
               LCID (language id).
 
               If vlmcsd has been started by an internet superserver, -r1 works
               almost identically to -r2. The only exception occurs if you send
-              more than one activation request over the same  TCP  connection.
-              This  is  simply  due  to the fact that vlmcsd is started upon a
+              more  than  one activation request over the same TCP connection.
+              This is simply due to the fact that vlmcsd  is  started  upon  a
               connection request and does not stay in memory after servicing a
-              KMS  request.  Consider  using -r0 or -w, -G, -0, -3 and -6 when
+              KMS request. Consider using -r0 or -w, -G, -0, -3  and  -6  when
               starting vlmcsd by an internet superserver.
 
-              -r2 behaves like most other KMS  server  emulators  with  random
-              support  and  generates  a new random ePID on every request. -r2
-              should be treated as debugging option  only  because  it  allows
+              -r2  behaves  like  most  other KMS server emulators with random
+              support and generates a new random ePID on  every  request.  -r2
+              should  be  treated  as  debugging option only because it allows
               very easy emulator detection.
 
 
        -C LCID
-              Do  not  randomize  the  locale id part of the ePID and use LCID
-              instead. The LCID must be specified as a  decimal  number,  e.g.
-              1049  for  "Russian  - Russia". This option has no effect if the
-              ePID is not randomized at all, e.g. if it is selected  from  the
+              Do not randomize the locale id part of the  ePID  and  use  LCID
+              instead.  The  LCID  must be specified as a decimal number, e.g.
+              1049 for "Russian - Russia". This option has no  effect  if  the
+              ePID  is  not randomized at all, e.g. if it is selected from the
               command line or an ini file.
 
               By default vlmcsd generates a valid locale id that is recognized
-              by .NET Framework 4.0. This may lead to a  locale  id  which  is
+              by  .NET  Framework  4.0.  This may lead to a locale id which is
               unlikely to occur in your country, for instance 2155 for "Quecha
               - Ecuador". You may want to select the locale id of your country
               instead. See MSDN <http://msdn.microsoft.com/en-us/goglobal/
-              bb964664.aspx> for a list of valid LCIDs. Please note that  some
+              bb964664.aspx>  for a list of valid LCIDs. Please note that some
               of them are not recognized by .NET Framework 4.0.
 
-              Most  other  KMS  emulators  use a fixed LCID of 1033 (English -
+              Most other KMS emulators use a fixed LCID  of  1033  (English  -
               US). To achive the same behavior in vlmcsd use -C 1033.
 
 
+       -H HostBuild
+              Do not randomize the host build number in the ePID and use Host-
+              Build instead, for instance 17763 for Windows Server 2019 / Win-
+              dows 10 1809.
+
+
        -K0, -K1, -K2 and -K3
-              Sets the whitelisting level to determine which  products  vlmcsd
+              Sets  the  whitelisting level to determine which products vlmcsd
               activates or refuses. The default is -K0.
 
-                   -K0:  activate  all  products  with  an  unknown, retail or
+                   -K0: activate all  products  with  an  unknown,  retail  or
                    beta/preview KMS ID.
                    -K1: activate products with a retail or beta/preview KMS ID
                    but refuse to activate products with an unknown KMS ID.
-                   -K2:  activate  products  with an unknown KMS ID but refuse
+                   -K2: activate products with an unknown KMS  ID  but  refuse
                    products with a retail or beta/preview KMS ID.
                    -K3: activate only products with a known volume license RTM
                    KMS ID and refuse all others.
 
 
-              The  SKU  ID  is  not  checked. Like a genuine KMS server vlmcsd
-              activates a product that has a random or unknown SKU ID. If  you
-              select  -K1  or  -K3,  vlmcsd also checks the Application ID for
-              correctness. If Microsoft introduces a new  KMS  ID  for  a  new
-              product,  you  cannot activate it if you used -K1 or -K3 until a
+              The SKU ID is not checked. Like  a  genuine  KMS  server  vlmcsd
+              activates  a product that has a random or unknown SKU ID. If you
+              select -K1 or -K3, vlmcsd also checks  the  Application  ID  for
+              correctness.  If  Microsoft  introduces  a  new KMS ID for a new
+              product, you cannot activate it if you used -K1 or -K3  until  a
               new version of vlmcsd is available.
 
 
        -c0 and -c1
-              -c1 causes vlmcsd to check if the client time  differs  no  more
+              -c1  causes  vlmcsd  to check if the client time differs no more
               than four hours from the system time. -c0 (the default) disables
-              this check. -c1 is  useful  to  prevent  emulator  detection.  A
-              client  that  tries  to detect an emulator could simply send two
-              subsequent request with two time stamps that  differ  more  than
+              this  check.  -c1  is  useful  to  prevent emulator detection. A
+              client that tries to detect an emulator could  simply  send  two
+              subsequent  request  with  two time stamps that differ more than
               four hours from each other. If both requests succeed, the server
-              is an emulator. If you specify -c1 on a system with no  reliable
-              time  source, activations will fail. It is ok to set the correct
+              is  an emulator. If you specify -c1 on a system with no reliable
+              time source, activations will fail. It is ok to set the  correct
               system time after you started vlmcsd.
 
 
        -M0 and -M1
-              Disables (-M0) or enables (-M1) maintaining  a  list  of  client
-              machine  IDs  (CMIDs). The default is -M0. -M1 is useful to pre-
-              vent emulator  detection.  By  maintaing  a  CMID  list,  vlmcsd
+              Disables  (-M0)  or  enables  (-M1) maintaining a list of client
+              machine IDs (CMIDs). The default is -M0. -M1 is useful  to  pre-
+              vent  emulator  detection.  By  maintaing  a  CMID  list, vlmcsd
               reports current active clients exactly like a genuine KMS emula-
-              tor. This includes bug compatibility to the extent that you  can
-              permanently  kill  a  genuine  KMS emulator by sending an "over-
-              charge request" with a required client count of 376 or more  and
-              then  request  activation  for  671 clients. vlmcsd can be reset
-              from this condition by restarting it. If  -M0  is  used,  vlmcsd
+              tor.  This includes bug compatibility to the extent that you can
+              permanently kill a genuine KMS emulator  by  sending  an  "over-
+              charge  request" with a required client count of 376 or more and
+              then request activation for 671 clients.  vlmcsd  can  be  reset
+              from  this  condition  by  restarting it. If -M0 is used, vlmcsd
               reports current active clients as good as possible. If no client
               sends an "overcharge request", it is not possible to detect vlm-
-              csd  as  an  emulator with -M0. -M1 requires the allocation of a
-              buffer that is about 50 kB in size. On hardware with few  memory
+              csd as an emulator with -M0. -M1 requires the  allocation  of  a
+              buffer  that is about 50 kB in size. On hardware with few memory
               resources use it only if you really need it.
 
-              If  you start vlmcsd from an internet superserver, -M1 cannot be
-              used. Since vlmcsd exits after each activation, it cannot  main-
+              If you start vlmcsd from an internet superserver, -M1 cannot  be
+              used.  Since vlmcsd exits after each activation, it cannot main-
               tain any state in memory.
 
 
@@ -599,82 +576,82 @@ OPTIONS
               These options are ignored if you do not also specify -M1. If you
               use -E0 (the default), vlmcsd starts up as a fully "charged" KMS
               server. Clients activate immediately. -E1 lets you start up vlm-
-              csd with an empty CMID list.  Activation  will  start  when  the
-              required  minimum  clients  (25  for Windows Client OSses, 5 for
-              Windows Server OSses and Office) have registered  with  the  KMS
-              server.  As  long  as  the  minimum  client  count  has not been
+              csd  with  an  empty  CMID  list. Activation will start when the
+              required minimum clients (25 for Windows  Client  OSses,  5  for
+              Windows  Server  OSses  and Office) have registered with the KMS
+              server. As long  as  the  minimum  client  count  has  not  been
               reached,  clients  end  up  in  HRESULT  0xC004F038  "The  count
-              reported  by  your Key Management Service (KMS) is insufficient.
-              Please contact your system administrator". You may use  vlmcs(1)
-              or  another KMS client emulator to "charge" vlmcsd. -E1 does not
-              improve emulator detection prevention. It's primary  purpose  is
-              to  help  developers  of  KMS  clients  to test "charging" a KMS
+              reported by your Key Management Service (KMS)  is  insufficient.
+              Please  contact your system administrator". You may use vlmcs(1)
+              or another KMS client emulator to "charge" vlmcsd. -E1 does  not
+              improve  emulator  detection prevention. It's primary purpose is
+              to help developers of KMS  clients  to  test  "charging"  a  KMS
               server.
 
 
        -R renewal-interval
-              Instructs clients to renew  activation  every  renewal-interval.
+              Instructs  clients  to  renew activation every renewal-interval.
               The renewal-interval is a number optionally immediately followed
-              by a letter indicating the unit. Valid unit letters are s  (sec-
+              by  a letter indicating the unit. Valid unit letters are s (sec-
               onds), m (minutes), h (hours), d (days) and w (weeks). If you do
               not specify a letter, minutes is assumed.
 
-              -R3d for instance instructs clients to renew activation every  3
+              -R3d  for instance instructs clients to renew activation every 3
               days. The default renewal-interval is 10080 (identical to 7d and
               1w).
 
               Due to poor implementation of Microsofts KMS Client it cannot be
               guaranteed that activation is renewed on time as specfied by the
-              -R option. Don't care  about  that.  Renewal  will  happen  well
+              -R  option.  Don't  care  about  that.  Renewal will happen well
               before your activation expires (usually 180 days).
 
-              Even  though  you  can  specify seconds, the granularity of this
-              option is 1 minute. Seconds are rounded down to the next  multi-
+              Even though you can specify seconds,  the  granularity  of  this
+              option  is 1 minute. Seconds are rounded down to the next multi-
               ple of 60.
 
 
        -A activation-interval
-              Instructs  clients to retry activation every activation-interval
-              if it was unsuccessful, e.g. because  it  could  not  reach  the
-              server.  The default is 120 (identical to 2h). activation-inter-
-              val follows the  same  syntax  as  renewal-interval  in  the  -R
+              Instructs clients to retry activation every  activation-interval
+              if  it  was  unsuccessful,  e.g.  because it could not reach the
+              server. The default is 120 (identical to 2h).  activation-inter-
+              val  follows  the  same  syntax  as  renewal-interval  in the -R
               option.
 
 
-       -s     Installs  vlmcsd  as  a  Windows service. This option only works
-              with the native Windows version  and  Cygwin.  Combine  -s  with
-              other  command  line  options.  These will be in effect when you
-              start the service. The service  automatically  starts  when  you
-              reboot  your machine. To start it manually, type "net start vlm-
+       -s     Installs vlmcsd as a Windows service.  This  option  only  works
+              with  the  native  Windows  version  and Cygwin. Combine -s with
+              other command line options. These will be  in  effect  when  you
+              start  the  service.  The  service automatically starts when you
+              reboot your machine. To start it manually, type "net start  vlm-
               csd".
 
-              If you use Cygwin, you  must  include  your  Cygwin  system  DLL
-              directory  (usually  C:\Cygwin\bin  or C:\Cygwin64\bin) into the
+              If  you  use  Cygwin,  you  must  include your Cygwin system DLL
+              directory (usually C:\Cygwin\bin or  C:\Cygwin64\bin)  into  the
               PATH environment variable or the service will not start.
 
-              You can reinstall the service anytime  using  vlmcsd  -s  again,
-              e.g.  with  a different command line. If the service is running,
+              You  can  reinstall  the  service anytime using vlmcsd -s again,
+              e.g. with a different command line. If the service  is  running,
               it will be restarted with the new command line.
 
-              When using -s the command  line  is  checked  for  basic  syntax
+              When  using  -s  the  command  line  is checked for basic syntax
               errors only. For example "vlmcsd -s -L 1.2.3.4" reports no error
-              but the service will not start if 1.2.3.4 is not an  IP  address
+              but  the  service will not start if 1.2.3.4 is not an IP address
               on your system.
 
 
-       -S     Uninstalls  the  vlmcsd service. Works only with the native Win-
-              dows version and Cygwin. All other options will  be  ignored  if
+       -S     Uninstalls the vlmcsd service. Works only with the  native  Win-
+              dows  version  and  Cygwin. All other options will be ignored if
               you include -S in the command line.
 
 
        -U [domain\]username
-              Can  only be used together with -s. Starts the service as a dif-
-              ferent user than the local SYSTEM account. This is used  to  run
-              the  service  under  an account with low privileges. If you omit
+              Can only be used together with -s. Starts the service as a  dif-
+              ferent  user  than the local SYSTEM account. This is used to run
+              the service under an account with low privileges.  If  you  omit
               the domain, an account from the local computer will be used.
 
               You may use "NT AUTHORITY\NetworkService". This is a pseudo user
-              with  low  privileges.  You may also use "NT AUTHORITY\LocalSer-
+              with low privileges. You may also  use  "NT  AUTHORITY\LocalSer-
               vice" which has more privileges but these are of no use for run-
               ning vlmcsd.
 
@@ -682,20 +659,20 @@ OPTIONS
               sion for your executable. "NT AUTHORITY\NetworkService" normally
               has no permission to run binaries from your home directory.
 
-              For  your convenience you can use the special username "/l" as a
+              For your convenience you can use the special username "/l" as  a
               shortcut  for  "NT  AUTHORITY\LocalService"  and  "/n"  for  "NT
-              AUTHORITY\NetworkService".  "vlmcsd -s -U /n"  installs the ser-
+              AUTHORITY\NetworkService". "vlmcsd -s -U /n" installs  the  ser-
               vice to run as "NT AUTHORITY\NetworkService".
 
 
        -W password
-              Can only be used together with -s. Specifies a password for  the
-              corresponding  username  you  use  with  -U. SYSTEM, "NT AUTHOR-
-              ITY\NetworkService", "NT AUTHORITY\LocalService" do not  require
+              Can  only be used together with -s. Specifies a password for the
+              corresponding username you use  with  -U.  SYSTEM,  "NT  AUTHOR-
+              ITY\NetworkService",  "NT AUTHORITY\LocalService" do not require
               a password.
 
-              If  you  specify  a  user  with  even  lower privileges than "NT
-              AUTHORITY\NetworkService", you must specify  its  password.  You
+              If you specify a  user  with  even  lower  privileges  than  "NT
+              AUTHORITY\NetworkService",  you  must  specify its password. You
               also have to grant the "Log on as a service" right to that user.
 
 
@@ -704,53 +681,53 @@ SIGNALS
 
 
        SIGTERM, SIGINT
-              These  signals cause vlmcsd to exit gracefully. All global sema-
-              phores and shared memory pages will be released,  the  pid  file
-              will  be  unlinked  (deleted)  and  a  shutdown  message will be
+              These signals cause vlmcsd to exit gracefully. All global  sema-
+              phores  and  shared  memory pages will be released, the pid file
+              will be unlinked  (deleted)  and  a  shutdown  message  will  be
               logged.
 
 
-       SIGHUP Causes vlmcsd to be restarted completely. This is useful if  you
-              started  vlmcsd  with  an  ini file. You can modify the ini file
-              while vlmcsd is running and then sending SIGHUP, e.g. by  typing
-              "killall  -SIGHUP  vlmcsd"  or  "kill -SIGHUP `cat /var/run/vlm-
+       SIGHUP Causes  vlmcsd to be restarted completely. This is useful if you
+              started vlmcsd with an ini file. You can  modify  the  ini  file
+              while  vlmcsd is running and then sending SIGHUP, e.g. by typing
+              "killall -SIGHUP vlmcsd" or  "kill  -SIGHUP  `cat  /var/run/vlm-
               csd.pid`".
 
               The SIGHUP handler has been implemented relatively simple. It is
-              virtually  the  same  as  stopping  vlmcsd and starting it again
+              virtually the same as stopping  vlmcsd  and  starting  it  again
               immediately with the following exceptions:
 
 
               -- The new process does not get a new process id.
 
-              -- If you used a pid file,  it  is  not  deleted  and  recreated
+              -- If  you  used  a  pid  file,  it is not deleted and recreated
                  because the process id stays the same.
 
-              -- If  you  used  the  'user' and/or 'group' directive in an ini
-                 file these are ignored. This is because once you switched  to
+              -- If you used the 'user' and/or 'group'  directive  in  an  ini
+                 file  these are ignored. This is because once you switched to
                  lower privileged users and groups, there is no way back. Any-
                  thing else would be a severe security flaw in the OS.
 
-       Signaling is not available in the native Windows  version  and  in  the
+       Signaling  is  not  available  in the native Windows version and in the
        Cygwin version when vlmcsd runs as a Windows service.
 
 
 SUPPORTED OPERATING SYSTEMS
-       vlmcsd  compiles  and  runs  on  Linux, Windows (no Cygwin required but
-       explicitly supported), Mac OS X, FreeBSD,  NetBSD,  OpenBSD,  Dragonfly
-       BSD,  Minix,  Solaris,  OpenIndiana,  Android  and  iOS. Other POSIX or
-       unixoid OSses may work with unmodified sources  or  may  require  minor
+       vlmcsd compiles and runs on Linux,  Windows  (no  Cygwin  required  but
+       explicitly  supported),  Mac  OS X, FreeBSD, NetBSD, OpenBSD, Dragonfly
+       BSD, Minix, Solaris, OpenIndiana,  Android  and  iOS.  Other  POSIX  or
+       unixoid  OSses  may  work  with unmodified sources or may require minor
        porting efforts.
 
 
 SUPPORTED PRODUCTS
-       vlmcsd  can answer activation requests for the following products: Win-
+       vlmcsd can answer activation requests for the following products:  Win-
        dows Vista, Windows 7, Windows 8, Windows 8.1, Windows 10 (up to 1703),
-       Windows  Server 2008, Windows Server 2008 R2, Windows Server 2012, Win-
-       dows Server 2012 R2, Windows Server 2016, Office  2010,  Project  2010,
+       Windows Server 2008, Windows Server 2008 R2, Windows Server 2012,  Win-
+       dows  Server  2012  R2, Windows Server 2016, Office 2010, Project 2010,
        Visio 2010, Office 2013, Project 2013, Visio 2013, Office 2016, Project
-       2016, Visio 2016. Newer products may work as long as the  KMS  protocol
-       does  not  change.  A  complete list of fully supported products can be
+       2016,  Visio  2016. Newer products may work as long as the KMS protocol
+       does not change. A complete list of fully  supported  products  can  be
        obtained using the -x option of vlmcs(1).
 
        Office, Project and Visio must be volume license versions.
@@ -762,24 +739,24 @@ FILES
 
 EXAMPLES
        vlmcsd -De
-              Starts vlmcsd in foreground. Useful if you use it for the  first
-              time  and  want  to  see what's happening when a client requests
+              Starts  vlmcsd in foreground. Useful if you use it for the first
+              time and want to see what's happening  when  a  client  requests
               activation.
 
 
        vlmcsd -l /var/log/vlmcsd.log
-              Starts vlmcsd as a daemon and logs everything  to  /var/log/vlm-
+              Starts  vlmcsd  as a daemon and logs everything to /var/log/vlm-
               csd.log.
 
 
        vlmcsd -L 192.168.1.17
               Starts vlmcsd as a daemon and listens on IP address 192.168.1.17
-              only. This is useful for routers that have a public and  a  pri-
+              only.  This  is useful for routers that have a public and a pri-
               vate IP address to prevent your KMS server from becoming public.
 
 
        vlmcsd -s -U /n -l C:\logs\vlmcsd.log
-              Installs  vlmcsd  as  a  Windows service with low privileges and
+              Installs vlmcsd as a Windows service  with  low  privileges  and
               logs  everything  to  C:\logs\vlmcsd.log  when  the  service  is
               started with "net start vlmcsd".
 
@@ -789,13 +766,13 @@ BUGS
 
 
 AUTHOR
-       Written  by  crony12, Hotbird64 and vityan666.  With contributions from
+       Written by crony12, Hotbird64 and vityan666.  With  contributions  from
        DougQaid.
 
 
 CREDITS
-       Thanks to CODYQX4, deagles, eIcn,  mikmik38,  nosferati87,  qad,  Rati-
-       borus, ...
+       Thanks  to  abbodi1406,  CODYQX4, deagles, eIcn, mikmik38, nosferati87,
+       qad, Ratiborus, ...
 
 
 SEE ALSO
@@ -803,4 +780,4 @@ SEE ALSO
 
 
 
-Hotbird64                          June 2017                         VLMCSD(8)
+Hotbird64                        October 2018                        VLMCSD(8)

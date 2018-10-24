@@ -1,4 +1,4 @@
-.TH VLMCSD.INI 5 "May 2017" "Hotbird64" "KMS Activation Manual"
+.TH VLMCSD.INI 5 "October 2018" "Hotbird64" "KMS Activation Manual"
 .LO 8
 
 .SH NAME
@@ -111,7 +111,10 @@ Can be TRUE or FALSE. Specifies whether you want to use bind time feature negoti
 The \fIargument\fR must 0, 1 or 2. This specifies the ePID randomization level. See options \fB-r0\fR, \fB-r1\fR and \fB-r2\fR in \fBvlmcsd\fR(8). The default randomization level is 1. A \fBRandomizationLevel\fR of 2 is not recommended and should be treated as a debugging level.
 
 .IP "\fBLCID\fR"
-Use a specific culture id (LCID) even if the ePID is randomized. The \fIargument\fR must be a number between 1 and 32767. While any number in that range is valid, you should use an offcial LCID. A list of assigned LCIDs can be found at http://msdn.microsoft.com/en\-us/goglobal/bb964664.aspx. On the command line you control this setting with option \fB-C\fR. 
+Use a specific culture id (LCID) even if the ePID is randomized. The \fIargument\fR must be a number between 1 and 32767. While any number in that range is valid, you should use an offcial LCID. A list of assigned LCIDs can be found at http://msdn.microsoft.com/en\-us/goglobal/bb964664.aspx. On the command line you control this setting with option \fB-C\fR.
+
+.IP "\fBHostBuild\fR"
+Use a specific host build number in the ePID even if it is randomized. The \fIargument\fR must be a number between 1 and 65535. While you can use any number you should only use build numbers that a released build numbers of Windows Servers, e.g. 17763 for Windows Server 2019.
 
 .IP "\fBMaxWorkers\fR"
 The \fIargument\fR specifies the maximum number of worker processes or threads that will be used to serve activation requests concurrently. This is the same as specifying \fB-m\fR on the command line. Minimum is 1. The maximum is platform specific and is at least 32767 but is likely to be greater on most systems. The default is no limit.
@@ -178,20 +181,8 @@ Run vlmcsd as another, preferrably less privileged, user. The \fIargument\fR can
 .IP "\fBGroup\fR"
 Run vlmcsd as another, preferrably less privileged, group. The \fIargument\fR can be a group name or a numeric group id. You must have the required privileges (capabilities on Linux) to change the security context of a process without providing any credentials (a password in most cases). On most unixoid OSses 'root' is the only user who has these privileges in the default configuration. This setting is not available in the native Windows version of vlmcsd. See \fB-g\fR in \fBvlmcsd\fR(8). This setting cannot be changed on the fly by sending SIGHUP to vlmcsd.
 
-.IP "\fBWindows\fR"
-The \fIargument\fR has the form \fIePID\fR [ / \fIHwId\fR ]. Always use \fIePID\fR and \fIHwId\fR for Windows activations. If specified, \fBRandomizationLevel\fR for Windows activitations will be ignored.
-
-.IP "\fBOffice2010\fR"
-The \fIargument\fR has the form \fIePID\fR [ / \fIHwId\fR ]. Always use \fIePID\fR and \fIHwId\fR for Office 2010 activations. If specified, \fBRandomizationLevel\fR for Office 2010 activitations will be ignored.
-
-.IP "\fBOffice2013\fR"
-The \fIargument\fR has the form \fIePID\fR [ / \fIHwId\fR ]. Always use \fIePID\fR and \fIHwId\fR for Office 2013 activations. If specified, \fBRandomizationLevel\fR for Office 2013 activitations will be ignored.
-
-.IP "\fBOffice2016\fR"
-The \fIargument\fR has the form \fIePID\fR [ / \fIHwId\fR ]. Always use \fIePID\fR and \fIHwId\fR for Office 2016 activations. If specified, \fBRandomizationLevel\fR for Office 2016 activitations will be ignored.
-
-.IP "\fBWinChinaGov\fR"
-The \fIargument\fR has the form \fIePID\fR [ / \fIHwId\fR ]. Always use \fIePID\fR and \fIHwId\fR for China Government Editions of Windows (Enterprise G/GN). If specified, \fBRandomizationLevel\fR for Windows China Government activitations will be ignored.
+.IP "\fB<csvlk-name>\fR"
+The \fIargument\fR has the form \fIePID\fR [ / \fIHwId\fR ]. Always use \fIePID\fR and \fIHwId\fR for activations with \fB<csvlk-name>\fR. If specified, \fBRandomizationLevel\fR for the \fB<csvlk-name>\fR will be ignored. With the default vlmcsd.kmd database you can use the following \fB<csvlk-name>\fRs: Windows, Office2010, Office2013, Office2016, Office2019 and WinChinaGov. While vlmcsd is compatible with older databases, you must use at least database version 1.6 for this feature to work.
 
 .SH "VALID EPIDS"
 The ePID is currently a comment only. You can specify any string up to 63 bytes. In Windows 7 Microsoft has blacklisted few ( < 10 ) ePIDs that were used in KMSv5 versions of the "Ratiborus Virtual Machine". Microsoft has given up on blacklisting when KMS emulators appeared in the wild.
@@ -209,7 +200,7 @@ If you are specifying an optional HWID it follows the same syntax as in the \fB\
 \fBvlmcsd\fR(8) was written by crony12, Hotbird64 and vityan666. With contributions from DougQaid.
 
 .SH CREDITS
-Thanks to CODYQX4, deagles, eIcn, mikmik38, nosferati87, qad, Ratiborus, ...
+Thanks to abbodi1406, CODYQX4, deagles, eIcn, mikmik38, nosferati87, qad, Ratiborus, ...
 
 .SH SEE ALSO
 \fBvlmcsd\fR(8), \fBvlmcsd\fR(7), \fBvlmcs\fR(1), \fBvlmcsdmulti\fR(1)

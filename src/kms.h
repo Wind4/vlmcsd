@@ -278,12 +278,15 @@ typedef struct
 	};
 } DataPointer_t;
 
+#define KMS_OPTIONS_USENDR64 1 << 0
+
 typedef struct VlmcsdHeader
 {
 	BYTE Magic[4];
 	VERSION_INFO;
 	uint8_t CsvlkCount;
-	uint8_t Reserved[3];
+	uint8_t Flags;
+	uint8_t Reserved[2];
 
 	union
 	{
@@ -358,7 +361,8 @@ void CleanUpClientLists();
 extern RequestCallback_t CreateResponseBase;
 
 #ifdef _PEDANTIC
-uint16_t IsValidLcid(const uint16_t Lcid);
+uint16_t IsValidLcid(const uint16_t lcid);
+uint16_t IsValidHostBuild(const uint16_t hostBuild);
 #endif // _PEDANTIC
 
 #endif // __kms_h

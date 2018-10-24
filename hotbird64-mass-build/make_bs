@@ -1,0 +1,2908 @@
+#!/bin/bash
+
+cd "$( dirname "$0" )"
+
+IS64ONLY=0
+
+if [ "$(uname -r|grep Microsoft)" != "" ]; then
+  IS64ONLY=1
+  echo "Warning 32-bit toolchains do not run."
+fi 
+
+export VLMCSD_VERSION=$(git describe)
+
+export VERBOSE=3
+export DNS_PARSER=internal
+
+MAKEFLAGS="-j200 -B"
+REUSEOBJFLAGS="-j200"
+SMALLCC="-pipe -fno-common -fno-exceptions -fno-stack-protector -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants"
+SMALLLD="-pipe -Wl,--hash-style=sysv -Wl,-z,norelro -Wl,--build-id=none"
+SMALL="$SMALLCC $SMALLLD"
+
+rm -f vlmcs vlmcsdmulti vlmcsd 2>/dev/null
+rm -fr ../binaries
+
+mkdir -p ../binaries/Linux/intel/glibc
+mkdir -p ../binaries/Linux/intel/uclibc
+mkdir -p ../binaries/Linux/intel/static
+mkdir -p ../binaries/Linux/intel/musl
+
+mkdir -p ../binaries/Linux/sparc/glibc
+mkdir -p ../binaries/Linux/s390/glibc
+
+mkdir -p ../binaries/Android/arm/bionic
+mkdir -p ../binaries/Android/arm/static
+mkdir -p ../binaries/Android/intel/bionic
+mkdir -p ../binaries/Android/intel/static
+mkdir -p ../binaries/Android/mips/bionic
+mkdir -p ../binaries/Android/mips/static
+
+mkdir -p ../binaries/Linux/arm/little-endian/glibc
+mkdir -p ../binaries/Linux/arm/little-endian/musl
+mkdir -p ../binaries/Linux/arm/little-endian/uclibc
+mkdir -p ../binaries/Linux/arm/little-endian/static
+mkdir -p ../binaries/Linux/arm/big-endian/uclibc
+mkdir -p ../binaries/Linux/arm/big-endian/static
+
+mkdir -p ../binaries/Linux/mips/little-endian/glibc
+mkdir -p ../binaries/Linux/mips/little-endian/uclibc
+mkdir -p ../binaries/Linux/mips/little-endian/static
+mkdir -p ../binaries/Linux/mips/little-endian/musl
+mkdir -p ../binaries/Linux/mips/big-endian/uclibc
+mkdir -p ../binaries/Linux/mips/big-endian/static
+mkdir -p ../binaries/Linux/mips/big-endian/glibc
+mkdir -p ../binaries/Linux/mips/big-endian/musl
+
+mkdir -p ../binaries/Linux/ppc/little-endian/glibc
+mkdir -p ../binaries/Linux/ppc/big-endian/glibc
+mkdir -p ../binaries/Linux/ppc/big-endian/uclibc
+mkdir -p ../binaries/Linux/ppc/big-endian/musl
+mkdir -p ../binaries/Linux/ppc/big-endian/static
+
+mkdir -p ../binaries/MacOSX/intel
+mkdir -p ../binaries/MacOSX/ppc
+mkdir -p ../binaries/iOS/arm
+
+mkdir -p ../binaries/FreeBSD/intel
+mkdir -p ../binaries/NetBSD/intel
+mkdir -p ../binaries/OpenBSD/intel
+mkdir -p ../binaries/DragonFly/intel
+mkdir -p ../binaries/Solaris/intel
+mkdir -p ../binaries/Windows/intel
+mkdir -p ../binaries/Minix/intel
+mkdir -p ../binaries/Hurd/intel
+
+rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+export STAGING_DIR=.
+
+cd ../src
+pwd
+
+# Windows 32-bit using MingW32-w64 toolchain on Ubuntu Linux
+export CLIENT_NAME=../binaries/Windows/intel/vlmcs-Windows-x86-gcc.exe
+export PROGRAM_NAME=../binaries/Windows/intel/vlmcsd-Windows-x86-gcc.exe
+export MULTI_NAME=../binaries/Windows/intel/vlmcsdmulti-Windows-x86-gcc.exe
+export DLL_NAME=../binaries/Windows/intel/libkms32-gcc.dll
+export THREADS=1
+export CFLAGS="$SMALLCC"
+export CC=i686-w64-mingw32-gcc
+export PLATFORMFLAGS="-march=i686 -mtune=generic -fwhole-program -pipe"
+export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--large-address-aware,--nxcompat,--dynamicbase,--tsaware,--no-seh,--disable-long-section-names"
+export FEATURES=full
+export AUXV=0
+
+make $MAKEFLAGS CRYPTO=windows CAT=2 all $MULTI_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME, $MULTI_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export CFLAGS="$CFLAGS -flto=16 -fvisibility=hidden -DIS_LIBRARY"
+export LDFLAGS="$LDFLAGS -static-libgcc"
+
+#make $MAKEFLAGS CRYPTO=windows FEATURES=minimum $DLL_NAME CAT=2
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $DLL_NAME
+#  exit $?
+#fi
+
+
+
+# Windows 32-bit using MingW32-w64 toolchain on Ubuntu Linux using MS RPC
+export CLIENT_NAME=../binaries/Windows/intel/vlmcs-Windows-msrpc-x86.exe
+export PROGRAM_NAME=../binaries/Windows/intel/vlmcsd-Windows-msrpc-x86.exe
+export MULTI_NAME=../binaries/Windows/intel/vlmcsdmulti-Windows-msrpc-x86.exe
+export THREADS=1
+export CFLAGS="-pipe -fno-common -fno-exceptions -fno-stack-protector -fno-unwind-tables -fmerge-all-constants -Wno-unused-variable -Wno-missing-braces"
+export CC=i686-w64-mingw32-gcc
+export PLATFORMFLAGS="-march=i686 -mtune=generic -pipe"
+export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--large-address-aware,--nxcompat,--dynamicbase,--tsaware,--disable-long-section-names -fwhole-program"
+export FEATURES=full
+
+make $MAKEFLAGS MSRPC=1 CRYPTO=windows $CLIENT_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME
+  exit $?
+fi
+
+#make $MAKEFLAGS MSRPC=1 CRYPTO=windows $MULTI_NAME CFLAGS="$CFLAGS -fno-lto" PLATFORMFLAGS="$PLATFORMFLAGS -fno-lto"
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+
+export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--large-address-aware,--nxcompat,--dynamicbase,--tsaware,--disable-long-section-names,--no-seh -fwhole-program"
+
+make $REUSEOBJFLAGS CAT=1 MSRPC=1 CRYPTO=windows $PROGRAM_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+# Windows 64-bit using MingW32-w64 toolchain on Ubuntu Linux
+export CLIENT_NAME=../binaries/Windows/intel/vlmcs-Windows-x64-gcc.exe
+export PROGRAM_NAME=../binaries/Windows/intel/vlmcsd-Windows-x64-gcc.exe
+export MULTI_NAME=../binaries/Windows/intel/vlmcsdmulti-Windows-x64-gcc.exe
+export DLL_NAME=../binaries/Windows/intel/libkms64-gcc.dll
+export THREADS=1
+export CFLAGS="$SMALLCC"
+export CC=x86_64-w64-mingw32-gcc
+export PLATFORMFLAGS="-march=nocona -mtune=generic -fwhole-program -pipe"
+export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--nxcompat,--dynamicbase,--tsaware,--no-seh,--high-entropy-va,--disable-long-section-names"
+
+make $MAKEFLAGS CAT=2 CRYPTO=windows all $MULTI_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME, $MULTI_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export CFLAGS="$CFLAGS -flto=16 -fvisibility=hidden -DIS_LIBRARY"
+export LDFLAGS="$LDFLAGS -static-libgcc"
+
+#make $MAKEFLAGS CRYPTO=windows FEATURES=minimum $DLL_NAME CAT=2
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $DLL_NAME
+#  exit $?
+#fi
+
+
+
+
+# Windows 64-bit using MingW32-w64 toolchain on Ubuntu Linux using MS RPC
+export CLIENT_NAME=../binaries/Windows/intel/vlmcs-Windows-msrpc-x64.exe
+export PROGRAM_NAME=../binaries/Windows/intel/vlmcsd-Windows-msrpc-x64.exe
+export MULTI_NAME=../binaries/Windows/intel/vlmcsdmulti-Windows-msrpc-x64.exe
+export THREADS=1
+export CFLAGS="-pipe -fno-common -fno-exceptions -fno-stack-protector -fno-unwind-tables -fmerge-all-constants -Wno-unused-variable -Wno-missing-braces"
+export CC=x86_64-w64-mingw32-gcc
+export PLATFORMFLAGS="-march=nocona -mtune=generic -pipe"
+export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--nxcompat,--dynamicbase,--tsaware,--high-entropy-va,--disable-long-section-names -fwhole-program"
+
+make $MAKEFLAGS CRYPTO=windows MSRPC=1 $CLIENT_NAME # $MULTI_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME
+  exit $?
+fi
+
+export LDFLAGS="-Wl,--gc-sections,--force-exe-suffix,--nxcompat,--dynamicbase,--tsaware,--no-seh,--high-entropy-va,--disable-long-section-names -fwhole-program"
+
+make $REUSEOBJFLAGS CAT=2 CRYPTO=windows MSRPC=1 $PROGRAM_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+# mips1el uclibc with old tomato toolchain gcc 3.2.3 with Broadcom extensions uClibc 0.9.19
+if [ $IS64ONLY == 0 ]; then
+export CLIENT_NAME=../binaries/Linux/mips/little-endian/uclibc/vlmcs-mips1el-tomato-uclibc
+export PROGRAM_NAME=../binaries/Linux/mips/little-endian/uclibc/vlmcsd-mips1el-tomato-uclibc
+export MULTI_NAME=../binaries/Linux/mips/little-endian/uclibc/vlmcsdmulti-mips1el-tomato-uclibc
+export CC=/opt/brcm/hndtools-mipsel-uclibc/bin/mipsel-uclibc-gcc
+export CFLAGS="-DNO_BUILTIN -DNO_LIMIT -pipe -fno-common -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -fmerge-all-constants"
+export PLATFORMFLAGS=""
+export LDFLAGS="-fwhole-program -Wl,-z,norelro"
+export THREADS=0
+#export TERMINAL_WIDTH=80
+
+make $MAKEFLAGS GETIFADDRS=musl NO_DNS=1 SAFE_MODE=1 allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export CLIENT_NAME=../binaries/Linux/mips/little-endian/static/vlmcs-mips1el-tomato-uclibc-static
+export PROGRAM_NAME=../binaries/Linux/mips/little-endian/static/vlmcsd-mips1el-tomato-uclibc-static
+export MULTI_NAME=../binaries/Linux/mips/little-endian/static/vlmcsdmulti-mips1el-tomato-uclibc-static
+export LDFLAGS="$LDFLAGS -static"
+
+make NO_DNS=1 SAFE_MODE=1 GETIFADDRS=musl $REUSEOBJFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $MULTI_NAME
+  exit $?
+fi
+fi
+
+
+
+
+# Linux mips32el with uClibc 0.9.33.2 using gcc 4.9 from OpenWRT toolchain
+export CLIENT_NAME=../binaries/Linux/mips/little-endian/uclibc/vlmcs-mips32el-openwrt-uclib
+export PROGRAM_NAME=../binaries/Linux/mips/little-endian/uclibc/vlmcsd-mips32el-openwrt-uclibc
+export MULTI_NAME=../binaries/Linux/mips/little-endian/uclibc/vlmcsdmulti-mips32el-openwrt-uclibc
+export CC=/opt/toolchains/mipsel-openwrt-linux-uclibc/toolchain-mipsel_mips32_gcc-4.9-linaro_uClibc-0.9.33.2/bin/mipsel-openwrt-linux-gcc
+export CFLAGS="$SMALLCC -DNO_LIMIT"
+export PLATFORMFLAGS="-flto=16 -fwhole-program"
+export LDFLAGS="-lpthread $SMALLLD"
+export THREADS=0
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export CLIENT_NAME=../binaries/Linux/mips/little-endian/static/vlmcs-mips32el-openwrt-uclib-static
+export PROGRAM_NAME=../binaries/Linux/mips/little-endian/static/vlmcsd-mips32el-openwrt-uclibc-static
+export MULTI_NAME=../binaries/Linux/mips/little-endian/static/vlmcsdmulti-mips32el-openwrt-uclibc-static
+export LDFLAGS="$LDFLAGS -static"
+
+make $REUSEOBJFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+
+# Linux mips16el with uClibc 0.9.33.2 using gcc 4.9 from OpenWRT toolchain with statically linked libgcc for Asus routers, e.g. Asus RT-N66U
+export CLIENT_NAME=../binaries/Linux/mips/little-endian/uclibc/vlmcs-mips16el-asus-rt-n66u-uclibc
+export PROGRAM_NAME=../binaries/Linux/mips/little-endian/uclibc/vlmcsd-mips16el-asus-rt-n66u-uclibc
+export MULTI_NAME=../binaries/Linux/mips/little-endian/static/vlmcsdmulti-mips16el-asus-rt-n66u-uclibc
+export CC=/opt/toolchains/mipsel-openwrt-linux-uclibc/toolchain-mipsel_mips32_gcc-4.9-linaro_uClibc-0.9.33.2/bin/mipsel-openwrt-linux-gcc
+export CFLAGS="$SMALLCC -static-libgcc -DNO_LIMIT"
+export PLATFORMFLAGS="-mips32 -mips16 -flto=16 -fwhole-program"
+export LDFLAGS="-lpthread $SMALLLD"
+export THREADS=0
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export CLIENT_NAME=../binaries/Linux/mips/little-endian/static/vlmcs-mips16el-asus-rt-n66u-uclibc-static
+export PROGRAM_NAME=../binaries/Linux/mips/little-endian/static/vlmcsd-mips16el-asus-rt-n66u-uclibc-static
+export MULTI_NAME=../binaries/Linux/mips/little-endian/static/vlmcsdmulti-mips16el-asus-rt-n66u-uclibc-static
+export LDFLAGS="$LDFLAGS -static"
+
+make $REUSEOBJFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+
+
+# Linux mips16el with uClibc 0.9.33.2 using gcc 4.8 from OpenWRT toolchain
+export CLIENT_NAME=../binaries/Linux/mips/little-endian/uclibc/vlmcs-mips16el-openwrt-uclibc
+export PROGRAM_NAME=../binaries/Linux/mips/little-endian/uclibc/vlmcsd-mips16el-openwrt-uclibc
+export MULTI_NAME=../binaries/Linux/mips/little-endian/static/vlmcsdmulti-mips16el-openwrt-uclibc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -mips16"
+export LDFLAGS="-lpthread $SMALLLD"
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export CLIENT_NAME=../binaries/Linux/mips/little-endian/static/vlmcs-mips16el-openwrt-uclib-static
+export PROGRAM_NAME=../binaries/Linux/mips/little-endian/static/vlmcsd-mips16el-openwrt-uclibc-static
+export MULTI_NAME=../binaries/Linux/mips/little-endian/static/vlmcsdmulti-mips16el-openwrt-uclibc-static
+export LDFLAGS="$LDFLAGS -static"
+
+make $REUSEOBJFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+# Linux mips16el eglibc 2.19 using gcc 4.8 from OpenWRT toolchain
+export CLIENT_NAME=../binaries/Linux/mips/little-endian/glibc/vlmcs-mips16el-openwrt-glibc
+export PROGRAM_NAME=../binaries/Linux/mips/little-endian/glibc/vlmcsd-mips16el-openwrt-glibc
+export MULTI_NAME=../binaries/Linux/mips/little-endian/glibc/vlmcsdmulti-mips16el-openwrt-glibc
+export CC=/opt/toolchains/mipsel_74kc+dsp2_gcc-4.9-linaro_eglibc-2.19-mips16/bin/mipsel-openwrt-linux-gnu-gcc-4.9.2
+#export CC=~/openwrt/staging_dir/toolchain-mipsel_mips32_gcc-4.8-linaro_eglibc-2.19/bin/mipsel-openwrt-linux-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=mips32 -mips16"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+# PowerPC 64-bit big-endian glibc.
+export CLIENT_NAME=../binaries/Linux/ppc/big-endian/glibc/vlmcs-ppc64-glibc
+export PROGRAM_NAME=../binaries/Linux/ppc/big-endian/glibc/vlmcsd-ppc64-glibc
+export MULTI_NAME=../binaries/Linux/ppc/big-endian/glibc/vlmcsdmulti-ppc64-glibc
+export CC=/opt/toolchains/ppc64-glibc2.19-gcc-4.9.1/bin/powerpc64-linux-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+# PowerPC 64-bit little-endian glibc.
+export CLIENT_NAME=../binaries/Linux/ppc/little-endian/glibc/vlmcs-ppc64el-glibc
+export PROGRAM_NAME=../binaries/Linux/ppc/little-endian/glibc/vlmcsd-ppc64el-glibc
+export MULTI_NAME=../binaries/Linux/ppc/little-endian/glibc/vlmcsdmulti-ppc64el-glibc
+export CC=/opt/toolchains/ppc64el-glibc2.20-gcc-4.9.1/bin/powerpc64le-linux-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+
+make DNS_PARSER=OS $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+# PowerPC glibc. Compiles with gcc 4.8 from OpenWRT toolchain but uses libs from an old DM500 toolchain to be compatible with glibc 2.3
+export CLIENT_NAME=../binaries/Linux/ppc/big-endian/glibc/vlmcs-ppc-glibc
+export PROGRAM_NAME=../binaries/Linux/ppc/big-endian/glibc/vlmcsd-ppc-glibc
+export MULTI_NAME=../binaries/Linux/ppc/big-endian/glibc/vlmcsdmulti-ppc-glibc
+export CC=/opt/toolchains/ppc-openwrt-eglibc-2.19-gcc-4.8/bin/powerpc-openwrt-linux-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program --sysroot=/opt/simplebuild/toolchains/powerpc -L/opt/simplebuild/toolchains/powerpc/lib -L/opt/simplebuild/toolchains/powerpc/usr/lib"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+# Mips 32 glibc compiled with gcc 4.9.2 from OpenWRT toolchain
+export CLIENT_NAME=../binaries/Linux/mips/big-endian/glibc/vlmcs-mips32-openwrt-glibc
+export PROGRAM_NAME=../binaries/Linux/mips/big-endian/glibc/vlmcsd-mips32-openwrt-glibc
+export MULTI_NAME=../binaries/Linux/mips/big-endian/glibc/vlmcsdmulti-mips32-openwrt-glibc
+export CC=/opt/toolchains/mips_34kc_gcc-4.9-linaro_eglibc-2.19-mips16/bin/mips-openwrt-linux-gcc
+#export CC=~/openwrt/staging_dir/toolchain-mips_34kc_gcc-4.8-linaro_eglibc-2.19/bin/mips-openwrt-linux-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -mips32"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+
+# Mips 32 glibc compiled with gcc 4.9.2 from OpenWRT toolchain
+export CLIENT_NAME=../binaries/Linux/mips/big-endian/glibc/vlmcs-mips16-openwrt-glibc
+export PROGRAM_NAME=../binaries/Linux/mips/big-endian/glibc/vlmcsd-mips16-openwrt-glibc
+export MULTI_NAME=../binaries/Linux/mips/big-endian/glibc/vlmcsdmulti-mips16-openwrt-glibc
+export CC=/opt/toolchains/mips_34kc_gcc-4.9-linaro_eglibc-2.19-mips16/bin/mips-openwrt-linux-gcc
+#export CC=~/openwrt/staging_dir/toolchain-mips_34kc_gcc-4.8-linaro_eglibc-2.19/bin/mips-openwrt-linux-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -mips32 -mips16"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+
+# mips32el glibc 2.19 compiled with gcc 4.8 from OpenWRT toolchain
+export CLIENT_NAME=../binaries/Linux/mips/little-endian/glibc/vlmcs-mips32el-openwrt-glibc
+export PROGRAM_NAME=../binaries/Linux/mips/little-endian/glibc/vlmcsd-mips32el-openwrt-glibc
+export MULTI_NAME=../binaries/Linux/mips/little-endian/glibc/vlmcsdmulti-mips32el-openwrt-glibc
+export CC=/opt/toolchains/mipsel_74kc+dsp2_gcc-4.9-linaro_eglibc-2.19-mips16/bin/mipsel-openwrt-linux-gnu-gcc-4.9.2
+#export CC=~/openwrt/staging_dir/toolchain-mipsel_mips32_gcc-4.8-linaro_eglibc-2.19/bin/mipsel-openwrt-linux-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -mips32"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+# armv7 glibc 2.22 gcc 5.3 OpenWRT toolchain
+
+export CC=/opt/toolchains/armelv7-OpenWRT-BCM47xx_53xx-gcc-5.3.0-glibc-2.22/bin/arm-openwrt-linux-gcc
+export CLIENT_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcs-armelv7-bcm47xx_53xx-openwrt-glibc
+export PROGRAM_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcsd-armelv7-bcm47xx_53xx-openwrt-glibc
+export MULTI_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcsdmulti-armelv7-bcm47xx_53xx-openwrt-glibc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv7-a -mthumb -mtune=cortex-a9"
+export LDFLAGS="$SMALLLD -static-libgcc"
+export THREADS=0
+export DNS_PARSER=internal
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $MULTI_NAME, $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+# armv7 glibc 2.22 gcc 5.3 OpenWRT toolchain
+
+export CC=/opt/toolchains/armelv7-OpenWRT-BCM47xx_53xx-gcc-5.3.0-musl-1.14/bin/arm-openwrt-linux-gcc
+export CLIENT_NAME=../binaries/Linux/arm/little-endian/musl/vlmcs-armelv7-bcm47xx_53xx-openwrt-musl
+export PROGRAM_NAME=../binaries/Linux/arm/little-endian/musl/vlmcsd-armelv7-bcm47xx_53xx-openwrt-musl
+export MULTI_NAME=../binaries/Linux/arm/little-endian/musl/vlmcsdmulti-armelv7-bcm47xx_53xx-openwrt-musl
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv7-a -mthumb -mtune=cortex-a9"
+export LDFLAGS="$SMALLLD -static-libgcc"
+export THREADS=0
+
+make DNS_PARSER=OS $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $MULTI_NAME, $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export CLIENT_NAME=../binaries/Linux/arm/little-endian/static/vlmcs-armelv7-bcm47xx_53xx-openwrt-musl-static
+export PROGRAM_NAME=../binaries/Linux/arm/little-endian/static/vlmcsd-armelv7-bcm47xx_53xx-openwrt-musl-static
+export MULTI_NAME=../binaries/Linux/arm/little-endian/static/vlmcsdmulti-armelv7-bcm47xx_53xx-openwrt-musl-static
+export LDFLAGS="$SMALLLD -static"
+
+make DNS_PARSER=OS $REUSEOBJFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $MULTI_NAME, $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+#Android gcc 4.8 with API Level 3 (Android 1.5 cupcake) armv7
+
+export CLIENT_NAME=../binaries/Android/arm/bionic/vlmcs-android15-armv7
+export PROGRAM_NAME=../binaries/Android/arm/bionic/vlmcsd-android15-armv7
+export MULTI_NAME=../binaries/Android/arm/static/vlmcsdmulti-android15-armv7
+export CC=/opt/toolchains/armelv7-android-3/bin/arm-linux-androideabi-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv7 -mthumb"
+export THREADS=0
+export LDFLAGS="$SMALLLD"
+
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export CLIENT_NAME=../binaries/Android/arm/static/vlmcs-android15-armv7-static
+export PROGRAM_NAME=../binaries/Android/arm/static/vlmcsd-android15-armv7-static
+export MULTI_NAME=../binaries/Android/arm/static/vlmcsdmulti-android15-armv7-static
+export LDFLAGS="$LDFLAGS -static"
+
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+#Android gcc 4.8 with API Level 3 (Android 1.5 cupcake) armv5
+
+export CLIENT_NAME=../binaries/Android/arm/bionic/vlmcs-android15-armv5
+export PROGRAM_NAME=../binaries/Android/arm/bionic/vlmcsd-android15-armv5
+export MULTI_NAME=../binaries/Android/arm/static/vlmcsdmulti-android15-armv5
+export CC=/opt/toolchains/armelv7-android-3/bin/arm-linux-androideabi-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv5te -mthumb"
+export THREADS=0
+export LDFLAGS="$SMALLLD"
+
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export CLIENT_NAME=../binaries/Android/arm/static/vlmcs-android15-armv5-static
+export PROGRAM_NAME=../binaries/Android/arm/static/vlmcsd-android15-armv5-static
+export MULTI_NAME=../binaries/Android/arm/static/vlmcsdmulti-android15-armv5-static
+export LDFLAGS="$LDFLAGS -static"
+
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+#Android gcc 4.8 with API Level 16 (Android 4.1 Jelly Bean) armv7
+
+export CLIENT_NAME=../binaries/Android/arm/bionic/vlmcs-android41-armv7
+export PROGRAM_NAME=../binaries/Android/arm/bionic/vlmcsd-android41-armv7
+export MULTI_NAME=../binaries/Android/arm/bionic/vlmcsdmulti-android41-armv7
+export CC=/opt/toolchains/armelv7-android-16/bin/arm-linux-androideabi-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv7 -mthumb -fPIE -pie"
+export THREADS=0
+export LDFLAGS="$SMALLLD"
+
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+##Android gcc 4.8 with API Level 21 (Android 5.0 Lollipop) armv7
+#
+#export CLIENT_NAME=../binaries/Android/arm/bionic/vlmcs-android50-armv7
+#export PROGRAM_NAME=../binaries/Android/arm/bionic/vlmcsd-android50-armv7
+#export MULTI_NAME=../binaries/Android/arm/bionic/vlmcsdmulti-android50-armv7
+#export CC=/opt/toolchains/armelv7-android-21/bin/arm-linux-androideabi-gcc
+#export CFLAGS="$SMALLCC"
+#export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv7 -mthumb -fPIE -pie"
+#export THREADS=0
+#export LDFLAGS="$SMALLLD"
+#
+#make NOLPTHREAD=1 $MAKEFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+#
+#make NOLPTHREAD=1 $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+#
+#
+#
+#
+#
+#Android gcc 4.9 with API Level 21 (Android 5.0 Lollipop) arm64el
+
+export CLIENT_NAME=../binaries/Android/arm/bionic/vlmcs-android50-arm64v8
+export PROGRAM_NAME=../binaries/Android/arm/bionic/vlmcsd-android50-arm64v8
+export MULTI_NAME=../binaries/Android/arm/bionic/vlmcsdmulti-android50-arm64v8
+export CC=/opt/toolchains/arm64el-android-21/bin/aarch64-linux-android-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -mtune=generic -mfix-cortex-a53-835769 -march=armv8-a -fPIE -pie"
+export THREADS=0
+export LDFLAGS="$SMALLLD"
+
+make NOLPTHREAD=1 NOLRESOLV=1 NO_DNS=0 $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+#Android gcc 4.9 with API Level 21 (Android 5.0 Lollipop) arm64el STATIC
+
+export CLIENT_NAME=../binaries/Android/arm/static/vlmcs-android50-arm64v8-static
+export PROGRAM_NAME=../binaries/Android/arm/static/vlmcsd-android50-arm64v8-static
+export MULTI_NAME=../binaries/Android/arm/static/vlmcsdmulti-android50-arm64v8-static
+export CC=/opt/toolchains/arm64el-android-21/bin/aarch64-linux-android-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -mtune=generic -mfix-cortex-a53-835769 -march=armv8-a"
+export THREADS=0
+export LDFLAGS="$SMALLLD -static"
+
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+#Android gcc 4.8 with API Level 9 (Android 2.3 Gingerbread) x86
+
+export CLIENT_NAME=../binaries/Android/intel/bionic/vlmcs-android23-x86
+export PROGRAM_NAME=../binaries/Android/intel/bionic/vlmcsd-android23-x86
+export MULTI_NAME=../binaries/Android/intel/static/vlmcsdmulti-android23-x86
+export CC=/opt/toolchains/x86-android-9/bin/i686-linux-android-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=i386 -m32"
+export THREADS=1
+export LDFLAGS="$SMALLLD"
+
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export CLIENT_NAME=../binaries/Android/intel/static/vlmcs-android23-x86-static
+export PROGRAM_NAME=../binaries/Android/intel/static/vlmcsd-android23-x86-static
+export MULTI_NAME=../binaries/Android/intel/static/vlmcsdmulti-android23-x86-static
+export LDFLAGS="$LDFLAGS -static"
+
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+#Android gcc 4.8 with API Level 16 (Android 4.1 Jelly Bean) x86
+
+export CLIENT_NAME=../binaries/Android/intel/bionic/vlmcs-android41-x86
+export PROGRAM_NAME=../binaries/Android/intel/bionic/vlmcsd-android41-x86
+export MULTI_NAME=../binaries/Android/intel/bionic/vlmcsdmulti-android41-x86
+export CC=/opt/toolchains/x86-android-16/bin/i686-linux-android-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=i386 -m32 -fPIE -pie"
+export THREADS=1
+export LDFLAGS="$SMALLLD"
+
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+##Android gcc 4.8 with API Level 21 (Android 5.0 Lollipop) x86
+#
+#export CLIENT_NAME=../binaries/Android/intel/bionic/vlmcs-android50-x86
+#export PROGRAM_NAME=../binaries/Android/intel/bionic/vlmcsd-android50-x86
+#export MULTI_NAME=../binaries/Android/intel/bionic/vlmcsdmulti-android50-x86
+#export CC=/opt/toolchains/x86-android-21/bin/i686-linux-android-gcc
+#export CFLAGS="$SMALLCC"
+#export PLATFORMFLAGS="-flto=16 -fwhole-program -march=atom -m32 -fPIE -pie"
+#export THREADS=1
+#export LDFLAGS="$SMALLLD"
+#
+#make NOLPTHREAD=1 $MAKEFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+#
+#make NOLPTHREAD=1 $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+
+
+
+
+#Android gcc 4.9 with API Level 21 (Android 5.0 Lollipop) x64
+
+export CLIENT_NAME=../binaries/Android/intel/bionic/vlmcs-android50-x64
+export PROGRAM_NAME=../binaries/Android/intel/bionic/vlmcsd-android50-x64
+export MULTI_NAME=../binaries/Android/intel/bionic/vlmcsdmulti-android50-x64
+export CC=/opt/toolchains/x86_64-android-21/bin/x86_64-linux-android-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -m64 -fPIE -pie"
+export THREADS=0
+export LDFLAGS="$SMALLLD"
+
+make NOLPTHREAD=1 NOLRESOLV=1 NO_DNS=0 $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+#Android gcc 4.9 with API Level 21 (Android 5.0 Lollipop) x64 STATIC
+
+export CLIENT_NAME=../binaries/Android/intel/static/vlmcs-android50-x64-static
+export PROGRAM_NAME=../binaries/Android/intel/static/vlmcsd-android50-x64-static
+export MULTI_NAME=../binaries/Android/intel/static/vlmcsdmulti-android50-x64-static
+export CC=/opt/toolchains/x86_64-android-21/bin/x86_64-linux-android-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -m64"
+export THREADS=0
+export LDFLAGS="$SMALLLD -static"
+
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+
+#Android gcc 4.8 with API Level 9 (Android 2.3 Gingerbread) mips32el
+
+export CLIENT_NAME=../binaries/Android/mips/bionic/vlmcs-android23-mips32el
+export PROGRAM_NAME=../binaries/Android/mips/bionic/vlmcsd-android23-mips32el
+export MULTI_NAME=../binaries/Android/mips/static/vlmcsdmulti-android23-mips32el
+export CC=/opt/toolchains/mipsel-android-9/bin/mipsel-linux-android-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program"
+export THREADS=1
+export LDFLAGS="$SMALLLD"
+
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export CLIENT_NAME=../binaries/Android/mips/static/vlmcs-android23-mips32el-static
+export PROGRAM_NAME=../binaries/Android/mips/static/vlmcsd-android23-mips32el-static
+export MULTI_NAME=../binaries/Android/mips/static/vlmcsdmulti-android23-mips32el-static
+export LDFLAGS="$LDFLAGS -static"
+
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $REUSEOBJFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+
+#Android gcc 4.8 with API Level 16 (Android 4.1 Jelly Bean) mips32el
+
+export CLIENT_NAME=../binaries/Android/mips/bionic/vlmcs-android41-mips32el
+export PROGRAM_NAME=../binaries/Android/mips/bionic/vlmcsd-android41-mips32el
+export MULTI_NAME=../binaries/Android/mips/bionic/vlmcsdmulti-android41-mips32el
+export CC=/opt/toolchains/mipsel-android-16/bin/mipsel-linux-android-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -fPIE -pie"
+export THREADS=1
+export LDFLAGS="$SMALLLD"
+
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+
+##Android gcc 4.8 with API Level 21 (Android 5.0 Lollipop) mips32el
+#
+#export CLIENT_NAME=../binaries/Android/mips/bionic/vlmcs-android50-mips32el
+#export PROGRAM_NAME=../binaries/Android/mips/bionic/vlmcsd-android50-mips32el
+#export MULTI_NAME=../binaries/Android/mips/bionic/vlmcsdmulti-android50-mips32el
+#export CC=/opt/toolchains/mipsel-android-21/bin/mipsel-linux-android-gcc
+#export CFLAGS="$SMALLCC"
+#export PLATFORMFLAGS="-flto=16 -fwhole-program -fPIE -pie"
+#export THREADS=1
+#export LDFLAGS="$SMALLLD"
+#
+#make NOLPTHREAD=1 $MAKEFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+#
+#make NOLPTHREAD=1 $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+
+
+
+
+##Android gcc 4.8 with API Level 9 (Android 2.3 Gingerbread) mips16el
+#
+#export CLIENT_NAME=../binaries/Android/mips/bionic/vlmcs-android23-mips16el
+#export PROGRAM_NAME=../binaries/Android/mips/bionic/vlmcsd-android23-mips16el
+#export CC=/opt/toolchains/mipsel-android-9/bin/mipsel-linux-android-gcc
+#export CFLAGS="$SMALLCC"
+#export PLATFORMFLAGS="-flto=16 -fwhole-program -mips16"
+#export THREADS=1
+#export LDFLAGS="$SMALLLD"
+#
+#make NOLPTHREAD=1 $MAKEFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#export CLIENT_NAME=../binaries/Android/mips/static/vlmcs-android23-mips16el-static
+#export PROGRAM_NAME=../binaries/Android/mips/static/vlmcsd-android23-mips16el-static
+#export MULTI_NAME=../binaries/Android/mips/static/vlmcsdmulti-android23-mips16el-static
+#export LDFLAGS="$LDFLAGS -static"
+#
+#make NOLPTHREAD=1 $REUSEOBJFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+#
+#make NOLPTHREAD=1 $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+#
+#export LDFLAGS="$SMALLLD"
+#export MULTI_NAME=../binaries/Android/mips/bionic/vlmcsdmulti-android23-mips16el
+#
+#make NOLPTHREAD=1 $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+#
+#
+#
+#
+#
+##Android gcc 4.8 with API Level 16 (Android 4.1 Jelly Bean) mips16el
+#
+#export CLIENT_NAME=../binaries/Android/mips/bionic/vlmcs-android41-mips16el
+#export PROGRAM_NAME=../binaries/Android/mips/bionic/vlmcsd-android41-mips16el
+#export MULTI_NAME=../binaries/Android/mips/bionic/vlmcsdmulti-android41-mips16el
+#export CC=/opt/toolchains/mipsel-android-16/bin/mipsel-linux-android-gcc
+#export CFLAGS="$SMALLCC"
+#export PLATFORMFLAGS="-flto=16 -fwhole-program -fPIE -pie -mips16"
+#export THREADS=1
+#export LDFLAGS="$SMALLLD"
+#
+#make NOLPTHREAD=1 $MAKEFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+#
+#make NOLPTHREAD=1 $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+#
+#
+#
+#
+#
+#Android gcc 4.8 with API Level 21 (Android 5.0 Lollipop) mips16el
+#
+#export CLIENT_NAME=../binaries/Android/mips/bionic/vlmcs-android50-mips16el
+#export PROGRAM_NAME=../binaries/Android/mips/bionic/vlmcsd-android50-mips16el
+#export MULTI_NAME=../binaries/Android/mips/bionic/vlmcsdmulti-android50-mips16el
+#export CC=/opt/toolchains/mipsel-android-21/bin/mipsel-linux-android-gcc
+#export CFLAGS="$SMALLCC"
+#export PLATFORMFLAGS="-flto=16 -fwhole-program -fPIE -pie -mips16"
+#export THREADS=1
+#export LDFLAGS="$SMALLLD"
+#
+#make NOLPTHREAD=1 $MAKEFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+#
+#make NOLPTHREAD=1 $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+
+
+#Android gcc 4.9 with API Level 21 (Android 5.0 Lollipop) mips64el
+
+export CLIENT_NAME=../binaries/Android/mips/bionic/vlmcs-android50-mips64el
+export PROGRAM_NAME=../binaries/Android/mips/bionic/vlmcsd-android50-mips64el
+export MULTI_NAME=../binaries/Android/mips/bionic/vlmcsdmulti-android50-mips64el
+export CC=/opt/toolchains/mips64el-android-21/bin/mips64el-linux-android-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -fPIE -pie"
+export THREADS=0
+export LDFLAGS="$SMALLLD"
+
+make NOLPTHREAD=1 NOLRESOLV=1 NO_DNS=0 $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+#Android gcc 4.9 with API Level 21 (Android 5.0 Lollipop) mips64el STATIC
+
+export CLIENT_NAME=../binaries/Android/mips/static/vlmcs-android50-mips64el-static
+export PROGRAM_NAME=../binaries/Android/mips/static/vlmcsd-android50-mips64el-static
+export MULTI_NAME=../binaries/Android/mips/static/vlmcsdmulti-android50-mips64el-static
+export CC=/opt/toolchains/mips64el-android-21/bin/mips64el-linux-android-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program"
+export THREADS=0
+export LDFLAGS="$SMALLLD -static"
+
+make NOLPTHREAD=1 NOLRESOLV=1 DNS_PARSER=OS $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+## Android 5.0+ with Ubuntu toolchain
+#export CLIENT_NAME=../binaries/Android/arm/bionic/vlmcs-android5
+#export PROGRAM_NAME=../binaries/Android/arm/bionic/vlmcsd-android5
+#export CC=arm-linux-androideabi-gcc
+#export CFLAGS="$SMALLCC"
+#export PLATFORMFLAGS="-flto=16 -fwhole-program"
+#export LDFLAGS="$SMALLLD -pie -fpie"
+#export THREADS=0
+#
+#make $MAKEFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#
+# Android 5.0+ with Ubuntu toolchain STATIC
+#export CLIENT_NAME=../binaries/Android/arm/static/vlmcs-android5-static
+#export PROGRAM_NAME=../binaries/Android/arm/static/vlmcsd-android5-static
+#export MULTI_NAME=../binaries/Android/arm/static/vlmcsdmulti-android5-static
+#export LDFLAGS="$LDFLAGS -static"
+#
+#make $REUSEOBJFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+#
+#make $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+#
+#export LDFLAGS="$SMALLLD -pie -fpie"
+#export MULTI_NAME=../binaries/Android/arm/bionic/vlmcsdmulti-android5
+#
+#make $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+#
+#
+#
+#
+## Android 5.0+ with Ubuntu toolchain for ARMv7 CPU with thumb2 instruction set
+#export CLIENT_NAME=../binaries/Android/arm/bionic/vlmcs-android5-armv7
+#export PROGRAM_NAME=../binaries/Android/arm/bionic/vlmcsd-android5-armv7
+#export CC=arm-linux-androideabi-gcc
+#export CFLAGS="$SMALLCC"
+#export PLATFORMFLAGS="-flto=16 -fwhole-program -mthumb -march=armv7 -mtune=cortex-a9"
+#export LDFLAGS="$SMALLLD -pie -fpie"
+#export THREADS=0
+#
+#make $MAKEFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#export CLIENT_NAME=../binaries/Android/arm/static/vlmcs-android5-armv7-static
+#export PROGRAM_NAME=../binaries/Android/arm/static/vlmcsd-android5-armv7-static
+#export MULTI_NAME=../binaries/Android/arm/static/vlmcsdmulti-android5-armv7-static
+#export LDFLAGS="$LDFLAGS -static"
+#
+#make $REUSEOBJFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+#
+#make $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+#
+#export LDFLAGS="$SMALLLD -pie -fpie"
+#export MULTI_NAME=../binaries/Android/arm/bionic/vlmcsdmulti-android5-armv7
+#
+#make $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+#
+##unset TERMINAL_WIDTH
+#
+#
+#
+#
+#
+## Android with Ubuntu toolchain
+#export CLIENT_NAME=../binaries/Android/arm/bionic/vlmcs-android
+#export PROGRAM_NAME=../binaries/Android/arm/bionic/vlmcsd-android
+#export CC=arm-linux-androideabi-gcc
+#export CFLAGS="$SMALLCC"
+#export PLATFORMFLAGS="-flto=16 -fwhole-program"
+#export LDFLAGS="$SMALLLD"
+#export THREADS=0
+#
+#make $MAKEFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#
+## Android with Ubuntu toolchain STATIC
+#export CLIENT_NAME=../binaries/Android/arm/static/vlmcs-android-static
+#export PROGRAM_NAME=../binaries/Android/arm/static/vlmcsd-android-static
+#export MULTI_NAME=../binaries/Android/arm/static/vlmcsdmulti-android-static
+#export LDFLAGS="$LDFLAGS -static"
+#
+#make $REUSEOBJFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+#
+#make $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+#
+#export LDFLAGS="$SMALLLD"
+#export MULTI_NAME=../binaries/Android/arm/bionic/vlmcsdmulti-android
+#
+#make $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+
+
+
+
+# Android with Ubuntu toolchain for ARMv7 CPU with thumb2 instruction set
+#export CLIENT_NAME=../binaries/Android/arm/bionic/vlmcs-android-armv7
+#export PROGRAM_NAME=../binaries/Android/arm/bionic/vlmcsd-android-armv7
+#export CC=arm-linux-androideabi-gcc
+#export CFLAGS="$SMALLCC"
+#export PLATFORMFLAGS="-flto=16 -fwhole-program -mthumb -march=armv7 -mtune=cortex-a9"
+#export LDFLAGS="$SMALLLD"
+#export THREADS=0
+#
+#make $MAKEFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#export CLIENT_NAME=../binaries/Android/arm/static/vlmcs-android-armv7-static
+#export PROGRAM_NAME=../binaries/Android/arm/static/vlmcsd-android-armv7-static
+#export MULTI_NAME=../binaries/Android/arm/static/vlmcsdmulti-android-armv7-static
+#export LDFLAGS="$LDFLAGS -static"
+#
+#make $REUSEOBJFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+#
+#make $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+#
+#export LDFLAGS="$SMALLLD"
+#export MULTI_NAME=../binaries/Android/arm/bionic/vlmcsdmulti-android-armv7
+#
+#make $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+
+
+
+# Linux x86 glibc
+export MULTI_NAME=../binaries/Linux/intel/glibc/vlmcsdmulti-x86-glibc
+export CLIENT_NAME=../binaries/Linux/intel/glibc/vlmcs-x86-glibc
+export PROGRAM_NAME=../binaries/Linux/intel/glibc/vlmcsd-x86-glibc
+export CC=/opt/toolchains/toolchain-i386_i486_gcc-4.8-linaro_eglibc-2.19/bin/i486-openwrt-linux-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -m32 -march=i686 -mtune=generic"
+export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+export THREADS=0
+
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+# Linux x86 glibc minimum standalone version
+export PROGRAM_NAME=../binaries/Linux/intel/glibc/vlmcsd-x86-glibc-minimum
+export CC=/opt/toolchains/toolchain-i386_i486_gcc-4.8-linaro_eglibc-2.19/bin/i486-openwrt-linux-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -m32 -march=i686 -mtune=generic"
+export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+export THREADS=0
+export FEATURES=minimum
+
+make NO_DNS=1 $MAKEFLAGS $PROGRAM_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $PROGRAM_NAME
+  exit $?
+fi
+
+# Linux x86 glibc minimum inetd version
+export PROGRAM_NAME=../binaries/Linux/intel/glibc/vlmcsd-x86-glibc-minimum-inetd
+export CFLAGS="$CFLAGS -DNO_SOCKETS"
+
+make NO_DNS=1 $MAKEFLAGS $PROGRAM_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $PROGRAM_NAME
+  exit $?
+fi
+
+# Linux x86 glibc threads
+export FEATURES=full
+export THREADS=1
+export PROGRAM_NAME=../binaries/Linux/intel/glibc/vlmcsd-x86-glibc-threads
+export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu -lpthread"
+export CFLAGS="$SMALLCC"
+
+make $MAKEFLAGS $PROGRAM_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+# Linux x86 musl
+export FEATURES=full
+export MULTI_NAME=../binaries/Linux/intel/static/vlmcsdmulti-x86-musl-static
+export CLIENT_NAME=../binaries/Linux/intel/static/vlmcs-x86-musl-static
+export PROGRAM_NAME=../binaries/Linux/intel/static/vlmcsd-x86-musl-static
+#export CC=/opt/toolchains/i386_i486_gcc-4.9-linaro_musl-1.1.6/bin/i486-openwrt-linux-musl-gcc-4.9.2
+export CC=/opt/toolchains/i486-musl-gcc-5.3.0-binutils-2.25.1/bin/i486-Hotbird-linux-musl-gcc.br_real
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -m32 -march=i486 -mtune=generic"
+export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu -static"
+export THREADS=0
+export NOPROCFS=0
+export AUXV=1
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export CLIENT_NAME=../binaries/Linux/intel/musl/vlmcs-x86-musl
+export PROGRAM_NAME=../binaries/Linux/intel/musl/vlmcsd-x86-musl
+export MULTI_NAME=../binaries/Linux/intel/musl/vlmcsdmulti-x86-musl
+export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+
+make $REUSEOBJFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+# Linux x86 musl static threads
+export FEATURES=full
+export PROGRAM_NAME=../binaries/Linux/intel/static/vlmcsd-x86-musl-static-threads
+export MULTI_NAME=../binaries/Linux/intel/static/vlmcsdmulti-x86-musl-static-threads
+export CC=/opt/toolchains/i486-musl-gcc-5.3.0-binutils-2.25.1/bin/i486-Hotbird-linux-musl-gcc.br_real
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -m32 -march=i486 -mtune=generic"
+export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu -static"
+export THREADS=1
+export NOPROCFS=0
+export AUXV=1
+
+make $MAKEFLAGS $PROGRAM_NAME $MULTI_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+
+
+
+# Linux armv4 little-endian glibc
+export FEATURES=full
+export MULTI_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcsdmulti-armv4el-glibc
+export CLIENT_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcs-armv4el-glibc
+export PROGRAM_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcsd-armv4el-glibc
+export CC=/opt/toolchains/armelv5t-glibc-2.23-gcc-6.1.0-binutils-2.26/usr/bin/arm-Hotbird-linux-gnueabi-gcc
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv4 -marm"
+export LDFLAGS="$SMALLLD -static-libgcc"
+export THREADS=0
+export NOPROCFS=0
+export AUXV=0
+
+make $MAKEFLAGS DNS_PARSER=internal allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+# Linux armv4 little-endian glibc thumb instruction set
+
+export MULTI_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcsdmulti-armv4el-glibc-thumb
+export CLIENT_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcs-armv4el-glibc-thumb
+export PROGRAM_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcsd-armv4el-glibc-thumb
+export CC=/opt/toolchains/armelv5t-glibc-2.23-gcc-6.1.0-binutils-2.26/usr/bin/arm-Hotbird-linux-gnueabi-gcc
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv4t -mthumb"
+export LDFLAGS="$SMALLLD -static-libgcc"
+export THREADS=0
+
+make $MAKEFLAGS DNS_PARSER=internal allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+# Linux armv5 little-endian glibc thumb instruction set
+export PROGRAM_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcsd-armv5el-glibc-thumb
+export CLIENT_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcs-armv5el-glibc-thumb
+export MULTI_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcsdmulti-armv5el-glibc-thumb
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv5t -mthumb"
+
+make $MAKEFLAGS DNS_PARSER=internal allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+# Linux armv5 little-endian glibc
+export PROGRAM_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcsd-armv5el-glibc
+export CLIENT_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcs-armv5el-glibc
+export MULTI_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcsdmulti-armv5el-glibc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv5 -marm"
+
+make $MAKEFLAGS DNS_PARSER=internal allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+# Linux armv7 little-endian glibc thumb2 instruction set
+export PROGRAM_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcsd-armv7el-glibc
+export CLIENT_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcs-armv7el-glibc
+export MULTI_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcsdmulti-armv7el-glibc
+export CC=/opt/toolchains/armelv7-cortex-a8-glibc-2.18/usr/bin/arm-linux-gcc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv7 -mthumb"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+export THREADS=0
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+# Linux armv4 little-endian openwrt toolchain
+export PROGRAM_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcsd-armv4el-openwrt-glibc
+export CLIENT_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcs-armv4el-openwrt-glibc
+export MULTI_NAME=../binaries/Linux/arm/little-endian/glibc/vlmcsdmulti-armv4el-openwrt-glibc
+export CC=/opt/toolchains/toolchain-arm_mpcore+vfp_gcc-4.8-linaro_eglibc-2.19_eabi/bin/arm-openwrt-linux-gcc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv4"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+export THREADS=0
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+
+# Linux armv7 little-endian openwrt toolchain thumb 2 instruction set
+INSTALLDIR=../binaries/Linux/arm/little-endian/glibc/
+SUFFIX=-armv7el-openwrt-glibc
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+export CC=/opt/toolchains/toolchain-arm_mpcore+vfp_gcc-4.8-linaro_eglibc-2.19_eabi/bin/arm-openwrt-linux-gcc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv7 -mthumb"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+export THREADS=0
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+
+
+
+
+# Linux armv5 little endian thumb instruction set
+INSTALLDIR=../binaries/Linux/arm/little-endian/static/
+SUFFIX=-armv5el-musl-thumb
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}-static
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}-static
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}-static
+export CC=/opt/toolchains/armelv5t-musl-gcc6.1.0-binutils-2.26/usr/bin/arm-Hotbird-linux-musleabi-gcc
+export PLATFORMFLAGS="-flto=16 -fwhole-program"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu -static"
+export THREADS=0
+export NOPROCFS=0
+export AUXV=1
+
+make $MAKEFLAGS DNS_PARSER=internal allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+rm -f ../build/dns_srv.o
+
+INSTALLDIR=../binaries/Linux/arm/little-endian/musl/
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+
+make $REUSEOBJFLAGS DNS_PARSER=OS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+# Linux armv5 little-endian uclibc thumb instruction set
+INSTALLDIR=../binaries/Linux/arm/little-endian/uclibc/
+SUFFIX=-armv5el-uclibc-thumb
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+export CC=/opt/toolchains/armelv5t-uclibc-0.9.33/usr/bin/arm-linux-gcc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv5t -mthumb"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+export THREADS=0
+export NOPROCFS=0
+export AUXV=0
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+# Linux armv7 little-endian uclibc thumb 2 instruction set
+INSTALLDIR=../binaries/Linux/arm/little-endian/
+SUFFIX=-armv7el-uclibc
+export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
+export CC=/opt/toolchains/armelv7-cortex-a8-uclibc-0.9.33/usr/bin/arm-linux-gcc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv7 -mthumb"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+export THREADS=0
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu -static"
+
+make $REUSEOBJFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+# Linux armv4 little-endian uclibc openwrt toolchain
+INSTALLDIR=../binaries/Linux/arm/little-endian/uclibc/
+SUFFIX=-armv4el-openwrt-uclibc
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+export CC=/opt/toolchains/toolchain-arm_mpcore+vfp_gcc-4.8-linaro_uClibc-0.9.33.2_eabi/bin/arm-openwrt-linux-gcc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv4 -marm"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+export THREADS=0
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+## Linux armv4 little-endian uclibc openwrt toolchain thumb instruction set
+#INSTALLDIR=../binaries/Linux/arm/little-endian/uclibc/
+#SUFFIX=-armv4el-openwrt-uclibc-thumb
+#export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+#export CC=~/openwrt/staging_dir/toolchain-arm_mpcore+vfp_gcc-4.8-linaro_uClibc-0.9.33.2_eabi/bin/arm-openwrt-linux-gcc
+#export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv4t -mthumb"
+#export FEATURES=full
+#export CFLAGS="$SMALLCC"
+#export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+#export THREADS=0
+#
+#make $MAKEFLAGS
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+#
+#rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+#
+#make $REUSEOBJFLAGS $MULTI_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $MULTI_NAME
+#  exit $?
+#fi
+
+
+
+
+# Linux armv7 little-endian uclibc openwrt toolchain thumb 2 instruction set
+INSTALLDIR=../binaries/Linux/arm/little-endian/uclibc/
+SUFFIX=-armv7el-openwrt-uclibc
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+export CC=/opt/toolchains/toolchain-arm_mpcore+vfp_gcc-4.8-linaro_uClibc-0.9.33.2_eabi/bin/arm-openwrt-linux-gcc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv7 -mthumb"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+export THREADS=0
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+#Linux armv4 little-endian uclibc
+if [ $IS64ONLY == 0 ]; then
+INSTALLDIR=../binaries/Linux/arm/little-endian/
+SUFFIX=-armv4el-uclibc
+export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
+export CC=~/toolchains/cross-compiler-armv4l/bin/armv4l-gcc
+export PLATFORMFLAGS="-pipe"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="-Wl,-z,norelro -fwhole-program"
+export THREADS=0
+export NOPROCFS=1
+
+make $MAKEFLAGS GETIFADDRS=musl SAFE_MODE=1 allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+export LDFLAGS="-Wl,-z,norelro -fwhole-program -static"
+
+make $REUSEOBJFLAGS GETIFADDRS=musl SAFE_MODE=1 allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+fi
+
+
+
+
+
+# mips1 little-endian with openssl 0.9.8 support dreambox toolchain
+if [ $IS64ONLY == 0 ]; then
+INSTALLDIR=../binaries/Linux/mips/little-endian/glibc/
+SUFFIX=-mips1el-glibc-openssl0.9.8-soft-EXPERIMENTAL
+export CRYPTO=openssl_with_aes_soft
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+export CC=/opt/simplebuild/toolchains/mipsoe20/bin/mipsel-unknown-linux-gnu-gcc
+export PLATFORMFLAGS="-flto=16 -fwhole-program"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+export NOPROCFS=0
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+# mips1 little-endian dreambox toolchain
+INSTALLDIR=../binaries/Linux/mips/little-endian/glibc/
+SUFFIX=-mips1el-glibc
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+export CC=/opt/simplebuild/toolchains/mipsoe20/bin/mipsel-unknown-linux-gnu-gcc
+export PLATFORMFLAGS="-flto=16 -fwhole-program"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+export CRYPTO=internal
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+# Linux mips1 little-endian uclibc 
+INSTALLDIR=../binaries/Linux/mips/little-endian/
+SUFFIX=-mips1el-uclibc
+export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
+export CC=~/toolchains/cross-compiler-mipsel/bin/mipsel-gcc
+export PLATFORMFLAGS="-pipe"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="-Wl,-z,norelro -fwhole-program"
+export THREADS=0
+export CRYPTO=internal
+export NOPROCFS=1
+
+make $MAKEFLAGS GETIFADDRS=musl SAFE_MODE=1 allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+export LDFLAGS="-Wl,-z,norelro -fwhole-program -static"
+
+make $REUSEOBJFLAGS GETIFADDRS=musl SAFE_MODE=1 allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+fi
+
+
+
+# Linux mips16 little endian glibc
+INSTALLDIR=../binaries/Linux/mips/little-endian/glibc/
+SUFFIX=-mips16el-glibc
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+export CC=/opt/toolchains/mips32el-mips16-glibc-2.18/usr/bin/mipsel-linux-gcc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -mips32 -mips16"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+export CRYPTO=internal
+export NOPROCFS=0
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+#ERROR
+## Linux mips16 little-endian uclibc
+#INSTALLDIR=../binaries/Linux/mips/little-endian/uclibc/
+#SUFFIX=-mips16el-uclibc
+#export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+#export CC=~/toolchains/mips32el-mips16-uclibc-0.9.33/bin/mipsel-linux-gcc
+#export PLATFORMFLAGS="-flto=16 -fwhole-program -mips32 -mips16"
+#export FEATURES=full
+#export CFLAGS="$SMALLCC"
+#export LDFLAGS="$SMALLLD"
+#export THREADS=0
+#export CRYPTO=internal
+#
+#make $MAKEFLAGS allmulti
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+
+
+
+
+
+#Linux PowerPC uclibc OpenWRT toolchain
+INSTALLDIR=../binaries/Linux/ppc/big-endian/
+SUFFIX=-ppc-uclibc
+export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
+#export CC=~/openwrt/staging_dir/toolchain-powerpc_405_gcc-4.8-linaro_uClibc-0.9.33.2/bin/powerpc-openwrt-linux-gcc
+export CC=/opt/toolchains/ppc-uclibc0.9.33.2-gcc-4.9.1-binutils2.24/bin/powerpc-linux-gcc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -L/root/toolchains/cross-compiler-powerpc/lib -L/root/toolchains/cross-compiler-powerpc/usr/lib"
+#export PLATFORMFLAGS="-flto=16 -fwhole-program"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD -static-libgcc"
+export THREADS=0
+export CRYPTO=internal
+
+make $MAKEFLAGS GETIFADDRS=musl allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+export LDFLAGS="$SMALLLD -static"
+
+make $REUSEOBJFLAGS GETIFADDRS=musl allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+#Linux PowerPC musl 1.15 toolchain
+INSTALLDIR=../binaries/Linux/ppc/big-endian/
+SUFFIX=-ppc-musl
+export PROGRAM_NAME=${INSTALLDIR}musl/vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}musl/vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}musl/vlmcsdmulti${SUFFIX}
+export CC=/opt/toolchains/ppc-musl-1.15-gcc-6.2.0-binutils-2.27/usr/bin/powerpc-Hotbird64-linux-musl-gcc
+export PLATFORMFLAGS="-flto=16 -fwhole-program"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD -static-libgcc"
+export THREADS=0
+export CRYPTO=internal
+
+make $MAKEFLAGS AUXV=1 DNS_PARSER=OS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $MULTI_NAME, $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+export LDFLAGS="$SMALLLD -static"
+
+make $REUSEOBJFLAGS AUXV=1 DNS_PARSER=OS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $MULTI_NAME, $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+if [ $IS64ONLY == 0 ]; then
+#Fritzbox 7170 (mips32r2 little-endian) device specific, May or may not run on other devices
+INSTALLDIR=../binaries/Linux/mips/little-endian/
+SUFFIX=-mips32r2el-Fritzbox-71xx-72xx-uclibc
+export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
+export CC=/opt/simplebuild/toolchains/fritz71xx/bin/mipsel-linux-uclibc-gcc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=4kec -mtune=4kec"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+export CRYPTO=internal
+
+make NOLRESOLV=1 GETIFADDRS=musl $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+export LDFLAGS="$SMALLLD -static"
+
+make NOLRESOLV=1 GETIFADDRS=musl $REUSEOBJFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+#Fritzbox 7370 (mips32r2 big-endian) device specific, May or may not run on other devices
+INSTALLDIR=../binaries/Linux/mips/big-endian/
+SUFFIX=-mips16-Fritzbox-33xx-73xx-74xx-63xx-64xx-uclibc
+export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
+export CC=/opt/simplebuild/toolchains/fritz73xxOS62/bin/mips-linux-cc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=24kc -mtune=24kc -mips16 -mdsp"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+export CRYPTO=internal
+
+make NOLRESOLV=1 $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+export LDFLAGS="$SMALLLD -static"
+
+make NOLRESOLV=1 $REUSEOBJFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+#Fritzbox 7370 (mips32r2 big-endian) device specific with _PEDANTIC, May or may not run on other devices
+INSTALLDIR=../binaries/Linux/mips/big-endian/uclibc/
+SUFFIX=-mips16-Fritzbox-33xx-73xx-74xx-63xx-64xx-uclibc-pedantic
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+export CC=/opt/simplebuild/toolchains/fritz73xxOS62/bin/mips-linux-cc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=24kc -mtune=24kc -mips16 -mdsp"
+export FEATURES=full
+export CFLAGS="$SMALLCC -D_PEDANTIC"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+export CRYPTO=internal
+
+make NOLRESOLV=1 $MAKEFLAGS $PROGRAM_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+#Fritzbox 7370 (mips32r2 big-endian) device specific with simple sockets and some features disabled, May or may not run on other devices
+INSTALLDIR=../binaries/Linux/mips/big-endian/uclibc/
+SUFFIX=-mips16-Fritzbox-33xx-73xx-74xx-63xx-64xx-uclibc-simple
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+export CC=/opt/simplebuild/toolchains/fritz73xxOS62/bin/mips-linux-cc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=24kc -mtune=24kc -mips16 -mdsp"
+export FEATURES=full
+export CFLAGS="$SMALLCC -DNO_USER_SWITCH -DSIMPLE_SOCKETS -DNO_PID_FILE -DNO_USER_SWITCH -DNO_USER_SWITCH"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+export CRYPTO=internal
+
+make NOLRESOLV=1 $MAKEFLAGS $PROGRAM_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+#Fritzbox 7370 (mips32r2 big-endian) device specific inetd start only, May or may not run on other devices
+INSTALLDIR=../binaries/Linux/mips/big-endian/uclibc/
+SUFFIX=-mips16-Fritzbox-33xx-73xx-74xx-63xx-64xx-uclibc-inetd
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+export CC=/opt/simplebuild/toolchains/fritz73xxOS62/bin/mips-linux-cc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=24kc -mtune=24kc -mips16 -mdsp"
+export FEATURES=inetd
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+export CRYPTO=internal
+
+make NOLRESOLV=1 $MAKEFLAGS $PROGRAM_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+#Fritzbox 7370 (mips32r2 big-endian) device specific with pthreads, May or may not run on other devices
+INSTALLDIR=../binaries/Linux/mips/big-endian/uclibc/
+SUFFIX=-mips16-Fritzbox-33xx-73xx-74xx-63xx-64xx-uclibc-threads
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+export CC=/opt/simplebuild/toolchains/fritz73xxOS62/bin/mips-linux-cc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=24kc -mtune=24kc -mips16 -mdsp"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD -lpthread"
+export THREADS=1
+
+make NOLRESOLV=1 $MAKEFLAGS $PROGRAM_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+#Fritzbox 7370 (mips32r2 big-endian) device specific with OpenSSL support, May or may not run on other devices
+INSTALLDIR=../binaries/Linux/mips/big-endian/uclibc/
+SUFFIX=-mips16-Fritzbox-33xx-73xx-74xx-63xx-64xx-uclibc-openssl0.9.8-soft-EXPERIMENTAL
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+export CC=/opt/simplebuild/toolchains/fritz73xxOS62/bin/mips-linux-cc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=24kc -mtune=24kc -mips16 -mdsp"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+export CRYPTO=openssl_with_aes_soft
+export OPENSSL_HMAC=0
+
+make NOLRESOLV=1 $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+fi
+
+
+unset OPENSSL_HMAC
+
+
+
+# Linux mips32 big-endian uclibc
+INSTALLDIR=../binaries/Linux/mips/big-endian/uclibc/
+SUFFIX=-mips32-uclibc
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+export CC=/root/toolchains/mips32eb-uclibc-0.9.33/usr/bin/mips-linux-cc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -mips32"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+export CRYPTO=internal
+export DNS_PARSER=internal
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+# Linux mips16 big-endian uclibc
+INSTALLDIR=../binaries/Linux/mips/big-endian/uclibc/
+SUFFIX=-mips16-uclibc
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+export CC=/opt/toolchains/mips32eb-uclibc-0.9.33/usr/bin/mips-linux-cc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -mips16"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+export CRYPTO=internal
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+#Atheros ar7xxx/ar9xxx chips with OpenWRT toolchain (mips16 big-endian) device specific, May or may not run on other devices
+INSTALLDIR=../binaries/Linux/mips/big-endian/
+SUFFIX=-mips16-openwrt-atheros-ar7xxx-ar9xxx-uclibc
+export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
+export CC=/opt/toolchains/mips-openwrt-linux-uclibc/bin/mips-openwrt-linux-gcc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=24kc -mips16"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="-ldl -lpthread $SMALLLD"
+export THREADS=0
+export CRYPTO=internal
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+
+#Atheros ar7xxx/ar9xxx chips with OpenWRT toolchain (mips16 big-endian) device specific, May or may not run on other devices
+INSTALLDIR=../binaries/Linux/mips/big-endian/
+SUFFIX=-mips16-openwrt-atheros-ar7xxx-ar9xxx-musl
+export PROGRAM_NAME=${INSTALLDIR}musl/vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}musl/vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}musl/vlmcsdmulti${SUFFIX}
+export CC=/opt/toolchains/mips_34kc_gcc-4.9-linaro_musl-1.1.6-mips16/bin/mips-openwrt-linux-musl-gcc-4.9.2
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=24kc -mips16"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+export CRYPTO=internal
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+export LDFLAGS="$LDFLAGS -static"
+
+make $REUSEOBJFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+#Atheros ar7xxx/ar9xxx chips with OpenWRT toolchain (mips32r2 big-endian) device specific, May or may not run on other devices
+INSTALLDIR=../binaries/Linux/mips/big-endian/
+SUFFIX=-mips32r2-openwrt-atheros-ar7xxx-ar9xxx-uclibc
+export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
+export CC=/opt/toolchains/mips-openwrt-linux-uclibc/bin/mips-openwrt-linux-gcc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=24kc"
+export FEATURES=full
+export CFLAGS="$SMALLCC -DNO_LIMIT"
+export LDFLAGS="-ldl -lpthread $SMALLLD"
+export THREADS=0
+export CRYPTO=internal
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+export LDFLAGS="$LDFLAGS -static"
+
+make $REUSEOBJFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+# Linux mips16 big-endian uclibc threads
+INSTALLDIR=../binaries/Linux/mips/big-endian/uclibc/
+SUFFIX=-mips16-uclibc-threads
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+export CC=/opt/toolchains/mips32eb-uclibc-0.9.33/usr/bin/mips-linux-cc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -mips16"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD -lpthread"
+export THREADS=1
+export CRYPTO=internal
+
+make $MAKEFLAGS $PROGRAM_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+# Linux mips32 big-endian glibc
+INSTALLDIR=../binaries/Linux/mips/big-endian/glibc/
+SUFFIX=-mips32-glibc
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+export CC=/opt/toolchains/mips32eb-glibc-2.19/usr/bin/mips-linux-cc
+export PLATFORMFLAGS="-flto=16 -fwhole-program"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+export CRYPTO=internal
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+# Linux mips16 big-endian glibc
+INSTALLDIR=../binaries/Linux/mips/big-endian/glibc/
+SUFFIX=-mips16-glibc
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+export CC=/opt/toolchains/mips32eb-glibc-2.19/usr/bin/mips-linux-cc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -mips16"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+export CRYPTO=internal
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+#Linux mips32 big-endian musl
+INSTALLDIR=../binaries/Linux/mips/big-endian/
+SUFFIX=-mips32-musl
+export PROGRAM_NAME=${INSTALLDIR}musl/vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}musl/vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}musl/vlmcsdmulti${SUFFIX}
+export CC=/opt/toolchains/mips32eb-musl/usr/bin/mips-linux-cc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -mips32"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+export CRYPTO=internal
+export NOPROCFS=0
+export AUXV=1
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+export LDFLAGS="$SMALLLD -static"
+
+make $REUSEOBJFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+rm -f *_all.c vlmcsd.o vlmcs.o vlmcsdmulti.o 2> /dev/null
+
+
+
+
+
+#Linux mips16 little-endian musl soft-float
+INSTALLDIR=../binaries/Linux/mips/little-endian/
+SUFFIX=-mips16el-musl
+export PROGRAM_NAME=${INSTALLDIR}musl/vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}musl/vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}musl/vlmcsdmulti${SUFFIX}
+export CC=/opt/toolchains/mips32el-mips16-musl/usr/bin/mipsel-linux-cc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -mips16"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+export CRYPTO=internal
+export NOPROCFS=0
+export AUXV=1
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+export LDFLAGS="$SMALLLD -static"
+
+make $REUSEOBJFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+#Linux mips16 little-endian musl fpu
+INSTALLDIR=../binaries/Linux/mips/little-endian/
+SUFFIX=-mips16el-musl-fpu
+export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+export CC=/opt/toolchains/mips32el-mips16-musl-fpu/usr/bin/mipsel-linux-cc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -mips16"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD -static"
+export THREADS=0
+export CRYPTO=internal
+export NOPROCFS=0
+export AUXV=1
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+##ERROR
+## Linux x86 uclibc
+#INSTALLDIR=../binaries/Linux/intel/uclibc/
+#SUFFIX=-x86-uclibc
+#export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+#export CC=/root/toolchains/i486-uclibc-0.9.33/bin/i486-linux-gcc
+#export PLATFORMFLAGS="-flto=16 -fwhole-program -m32 -march=i486 -mtune=generic"
+#export FEATURES=full
+#export CFLAGS="$SMALLCC"
+#export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+#export THREADS=0
+#export CRYPTO=internal
+#export NOPROCFS=0
+#export AUXV=0
+#
+#make $MAKEFLAGS allmulti
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+
+
+
+
+##ERROR
+## Linux x64 glibc
+#INSTALLDIR=../binaries/Linux/intel/glibc/
+#SUFFIX=-x64-glibc
+#export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+#export CC=/root/toolchains/x86_64-glibc-2.19/usr/bin/x86_64-linux-gcc
+#export PLATFORMFLAGS="-flto=16 -fwhole-program -m64 -mtune=generic"
+#export FEATURES=full
+#export CFLAGS="$SMALLCC"
+#export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+#export THREADS=0
+#export CRYPTO=internal
+#
+#make $MAKEFLAGS allmulti
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+
+
+
+
+
+#Linux Sparc32v7 glibc
+INSTALLDIR=../binaries/Linux/sparc/glibc/
+SUFFIX=-sparc32v7-glibc
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+export CC=/opt/toolchains/sparc32-glibc-gcc-4.7.4/bin/sparc-buildroot-linux-gnu-gcc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -mcpu=v7"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+export CRYPTO=internal
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+##ERROR
+# Linux x64 glibc with threads
+#INSTALLDIR=../binaries/Linux/intel/glibc/
+#SUFFIX=-x64-glibc-threads
+#export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+#export CC=/opt/toolchains/x86_64-glibc-2.19/usr/bin/x86_64-linux-gcc
+#export PLATFORMFLAGS="-flto=16 -fwhole-program -m64 -mtune=generic"
+#export FEATURES=full
+#export CFLAGS="$SMALLCC"
+#export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu -lpthread"
+#export THREADS=1
+#export CRYPTO=internal
+#
+#make $MAKEFLAGS $PROGRAM_NAME
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+
+
+
+##ERROR
+## Linux x64 glibc with OpenSSL 1.0.x support
+#INSTALLDIR=../binaries/Linux/intel/glibc/
+#SUFFIX=-x64-glibc-openssl1.0.0-hard-EXPERIMENTAL
+#export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+#export CC=/opt/toolchains/x86_64-glibc-2.19/usr/bin/x86_64-linux-gcc
+#export PLATFORMFLAGS="-flto=16 -fwhole-program -m64 -mtune=generic"
+#export FEATURES=full
+#export CFLAGS="$SMALLCC"
+#export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+#export THREADS=0
+#export CRYPTO=openssl_with_aes
+#
+#make $MAKEFLAGS allmulti
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+
+
+
+
+
+# Linux x64 musl
+INSTALLDIR=../binaries/Linux/intel/
+SUFFIX=-x64-musl
+export PROGRAM_NAME=${INSTALLDIR}musl/vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}musl/vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}musl/vlmcsdmulti${SUFFIX}
+#export CC=/opt/toolchains/x86_64_gcc-4.9-linaro_musl-1.1.6/bin/x86_64-openwrt-linux-musl-gcc-4.9.2
+export CC=/opt/toolchains/x86_64-musl-gcc-5.3.0-binutils-2.25.1/bin/x86_64-Hotbird-linux-musl-gcc.br_real
+export PLATFORMFLAGS="-flto=16 -fwhole-program -m64 -mtune=generic"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+export THREADS=0
+export CRYPTO=internal
+export NOPROCFS=0
+export AUXV=1
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu -static"
+
+make $REUSEOBJFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export AUXV=0
+
+
+
+
+
+##ERROR
+## Linux x64 uclibc
+#INSTALLDIR=../binaries/Linux/intel/uclibc/
+#SUFFIX=-x64-uclibc
+#export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+#export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+#export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+#export CC=/opt/toolchains/x86_64-uclibc-0.9.33/bin/x86_64-linux-gcc
+#export PLATFORMFLAGS="-flto=16 -fwhole-program -m64 -mtune=generic"
+#export FEATURES=full
+#export CFLAGS="$SMALLCC"
+#export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+#export THREADS=0
+#export CRYPTO=internal
+#export NOPROCFS=0
+#export AUXV=0
+#
+#make $MAKEFLAGS allmulti
+#
+#if [ $? != 0 ]; then
+#  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+#  exit $?
+#fi
+
+
+
+
+# mips32 little-endian DD-WRT toolchain with gcc 4.1.0
+if [ $IS64ONLY == 0 ]; then
+export CC=/opt/simplebuild/toolchains/ddwrt410/bin/mipsel-linux-gcc
+INSTALLDIR=../binaries/Linux/mips/little-endian/
+SUFFIX=-mips32el-ddwrt-gcc$($CC -dumpversion)-uclibc
+export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
+export PLATFORMFLAGS="-pipe -mips32"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="-fwhole-program"
+export THREADS=0
+export CRYPTO=internal
+
+make $MAKEFLAGS GETIFADDRS=musl CAT=2 SAFE_MODE=1 $PROGRAM_NAME $MULTI_NAME $CLIENT_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $PROGRAM_NAME, $MULTI_NAME and/or $CLIENT_NAME
+  exit $?
+fi
+
+export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+export LDFLAGS="-fwhole-program -static"
+
+make $REUSEOBJFLAGS GETIFADDRS=musl CAT=2 SAFE_MODE=1 $PROGRAM_NAME $MULTI_NAME $CLIENT_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $PROGRAM_NAME, $MULTI_NAME and/or $CLIENT_NAME
+  exit $?
+fi
+fi
+
+
+
+
+#Linux mips32 little-endian uclibc
+INSTALLDIR=../binaries/Linux/mips/little-endian/
+SUFFIX=-mips32el-uclibc
+export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
+export CC=/opt/toolchains/mips32el-uclibc-0.9.33/bin/mipsel-linux-gcc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -mips32"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD"
+export THREADS=0
+export CRYPTO=internal
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+export LDFLAGS="$SMALLLD -static"
+
+make $REUSEOBJFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+#Linux armv6 hard-float little-endian. Used on Raspberry Pi with Raspbian.
+#The hard-float ABI cannot be combined with thumb.
+#You may wish to use armv5el-thumb instead because the binary is smaller
+INSTALLDIR=../binaries/Linux/arm/little-endian/glibc/
+SUFFIX=-armv6hf-Raspberry-glibc
+export PROGRAM_NAME=${INSTALLDIR}vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}vlmcsdmulti${SUFFIX}
+export CC=/opt/toolchains/armhfv6-glibc-2.19/bin/arm-linux-gcc
+export PLATFORMFLAGS="-flto=16 -fwhole-program -march=armv6zk -mfpu=vfp -mfloat-abi=hard -mtune=arm1176jzf-s"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="$SMALLLD -Wl,--hash-style=gnu"
+export THREADS=0
+export CRYPTO=internal
+
+make $MAKEFLAGS allmulti
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+
+
+
+
+# Linux arm big-endian uclibc
+if [ $IS64ONLY == 0 ]; then
+INSTALLDIR=../binaries/Linux/arm/big-endian/
+SUFFIX=-armeb-nslu2-uclibc
+export PROGRAM_NAME=${INSTALLDIR}uclibc/vlmcsd${SUFFIX}
+export CLIENT_NAME=${INSTALLDIR}uclibc/vlmcs${SUFFIX}
+export MULTI_NAME=${INSTALLDIR}uclibc/vlmcsdmulti${SUFFIX}
+export CC=/opt/simplebuild/toolchains/nslu2open/bin/armeb-linux-uclibc-gcc
+export PLATFORMFLAGS="-pipe"
+export FEATURES=full
+export CFLAGS="$SMALLCC"
+export LDFLAGS="-Wl,-z,norelo"
+export THREADS=0
+
+make $MAKEFLAGS GETIFADDRS=musl SAFE_MODE=1 CAT=2 $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME, $MULTI_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+
+export PROGRAM_NAME=${INSTALLDIR}static/vlmcsd${SUFFIX}-static
+export CLIENT_NAME=${INSTALLDIR}static/vlmcs${SUFFIX}-static
+export MULTI_NAME=${INSTALLDIR}static/vlmcsdmulti${SUFFIX}-static
+export LDFLAGS="-Wl,-z,norelo -static"
+
+make $REUSEOBJFLAGS GETIFADDRS=musl SAFE_MODE=1 CAT=2 $CLIENT_NAME $PROGRAM_NAME $MULTI_NAME
+
+if [ $? != 0 ]; then
+  echo Error creating $CLIENT_NAME, $MULTI_NAME and/or $PROGRAM_NAME
+  exit $?
+fi
+fi
+
+# Strip off unnecessary stuff from ../binaries
+
+#find ../binaries -xdev -name 'vlmcs*' -exec /opt/toolchains/mips32el-mips16-glibc-2.18/usr/bin/mipsel-linux-strip -s --strip-unneeded --remove-section=.note.gnu.gold-version --remove-section=.comment --remove-section=.note --remove-section=.note.gnu.build-id --remove-section=.note.ABI-tag {} \; 2>/dev/null
+#find ../binaries -xdev -name 'vlmcs*' -exec strip -s --strip-unneeded --remove-section=.note.gnu.gold-version --remove-section=.comment --remove-section=.note --remove-section=.note.gnu.build-id --remove-section=.note.ABI-tag {} \; 2>/dev/null
+find ../binaries -xdev -name 'vlmcs*' ! -name '*-NetBSD-*' ! -name '*-Windows-*' ! -name '*-cygwin-*' ! -name '*-MacOSX-*' ! -name '*-iOS-*' -exec sstrip -z {} \;
+
+cd ..
+
+make alldocs
+
+rm build/*.o
+
+#cp -p ../binaries/Linux/intel/glibc/vlmcs-x32-glibc /usr/local/bin/vlmcs
+
+if [ `lsb_release -is` == "Debian" ]; then
+  cp -pf binaries/Linux/intel/glibc/vlmcsdmulti-x86-glibc /usr/local/sbin/vlmcsdmulti
+else
+  cp -pf binaries/Linux/intel/glibc/vlmcsdmulti-x32-glibc /usr/local/sbin/vlmcsdmulti
+fi
+
+ln -s vlmcsdmulti /usr/local/sbin/vlmcsd 2>/dev/null
+ln -s ../sbin/vlmcsdmulti /usr/local/bin/vlmcs 2>/dev/null
+mkdir -p /usr/local/man/man1 2>/dev/null
+mkdir -p /usr/local/man/man5 2>/dev/null
+mkdir -p /usr/local/man/man8 2>/dev/null
+mkdir -p /usr/local/man/man7 2>/dev/null
+cp -a man/vlmcs.1 man/vlmcsdmulti.1 /usr/local/man/man1/
+cp -a man/vlmcsd-floppy.7 man/vlmcsd.7 /usr/local/man/man7/
+cp -a man/vlmcsd.8 /usr/local/man/man8/
+cp -a man/vlmcsd.ini.5 /usr/local/man/man5/
+pbzip2 -f -9 /usr/local/man/man7/vlmcsd-floppy.7 /usr/local/man/man5/vlmcsd.ini.5 /usr/local/man/man1/vlmcs.1 /usr/local/man/man1/vlmcsdmulti.1 /usr/local/man/man7/vlmcsd.7 /usr/local/man/man8/vlmcsd.8
+#pbzip2 -f /usr/local/man/man7/vlmcsd.7
+#pbzip2 -f /usr/local/man/man8/vlmcsd.8
+
+mandb >/dev/null 2>&1
+

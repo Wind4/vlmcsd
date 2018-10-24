@@ -544,7 +544,7 @@ static void getDefaultDataFile()
 	char* fn_exe_copy = vlmcsd_strdup(fn_exe);
 	strncpy(fileName, dirname(fn_exe_copy), 512);
 	free(fn_exe_copy);
-	strncat(fileName, "/vlmcsd.kmd", 512);
+	strncat(fileName, "/vlmcsd.kmd", 500);
 	fn_data = vlmcsd_strdup(fileName);
 }
 #endif // !_WIN32
@@ -593,29 +593,13 @@ void loadKmsData()
 			fclose(file);
 
 #			if !defined(NO_LOG) && !defined(NO_SOCKETS)
-			if (!InetdMode) logger("Read KMS data file %s\n", fn_data);
+			if (!InetdMode) logger("Read KMS data file version %u.%u %s\n", (unsigned int)KmsData->MajorVer, (unsigned int)KmsData->MinorVer, fn_data);
 #			endif // NO_LOG
-		}
-
-		if (KmsData->CsvlkCount < MIN_CSVLK)
-		{
-			printerrorf("Warning: Legacy database: Some products are missing.\n");
 		}
 	}
 
 
 #	endif // NO_EXTERNAL_DATA
-
-#	if !defined(NO_RANDOM_EPID) || !defined(NO_CL_PIDS) || !defined(NO_INI_FILE)
-
-	if (KmsData->CsvlkCount > MIN_CSVLK)
-	{
-		KmsResponseParameters = (KmsResponseParam_t*)realloc(KmsResponseParameters, KmsData->CsvlkCount * sizeof(KmsResponseParam_t));
-		if (!KmsResponseParameters) OutOfMemory();
-		memset(KmsResponseParameters + MIN_CSVLK, 0, (KmsData->CsvlkCount - MIN_CSVLK) * sizeof(KmsResponseParam_t));
-	}
-
-#	endif // !defined(NO_RANDOM_EPID) || !defined(NO_CL_PIDS) || !defined(NO_INI_FILE)
 
 #	ifndef UNSAFE_DATA_LOAD
 	if (((BYTE*)KmsData)[size - 1] != 0) dataFileFormatError();
@@ -652,7 +636,7 @@ void loadKmsData()
 #		endif // NO_RANDOM_EPID
 	}
 
-	uint32_t totalItemCount = KmsData->AppItemCount + KmsData->KmsItemCount + KmsData->SkuItemCount;
+	const uint32_t totalItemCount = KmsData->AppItemCount + KmsData->KmsItemCount + KmsData->SkuItemCount;
 
 #	ifndef NO_EXTERNAL_DATA
 	if (

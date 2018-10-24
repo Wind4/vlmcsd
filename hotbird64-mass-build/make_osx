@@ -49,10 +49,10 @@ PATH=~/toolchains/iOS5.1-MacOS-Lion/usr/bin:$PATH make $MAKEFLAGS allmulti MULTI
 PATH=~/toolchains/gcc4.2/usr/bin:$PATH make -Bj allmulti SAFE_MODE=1 MULTI_NAME=$BINDIR/vlmcsdmulti-MacOSX-ppc PROGRAM_NAME=$BINDIR/vlmcsd-MacOSX-ppc CLIENT_NAME=$BINDIR/vlmcs-MacOSX-ppc CC=gcc CFLAGS="$CFGCC42 -isysroot ~/toolchains/MacOSX10.5.sdk -arch ppc -mmacosx-version-min=10.0" && \
 
 
-make $MAKEFLAGS allmulti MULTI_NAME=$BINDIR/vlmcsdmulti-MacOSX-x86-gcc CLIENT_NAME=$BINDIR/vlmcs-MacOSX-x86-gcc PROGRAM_NAME=$BINDIR/vlmcsd-MacOSX-x86-gcc CC=gcc-6 CFLAGS="$CFGCC" PLATFORMFLAGS="-m32 -march=core2 -mmacosx-version-min=10.11" && \
-make $MAKEFLAGS vlmcsd THREADS=1 PROGRAM_NAME=$BINDIR/vlmcsd-MacOSX-x86-threads-gcc CC=gcc-6 CFLAGS="$CFGCC" PLATFORMFLAGS="-m32 -march=core2 -mmacosx-version-min=10.11" && \
-make $MAKEFLAGS allmulti MULTI_NAME=$BINDIR/vlmcsdmulti-MacOSX-x64-gcc CLIENT_NAME=$BINDIR/vlmcs-MacOSX-x64-gcc PROGRAM_NAME=$BINDIR/vlmcsd-MacOSX-x64-gcc CC=gcc-6 CFLAGS="$CFGCC" PLATFORMFLAGS="-m64 -march=core2 -mmacosx-version-min=10.11" && \
-make $MAKEFLAGS vlmcsd THREADS=1 PROGRAM_NAME=$BINDIR/vlmcsd-MacOSX-x64-threads-gcc CC=gcc-6 CFLAGS="$CFGCC" PLATFORMFLAGS="-m64 -march=core2 -mmacosx-version-min=10.11" && \
+make $MAKEFLAGS allmulti MULTI_NAME=$BINDIR/vlmcsdmulti-MacOSX-x86-gcc CLIENT_NAME=$BINDIR/vlmcs-MacOSX-x86-gcc PROGRAM_NAME=$BINDIR/vlmcsd-MacOSX-x86-gcc CC=gcc-7 CFLAGS="$CFGCC" PLATFORMFLAGS="-m32 -march=core2 -mmacosx-version-min=10.11" && \
+make $MAKEFLAGS vlmcsd THREADS=1 PROGRAM_NAME=$BINDIR/vlmcsd-MacOSX-x86-threads-gcc CC=gcc-7 CFLAGS="$CFGCC" PLATFORMFLAGS="-m32 -march=core2 -mmacosx-version-min=10.11" && \
+make $MAKEFLAGS allmulti MULTI_NAME=$BINDIR/vlmcsdmulti-MacOSX-x64-gcc CLIENT_NAME=$BINDIR/vlmcs-MacOSX-x64-gcc PROGRAM_NAME=$BINDIR/vlmcsd-MacOSX-x64-gcc CC=gcc-7 CFLAGS="$CFGCC" PLATFORMFLAGS="-m64 -march=core2 -mmacosx-version-min=10.11" && \
+make $MAKEFLAGS vlmcsd THREADS=1 PROGRAM_NAME=$BINDIR/vlmcsd-MacOSX-x64-threads-gcc CC=gcc-7 CFLAGS="$CFGCC" PLATFORMFLAGS="-m64 -march=core2 -mmacosx-version-min=10.11" && \
 
 # Sign the iOS binaries
 #ldid -S *iOS*

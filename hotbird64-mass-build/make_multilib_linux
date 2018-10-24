@@ -12,6 +12,58 @@ BINDIR="../bin"
 MANDIR="../man"
 cd ../src
 
+
+mkdir -p ../binaries/Linux/intel/glibc
+mkdir -p ../binaries/Linux/intel/uclibc
+mkdir -p ../binaries/Linux/intel/static
+mkdir -p ../binaries/Linux/intel/musl
+
+mkdir -p ../binaries/Linux/sparc/glibc
+mkdir -p ../binaries/Linux/s390/glibc
+
+mkdir -p ../binaries/Android/arm/bionic
+mkdir -p ../binaries/Android/arm/static
+mkdir -p ../binaries/Android/intel/bionic
+mkdir -p ../binaries/Android/intel/static
+mkdir -p ../binaries/Android/mips/bionic
+mkdir -p ../binaries/Android/mips/static
+
+mkdir -p ../binaries/Linux/arm/little-endian/glibc
+mkdir -p ../binaries/Linux/arm/little-endian/musl
+mkdir -p ../binaries/Linux/arm/little-endian/uclibc
+mkdir -p ../binaries/Linux/arm/little-endian/static
+mkdir -p ../binaries/Linux/arm/big-endian/uclibc
+mkdir -p ../binaries/Linux/arm/big-endian/static
+
+mkdir -p ../binaries/Linux/mips/little-endian/glibc
+mkdir -p ../binaries/Linux/mips/little-endian/uclibc
+mkdir -p ../binaries/Linux/mips/little-endian/static
+mkdir -p ../binaries/Linux/mips/little-endian/musl
+mkdir -p ../binaries/Linux/mips/big-endian/uclibc
+mkdir -p ../binaries/Linux/mips/big-endian/static
+mkdir -p ../binaries/Linux/mips/big-endian/glibc
+mkdir -p ../binaries/Linux/mips/big-endian/musl
+
+mkdir -p ../binaries/Linux/ppc/little-endian/glibc
+mkdir -p ../binaries/Linux/ppc/big-endian/glibc
+mkdir -p ../binaries/Linux/ppc/big-endian/uclibc
+mkdir -p ../binaries/Linux/ppc/big-endian/musl
+mkdir -p ../binaries/Linux/ppc/big-endian/static
+
+mkdir -p ../binaries/MacOSX/intel
+mkdir -p ../binaries/MacOSX/ppc
+mkdir -p ../binaries/iOS/arm
+
+mkdir -p ../binaries/FreeBSD/intel
+mkdir -p ../binaries/NetBSD/intel
+mkdir -p ../binaries/OpenBSD/intel
+mkdir -p ../binaries/DragonFly/intel
+mkdir -p ../binaries/Solaris/intel
+mkdir -p ../binaries/Windows/intel
+mkdir -p ../binaries/Minix/intel
+mkdir -p ../binaries/Hurd/intel
+
+
 ## IBM S/390
 
 export CFLAGS="$SMALLCC"
@@ -22,17 +74,17 @@ export FEATURES=full
 export CC=s390x-linux-gnu-gcc
 export VERBOSE=3
 
-export MULTI_NAME=$BINDIR/vlmcsdmulti-s390-glibc
-export CLIENT_NAME=$BINDIR/vlmcs-s390-glibc
-export PROGRAM_NAME=$BINDIR/vlmcsd-s390-glibc
+export MULTI_NAME=~/x/binaries/Linux/s390/glibc/vlmcsdmulti-s390-glibc
+export CLIENT_NAME=~/x/binaries/Linux/s390/glibc/vlmcs-s390-glibc
+export PROGRAM_NAME=~/x/binaries/Linux/s390/glibc/vlmcsd-s390-glibc
 
 make -B -j`nproc` allmulti
 
 
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -m64 -mzarch -mpacked-stack -msmall-exec"
-export MULTI_NAME=$BINDIR/vlmcsdmulti-s390x-glibc
-export CLIENT_NAME=$BINDIR/vlmcs-s390x-glibc
-export PROGRAM_NAME=$BINDIR/vlmcsd-s390x-glibc
+export MULTI_NAME=~/x/binaries/Linux/s390/glibc/vlmcsdmulti-s390x-glibc
+export CLIENT_NAME=~/x/binaries/Linux/s390/glibc/vlmcs-s390x-glibc
+export PROGRAM_NAME=~/x/binaries/Linux/s390/glibc/vlmcsd-s390x-glibc
 
 make -B -j`nproc` allmulti
 
@@ -44,9 +96,9 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mcpu=v7"
 export LDFLAGS="$SMALLLD"
 export CC=sparc64-linux-gnu-gcc
 
-export MULTI_NAME=$BINDIR/vlmcsdmulti-sparc64v9-glibc
-export CLIENT_NAME=$BINDIR/vlmcs-sparc64v9-glibc
-export PROGRAM_NAME=$BINDIR/vlmcsd-sparc64v9-glibc
+export MULTI_NAME=~/x/binaries/Linux/sparc/glibc/vlmcsdmulti-sparc64v9-glibc
+export CLIENT_NAME=~/x/binaries/Linux/sparc/glibc/vlmcs-sparc64v9-glibc
+export PROGRAM_NAME=~/x/binaries/Linux/sparc/glibc/vlmcsd-sparc64v9-glibc
 
 make -B -j`nproc` allmulti
 
@@ -59,16 +111,16 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mips64 -mno-mips16"
 export LDFLAGS="$SMALLLD"
 export CC=mips64-linux-gnuabi64-gcc
 
-export MULTI_NAME=$BINDIR/vlmcsdmulti-mips64-glibc
-export CLIENT_NAME=$BINDIR/vlmcs-mips64-glibc
-export PROGRAM_NAME=$BINDIR/vlmcsd-mips64-glibc
+export MULTI_NAME=~/x/binaries/Linux/mips/big-endian/glibc/vlmcsdmulti-mips64-glibc
+export CLIENT_NAME=~/x/binaries/Linux/mips/big-endian/glibc/vlmcs-mips64-glibc
+export PROGRAM_NAME=~/x/binaries/Linux/mips/big-endian/glibc/vlmcsd-mips64-glibc
 
 make -B -j`nproc` allmulti
 
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mips64 -mmicromips"
-export MULTI_NAME=$BINDIR/vlmcsdmulti-mips64mm-glibc
-export CLIENT_NAME=$BINDIR/vlmcs-mips64mm-glibc
-export PROGRAM_NAME=$BINDIR/vlmcsd-mips64mm-glibc
+export MULTI_NAME=~/x/binaries/Linux/mips/big-endian/glibc/vlmcsdmulti-mips64mm-glibc
+export CLIENT_NAME=~/x/binaries/Linux/mips/big-endian/glibc/vlmcs-mips64mm-glibc
+export PROGRAM_NAME=~/x/binaries/Linux/mips/big-endian/glibc/vlmcsd-mips64mm-glibc
 
 make -B -j`nproc` allmulti
 
@@ -80,21 +132,18 @@ export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mips64 -mno-mips16"
 export LDFLAGS="$SMALLLD"
 export CC=mips64el-linux-gnuabi64-gcc
 
-export MULTI_NAME=$BINDIR/vlmcsdmulti-mips64el-glibc
-export CLIENT_NAME=$BINDIR/vlmcs-mips64el-glibc
-export PROGRAM_NAME=$BINDIR/vlmcsd-mips64el-glibc
+export MULTI_NAME=~/x/binaries/Linux/mips/little-endian/glibc/vlmcsdmulti-mips64el-glibc
+export CLIENT_NAME=~/x/binaries/Linux/mips/little-endian/glibc/vlmcs-mips64el-glibc
+export PROGRAM_NAME=~/x/binaries/Linux/mips/little-endian/glibc/vlmcsd-mips64el-glibc
 
 make -B -j`nproc` allmulti
 
 export PLATFORMFLAGS="-flto=jobserver -fwhole-program -mips64 -mmicromips"
-export MULTI_NAME=$BINDIR/vlmcsdmulti-mips64elmm-glibc
-export CLIENT_NAME=$BINDIR/vlmcs-mips64elmm-glibc
-export PROGRAM_NAME=$BINDIR/vlmcsd-mips64elmm-glibc
+export MULTI_NAME=~/x/binaries/Linux/mips/little-endian/glibc/vlmcsdmulti-mips64elmm-glibc
+export CLIENT_NAME=~/x/binaries/Linux/mips/little-endian/glibc/vlmcs-mips64elmm-glibc
+export PROGRAM_NAME=~/x/binaries/Linux/mips/little-endian/glibc/vlmcsd-mips64elmm-glibc
 
 make -B -j`nproc` allmulti
-
-cd $BINDIR
-sstrip -z *
 
 
 
@@ -102,23 +151,5 @@ if [ "$1" == "nocopy" ]; then
   exit 0
 fi
 
-cd $MANDIR
-
-mkdir -p /usr/local/man/man1 2>/dev/null
-mkdir -p /usr/local/man/man5 2>/dev/null
-mkdir -p /usr/local/man/man8 2>/dev/null
-mkdir -p /usr/local/man/man7 2>/dev/null
-cp -a vlmcs.1 vlmcsdmulti.1 /usr/local/man/man1/
-cp -a vlmcsd.7 /usr/local/man/man7/
-cp -a vlmcsd.8 /usr/local/man/man8/
-cp -a vlmcsd.ini.5 /usr/local/man/man5/
-pbzip2 -f -9 /usr/local/man/man5/vlmcsd.ini.5 /usr/local/man/man1/vlmcs.1 /usr/local/man/man1/vlmcsdmulti.1 /usr/local/man/man7/vlmcsd.7 /usr/local/man/man8/vlmcsd.8
-
-cd $BINDIR
-
-scp -p vlmcsdmulti-s390-glibc vlmcs-s390-glibc vlmcsd-s390-glibc vlmcsdmulti-s390x-glibc vlmcs-s390x-glibc vlmcsd-s390x-glibc ubuntu64.internal:x/binaries/Linux/s390/glibc
-scp -p vlmcsdmulti-sparc64v9-glibc vlmcs-sparc64v9-glibc vlmcsd-sparc64v9-glibc ubuntu64.internal:x/binaries/Linux/sparc/glibc
-scp -p vlmcsdmulti-mips64-glibc vlmcs-mips64-glibc vlmcsd-mips64-glibc vlmcsdmulti-mips64mm-glibc vlmcs-mips64mm-glibc vlmcsd-mips64mm-glibc ubuntu64.internal:x/binaries/Linux/mips/big-endian/glibc
-scp -p vlmcsdmulti-mips64el-glibc vlmcs-mips64el-glibc vlmcsd-mips64el-glibc vlmcsdmulti-mips64elmm-glibc vlmcs-mips64elmm-glibc vlmcsd-mips64elmm-glibc ubuntu64.internal:x/binaries/Linux/mips/little-endian/glibc
-scp -p -P 2222 vlmcsdmulti-s390-glibc vlmcs-s390-glibc vlmcsd-s390-glibc vlmcsdmulti-s390x-glibc vlmcs-s390x-glibc vlmcsd-s390x-glibc s390:vlmcsd
-scp -p -P 2222 vlmcsdmulti-s390-glibc vlmcsdmulti-s390x-glibc s390:/usr/local/sbin
+scp -p -P 2222 ~/x/binaries/Linux/s390/glibc/vlmcsdmulti-s390-glibc ~/x/binaries/Linux/s390/glibc/vlmcs-s390-glibc ~/x/binaries/Linux/s390/glibc/vlmcsd-s390-glibc ~/x/binaries/Linux/s390/glibc/vlmcsdmulti-s390x-glibc ~/x/binaries/Linux/s390/glibc/vlmcs-s390x-glibc ~/x/binaries/Linux/s390/glibc/vlmcsd-s390x-glibc s390:vlmcsd
+scp -p -P 2222 ~/x/binaries/Linux/s390/glibc/vlmcsdmulti-s390-glibc ~/x/binaries/Linux/s390/glibc/vlmcsdmulti-s390x-glibc s390:/usr/local/sbin

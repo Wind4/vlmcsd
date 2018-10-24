@@ -84,7 +84,7 @@
 #include "wintap.h"
 #endif
 
-static const char* const optstring = "N:B:m:t:w:0:3:6:H:A:R:u:G:g:L:p:i:P:l:r:U:W:C:c:F:O:o:x:T:K:E:M:j:SseDdVvqkZ";
+static const char* const optstring = "a:N:B:m:t:A:R:u:g:L:p:i:H:P:l:r:U:W:C:c:F:O:o:x:T:K:E:M:j:SseDdVvqkZ";
 
 #if !defined(NO_SOCKETS) && !defined(USE_MSRPC) && !defined(SIMPLE_SOCKETS)
 static uint_fast8_t maxsockets = 0;
@@ -119,11 +119,6 @@ char* IniFileErrorBuffer = NULL;
 
 static IniFileParameter_t IniFileParameterList[] =
 {
-		{ "Windows", INI_PARAM_WINDOWS },
-		{ "Office2010", INI_PARAM_OFFICE2010 },
-		{ "Office2013", INI_PARAM_OFFICE2013 },
-		{ "Office2016", INI_PARAM_OFFICE2016 },
-		{ "WinChinaGov", INI_PARAM_WINCHINAGOV },
 #	ifndef NO_SOCKETS
 		{ "ExitLevel", INI_PARAM_EXIT_LEVEL },
 #	endif // NO_SOCKETS
@@ -144,6 +139,7 @@ static IniFileParameter_t IniFileParameterList[] =
 #	ifndef NO_RANDOM_EPID
 		{ "RandomizationLevel", INI_PARAM_RANDOMIZATION_LEVEL },
 		{ "LCID", INI_PARAM_LCID },
+		{ "HostBuild", INI_PARAM_HOST_BUILD },
 #	endif // NO_RANDOM_EPID
 #	if !defined(NO_SOCKETS) && (defined(USE_MSRPC) || defined(SIMPLE_SOCKETS) || defined(HAVE_GETIFADDR))
 		{ "Port", INI_PARAM_PORT },
@@ -270,21 +266,17 @@ static __noreturn void usage()
 		"\nUsage:\n"
 		"   %s [ options ]\n\n"
 		"Where:\n"
-#		ifndef NO_CL_PIDS
-		"  -w <ePID>\t\talways use <ePID> for Windows\n"
-		"  -0 <ePID>\t\talways use <ePID> for Office2010\n"
-		"  -3 <ePID>\t\talways use <ePID> for Office2013\n"
-		"  -6 <ePID>\t\talways use <ePID> for Office2016\n"
-		"  -G <ePID>\t\talways use <ePID> for Win China Gov\n"
-		"  -H <HwId>\t\talways use hardware Id <HwId>\n"
-#		endif // NO_CL_PIDS
 #		if !defined(_WIN32) && !defined(NO_USER_SWITCH)
 		"  -u <user>\t\tset uid to <user>\n"
 		"  -g <group>\t\tset gid to <group>\n"
 #		endif // !defined(_WIN32) && !defined(NO_USER_SWITCH)
+#		ifndef NO_CL_PIDS
+		"  -a <csvlk>=<epid>\tuse <epid> for <csvlk>\n"
+#		endif // NO_CL_PIDS
 #		ifndef NO_RANDOM_EPID
 		"  -r 0|1|2\t\tset ePID randomization level (default 1)\n"
 		"  -C <LCID>\t\tuse fixed <LCID> in random ePIDs\n"
+		"  -H <build>\t\tuse fixed <build> number in random ePIDs\n"
 #		endif // NO_RANDOM_EPID
 #		if !defined(NO_PRIVATE_IP_DETECT)
 #		if HAVE_GETIFADDR
@@ -334,7 +326,7 @@ static __noreturn void usage()
 #		endif // _WIN32
 #		endif // NO_SOCKETS
 #		ifndef NO_STRICT_MODES
-		"  -K 0|1|2|3\t\tset whitelisting level for KMS IDs (default -K0)\n"
+		"  -K 0|1|2|3\t\tset white-listing level for KMS IDs (default -K0)\n"
 		"  -c0, -c1\t\tdisable/enable client time checking (default -c0)\n"
 #		ifndef NO_CLIENT_LIST
 		"  -M0, -M1\t\tdisable/enable maintaining clients (default -M0)\n"
@@ -392,7 +384,8 @@ static __noreturn void usage()
 
 __pure static BOOL getTimeSpanFromIniFile(DWORD* result, const char *const restrict argument)
 {
-	DWORD val = timeSpanString2Minutes(argument);
+	const DWORD val = timeSpanString2Minutes(argument);
+
 	if (!val)
 	{
 		IniFileErrorMessage = "Incorrect time span.";
@@ -408,7 +401,7 @@ __pure static BOOL getTimeSpanFromIniFile(DWORD* result, const char *const restr
 
 __pure static DWORD getTimeSpanFromCommandLine(const char *const restrict arg, const char optchar)
 {
-	DWORD val = timeSpanString2Minutes(arg);
+	const DWORD val = timeSpanString2Minutes(arg);
 
 	if (!val)
 	{
@@ -421,6 +414,71 @@ __pure static DWORD getTimeSpanFromCommandLine(const char *const restrict arg, c
 
 #endif // NO_CUSTOM_INTERVALS
 
+
+#if !defined(NO_INI_FILE) || !defined (NO_CL_PIDS)
+static __pure int isControlCharOrSlash(const char c)
+{
+	if ((unsigned char)c < '!') return TRUE;
+	if (c == '/') return TRUE;
+	return FALSE;
+}
+
+
+static void iniFileLineNextWord(const char **s)
+{
+	while (**s && isspace((int)**s)) (*s)++;
+}
+
+
+static BOOL setHwIdFromIniFileLine(const char **s, const uint32_t index, const uint8_t overwrite)
+{
+	iniFileLineNextWord(s);
+
+	if (**s == '/')
+	{
+		if (!overwrite && KmsResponseParameters[index].HwId) return TRUE;
+
+		BYTE* HwId = (BYTE*)vlmcsd_malloc(sizeof(((RESPONSE_V6 *)0)->HwId));
+		hex2bin(HwId, *s + 1, sizeof(((RESPONSE_V6 *)0)->HwId));
+		KmsResponseParameters[index].HwId = HwId;
+	}
+
+	return TRUE;
+}
+
+
+static BOOL setEpidFromIniFileLine(const char **s, const uint32_t index, const char *ePidSource, const uint8_t overwrite)
+{
+	iniFileLineNextWord(s);
+	const char *savedPosition = *s;
+	uint_fast16_t i;
+
+	for (i = 0; !isControlCharOrSlash(**s); i++)
+	{
+		if (utf8_to_ucs2_char((const unsigned char*)*s, (const unsigned char**)s) == (WCHAR)~0)
+		{
+			return FALSE;
+		}
+	}
+
+	if (i < 1 || i >= PID_BUFFER_SIZE) return FALSE;
+	if (!overwrite && KmsResponseParameters[index].Epid) return TRUE;
+
+	const size_t size = *s - savedPosition + 1;
+
+	char* epidbuffer = (char*)vlmcsd_malloc(size);
+	memcpy(epidbuffer, savedPosition, size - 1);
+	epidbuffer[size - 1] = 0;
+
+	KmsResponseParameters[index].Epid = epidbuffer;
+
+#ifndef NO_LOG
+	KmsResponseParameters[index].EpidSource = ePidSource;
+#endif //NO_LOG
+
+	return TRUE;
+}
+#endif // !defined(NO_INI_FILE) || !defined (NO_CL_PIDS)
 
 #ifndef NO_INI_FILE
 static void ignoreIniFileParameter(uint_fast8_t iniFileParameterId)
@@ -463,103 +521,12 @@ static BOOL getIniFileArgumentInt(unsigned int *result, const char *const argume
 }
 
 
-static __pure int isControlCharOrSlash(const char c)
-{
-	if ((unsigned char)c < '!') return TRUE;
-	if (c == '/') return TRUE;
-	return FALSE;
-}
-
-
-static void iniFileLineNextWord(const char **s)
-{
-	while (**s && isspace((int)**s)) (*s)++;
-}
-
-
-static BOOL setHwIdFromIniFileLine(const char **s, const uint32_t index)
-{
-	iniFileLineNextWord(s);
-
-	if (**s == '/')
-	{
-		if (KmsResponseParameters[index].HwId) return TRUE;
-
-		BYTE* HwId = (BYTE*)vlmcsd_malloc(sizeof(((RESPONSE_V6 *)0)->HwId));
-		hex2bin(HwId, *s + 1, sizeof(((RESPONSE_V6 *)0)->HwId));
-		KmsResponseParameters[index].HwId = HwId;
-	}
-
-	return TRUE;
-}
-
-
-static BOOL setEpidFromIniFileLine(const char **s, const uint32_t index)
-{
-	iniFileLineNextWord(s);
-	const char *savedPosition = *s;
-	uint_fast16_t i;
-
-	for (i = 0; !isControlCharOrSlash(**s); i++)
-	{
-		if (utf8_to_ucs2_char((const unsigned char*)*s, (const unsigned char**)s) == (WCHAR)~0)
-		{
-			return FALSE;
-		}
-	}
-
-	if (i < 1 || i >= PID_BUFFER_SIZE) return FALSE;
-	if (KmsResponseParameters[index].Epid) return TRUE;
-
-	size_t size = *s - savedPosition + 1;
-
-	char* epidbuffer = (char*)vlmcsd_malloc(size);
-	memcpy(epidbuffer, savedPosition, size - 1);
-	epidbuffer[size - 1] = 0;
-
-	KmsResponseParameters[index].Epid = epidbuffer;
-
-#ifndef NO_LOG
-	KmsResponseParameters[index].EpidSource = fn_ini;
-#endif //NO_LOG
-
-	return TRUE;
-}
-
-
 static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 {
 	unsigned int result;
 	BOOL success = TRUE;
-	const char *s = (const char*)iniarg;
-
 	switch (id)
 	{
-	case INI_PARAM_WINDOWS:
-		setEpidFromIniFileLine(&s, EPID_INDEX_WINDOWS);
-		setHwIdFromIniFileLine(&s, EPID_INDEX_WINDOWS);
-		break;
-
-	case INI_PARAM_OFFICE2010:
-		setEpidFromIniFileLine(&s, EPID_INDEX_OFFICE2010);
-		setHwIdFromIniFileLine(&s, EPID_INDEX_OFFICE2010);
-		break;
-
-	case INI_PARAM_OFFICE2013:
-		setEpidFromIniFileLine(&s, EPID_INDEX_OFFICE2013);
-		setHwIdFromIniFileLine(&s, EPID_INDEX_OFFICE2013);
-		break;
-
-	case INI_PARAM_OFFICE2016:
-		setEpidFromIniFileLine(&s, EPID_INDEX_OFFICE2016);
-		setHwIdFromIniFileLine(&s, EPID_INDEX_OFFICE2016);
-		break;
-
-	case INI_PARAM_WINCHINAGOV:
-		setEpidFromIniFileLine(&s, EPID_INDEX_WINCHINAGOV);
-		setHwIdFromIniFileLine(&s, EPID_INDEX_WINCHINAGOV);
-		break;
-
 #	ifndef NO_TAP
 
 	case INI_PARAM_VPN:
@@ -608,6 +575,11 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 	case INI_PARAM_RANDOMIZATION_LEVEL:
 		success = getIniFileArgumentInt(&result, iniarg, 0, 2);
 		if (success) RandomizationLevel = (int_fast8_t)result;
+		break;
+
+	case INI_PARAM_HOST_BUILD:
+		success = getIniFileArgumentInt(&result, iniarg, 0, 65535);
+		if (success) HostBuild = (uint16_t)result;
 		break;
 
 #	endif // NO_RANDOM_EPID
@@ -728,6 +700,7 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 
 	case INI_PARAM_RPC_NDR64:
 		success = getIniFileArgumentBool(&UseServerRpcNDR64, iniarg);
+		if (success) IsNDR64Defined = TRUE;
 		break;
 
 	case INI_PARAM_RPC_BTFN:
@@ -800,6 +773,56 @@ static BOOL getIniFileArgument(const char **s)
 	return TRUE;
 }
 
+static char* GetNextString(char* s)
+{
+	return s + strlen(s) + 1;
+}
+
+static int8_t GetCsvlkIndexFromName(const char *s)
+{
+	int8_t i;
+
+	for (i = 0; i < KmsData->CsvlkCount; i++)
+	{
+		const char *csvlkName = GetNextString(KmsData->CsvlkData[i].EPid);
+
+		if (!strncasecmp(csvlkName, s, strlen(csvlkName)))
+		{
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+static BOOL handleIniFileEpidParameter(const char *s, uint8_t allowIniFileDirectives, const char *ePidSource)
+{
+	int_fast16_t i;
+
+	if (allowIniFileDirectives)
+	{
+		for (i = 0; i < (int_fast16_t)vlmcsd_countof(IniFileParameterList); i++)
+		{
+			if (!strncasecmp(IniFileParameterList[i].Name, s, strlen(IniFileParameterList[i].Name)))
+			{
+				return TRUE;
+			}
+		}
+	}
+
+	i = GetCsvlkIndexFromName(s);
+
+	if (i >= 0)
+	{
+		if (!getIniFileArgument(&s)) return FALSE;
+		if (!setEpidFromIniFileLine(&s, i, ePidSource, !allowIniFileDirectives)) return FALSE;
+		if (!setHwIdFromIniFileLine(&s, i, !allowIniFileDirectives)) return FALSE;
+		return TRUE;
+	}
+
+	IniFileErrorMessage = "Unknown keyword.";
+	return FALSE;
+}
 
 static BOOL handleIniFileParameter(const char *s)
 {
@@ -809,14 +832,13 @@ static BOOL handleIniFileParameter(const char *s)
 	{
 		if (strncasecmp(IniFileParameterList[i].Name, s, strlen(IniFileParameterList[i].Name))) continue;
 		if (!IniFileParameterList[i].Id) return TRUE;
-
 		if (!getIniFileArgument(&s)) return FALSE;
 
 		return setIniFileParameter(IniFileParameterList[i].Id, s);
 	}
 
-	IniFileErrorMessage = "Unknown keyword.";
-	return FALSE;
+	IniFileErrorMessage = NULL;
+	return TRUE;
 }
 
 
@@ -844,6 +866,11 @@ static BOOL readIniFile(const uint_fast8_t pass)
 	FILE *restrict f;
 	BOOL result = TRUE;
 
+	if (pass == INI_FILE_PASS_2 && KmsData->MinorVer < 6)
+	{
+		return TRUE;
+	}
+
 	IniFileErrorBuffer = (char*)vlmcsd_malloc(INIFILE_ERROR_BUFFERSIZE);
 
 	if (!((f = fopen(fn_ini, "r")))) return FALSE;
@@ -855,18 +882,18 @@ static BOOL readIniFile(const uint_fast8_t pass)
 		iniFileLineNextWord(&s);
 		if (*s == ';' || *s == '#' || !*s) continue;
 
-#		ifndef NO_SOCKETS
 		if (pass == INI_FILE_PASS_1)
-#		endif // NO_SOCKETS
 		{
 			if (handleIniFileParameter(s)) continue;
-
-			lineParseError = TRUE;/*!checkGuidInIniFileLine(&s, &appIndex) ||
-					!setEpidFromIniFileLine(&s, appIndex) ||
-					!setHwIdFromIniFileLine(&s, appIndex);*/
+			lineParseError = TRUE;
+		}
+		else if (pass == INI_FILE_PASS_2)
+		{
+			if (handleIniFileEpidParameter(s, TRUE, fn_ini)) continue;
+			lineParseError = TRUE;
 		}
 #		if !defined(NO_SOCKETS) && !defined(SIMPLE_SOCKETS) && !defined(USE_MSRPC)
-		else if (pass == INI_FILE_PASS_2)
+		else if (pass == INI_FILE_PASS_3)
 		{
 			lineParseError = !setupListeningSocketsFromIniFile(s);
 		}
@@ -1020,7 +1047,7 @@ static int daemonizeAndSetSignalAction()
 
 #else // _WIN32
 
-static BOOL terminationHandler(const DWORD fdwCtrlType)
+static BOOL __stdcall  terminationHandler(const DWORD fdwCtrlType)
 {
 	// What a lame substitute for Unix signal handling
 	switch (fdwCtrlType)
@@ -1043,7 +1070,7 @@ static DWORD daemonizeAndSetSignalAction()
 	if (!SetConsoleCtrlHandler((PHANDLER_ROUTINE)terminationHandler, TRUE))
 	{
 #ifndef NO_LOG
-		DWORD rc = GetLastError();
+		const DWORD rc = GetLastError();
 		logger("Warning: Could not register Windows signal handler: Error %u\n", rc);
 #endif // NO_LOG
 	}
@@ -1073,10 +1100,6 @@ __pure static char* getCommandLineArg(char *const restrict arg)
 static void parseGeneralArguments() {
 	int o;
 
-#ifndef NO_CL_PIDS
-	BYTE* HwId;
-#endif // NO_CL_PIDS
-
 	for (opterr = 0; (o = getopt(global_argc, (char* const*)global_argv, (const char*)optstring)) > 0; ) switch (o)
 	{
 #	if !defined(NO_SOCKETS) && !defined(NO_SIGHUP) && !defined(_WIN32)
@@ -1097,50 +1120,7 @@ static void parseGeneralArguments() {
 
 #	ifndef NO_CL_PIDS
 
-	case 'w':
-		KmsResponseParameters[EPID_INDEX_WINDOWS].Epid = getCommandLineArg(optarg);
-#		ifndef NO_LOG
-		KmsResponseParameters[EPID_INDEX_WINDOWS].EpidSource = "command line";
-#		endif // NO_LOG
-		break;
-
-	case '0':
-		KmsResponseParameters[EPID_INDEX_OFFICE2010].Epid = getCommandLineArg(optarg);
-#		ifndef NO_LOG
-		KmsResponseParameters[EPID_INDEX_OFFICE2010].EpidSource = "command line";
-#		endif // NO_LOG
-		break;
-
-	case '3':
-		KmsResponseParameters[EPID_INDEX_OFFICE2013].Epid = getCommandLineArg(optarg);
-#		ifndef NO_LOG
-		KmsResponseParameters[EPID_INDEX_OFFICE2013].EpidSource = "command line";
-#		endif // NO_LOG
-		break;
-
-	case '6':
-		KmsResponseParameters[EPID_INDEX_OFFICE2016].Epid = getCommandLineArg(optarg);
-#		ifndef NO_LOG
-		KmsResponseParameters[EPID_INDEX_OFFICE2016].EpidSource = "command line";
-#		endif // NO_LOG
-		break;
-
-	case 'G':
-		KmsResponseParameters[EPID_INDEX_WINCHINAGOV].Epid = getCommandLineArg(optarg);
-#		ifndef NO_LOG
-		KmsResponseParameters[EPID_INDEX_WINCHINAGOV].EpidSource = "command line";
-#		endif // NO_LOG
-		break;
-
-	case 'H':
-		HwId = (BYTE*)vlmcsd_malloc(sizeof(((RESPONSE_V6 *)0)->HwId));
-		hex2bin(HwId, optarg, sizeof(((RESPONSE_V6 *)0)->HwId));
-
-		KmsResponseParameters[EPID_INDEX_WINDOWS].HwId =
-			KmsResponseParameters[EPID_INDEX_OFFICE2010].HwId =
-			KmsResponseParameters[EPID_INDEX_OFFICE2013].HwId =
-			KmsResponseParameters[EPID_INDEX_WINCHINAGOV].HwId =
-			KmsResponseParameters[EPID_INDEX_OFFICE2016].HwId = HwId;
+	case 'a':
 		break;
 
 #	endif // NO_CL_PIDS
@@ -1341,6 +1321,19 @@ static void parseGeneralArguments() {
 #		endif // _PEDANTIC
 
 		break;
+
+	case 'H':
+		HostBuild = (uint16_t)getOptionArgumentInt((char)o, 0, 0xffff);
+		ignoreIniFileParameter(INI_PARAM_HOST_BUILD);
+
+#		ifdef _PEDANTIC
+		if (!IsValidHostBuild(HostBuild))
+		{
+			printerrorf("Warning: %u is not a known released Windows Server build >= 2008.\n");
+		}
+#		endif // _PEDANTIC
+
+		break;
 #	endif // NO_RANDOM_PID
 
 #	if !defined(NO_USER_SWITCH) && !defined(_WIN32)
@@ -1393,6 +1386,7 @@ static void parseGeneralArguments() {
 #	ifndef SIMPLE_RPC
 	case 'N':
 		if (!getArgumentBool(&UseServerRpcNDR64, optarg)) usage();
+		IsNDR64Defined = TRUE;
 		ignoreIniFileParameter(INI_PARAM_RPC_NDR64);
 		break;
 
@@ -1461,8 +1455,8 @@ static void writePidFile()
 			logger("Warning: Cannot write pid file '%s'. %s.\n", fn_pid, strerror(errno));
 		}
 #		endif // NO_LOG
+		}
 	}
-}
 #else
 #define writePidFile()
 #endif // !defined(NO_PID_FILE)
@@ -1569,8 +1563,8 @@ static void allocateSemaphore(void)
 			{
 				printerrorf("Warning: Could not create semaphore: %s\n", vlmcsd_strerror(errno));
 				MaxTasks = SEM_VALUE_MAX;
-			}
-		}
+}
+	}
 
 #		endif // THREADS or CYGWIN
 
@@ -1583,7 +1577,7 @@ static void allocateSemaphore(void)
 		}
 
 #		endif // _WIN32
-	}
+}
 }
 #endif // !defined(NO_LIMIT) && !defined(NO_SOCKETS) && !__minix__
 
@@ -1596,15 +1590,15 @@ int setupListeningSockets()
 	char** privateIPList = NULL;
 	int numPrivateIPs = 0;
 	if (PublicIPProtectionLevel & 1) getPrivateIPAddresses(&numPrivateIPs, &privateIPList);
-	uint_fast8_t allocsockets = (uint_fast8_t)(maxsockets ? (maxsockets + numPrivateIPs) : ((PublicIPProtectionLevel & 1) ? numPrivateIPs : 2));
+	const uint_fast8_t allocsockets = (uint_fast8_t)(maxsockets ? (maxsockets + numPrivateIPs) : ((PublicIPProtectionLevel & 1) ? numPrivateIPs : 2));
 #	else // !HAVE_GETIFADDR
 	uint_fast8_t allocsockets = maxsockets ? maxsockets : 2;
 #	endif // !HAVE_GETIFADDR
 
 	SocketList = (SOCKET*)vlmcsd_malloc((size_t)allocsockets * sizeof(SOCKET));
 
-	int_fast8_t haveIPv4Stack = checkProtocolStack(AF_INET);
-	int_fast8_t haveIPv6Stack = checkProtocolStack(AF_INET6);
+	const int_fast8_t haveIPv4Stack = checkProtocolStack(AF_INET);
+	const int_fast8_t haveIPv6Stack = checkProtocolStack(AF_INET6);
 
 	// Reset getopt since we've alread used it
 	optReset();
@@ -1627,7 +1621,7 @@ int setupListeningSockets()
 #	ifndef NO_INI_FILE
 	if (maxsockets && !numsockets)
 	{
-		if (fn_ini && !readIniFile(INI_FILE_PASS_2))
+		if (fn_ini && !readIniFile(INI_FILE_PASS_3))
 		{
 #			ifdef INI_FILE
 			if (strcmp(fn_ini, INI_FILE))
@@ -1662,7 +1656,7 @@ int setupListeningSockets()
 		if (haveIPv6Stack) addListeningSocket("::");
 		if (haveIPv4Stack) addListeningSocket("0.0.0.0");
 #		endif // !HAVE_GETIFADDR
-	}
+}
 
 	if (!numsockets)
 	{
@@ -1698,11 +1692,6 @@ int server_main(int argc, CARGV argv)
 
 int newmain()
 {
-#	if !defined(NO_RANDOM_EPID) || !defined(NO_CL_PIDS) || !defined(NO_INI_FILE)
-	KmsResponseParameters = (KmsResponseParam_t*)vlmcsd_malloc(sizeof(KmsResponseParam_t) * MIN_CSVLK);
-	memset(KmsResponseParameters, 0, sizeof(KmsResponseParam_t) * MIN_CSVLK);
-#	endif // !defined(NO_RANDOM_EPID) || !defined(NO_CL_PIDS) || !defined(NO_INI_FILE)
-
 	// Initialize thread synchronization objects for Windows and Cygwin
 #	ifdef USE_THREADS
 
@@ -1762,7 +1751,7 @@ int newmain()
 #		ifndef NO_LOG
 		logstdout = 0;
 #		endif // !NO_LOG
-	}
+}
 
 #	endif // !defined(_WIN32) && !defined(NO_SOCKETS) && !defined(USE_MSRPC)
 
@@ -1779,6 +1768,67 @@ int newmain()
 #	endif // NO_INI_FILE
 
 	loadKmsData();
+
+#	if !defined(USE_MSRPC) && !defined(SIMPLE_RPC)
+
+	if
+		(
+			!IsNDR64Defined
+			)
+	{
+		UseServerRpcNDR64 = !!KmsData->Flags & KMS_OPTIONS_USENDR64;
+#		ifndef NO_RANDOM_EPID
+		if (HostBuild&&RandomizationLevel)
+		{
+			UseServerRpcNDR64 = HostBuild > 7601;
+		}
+#		endif 
+	}
+#	endif // !defined(USE_MSRPC) && !defined(SIMPLE_RPC)
+
+#	if !defined(NO_INI_FILE) || !defined(NO_CL_PIDS)
+	if (KmsData->MinorVer < 6)
+	{
+		printerrorf("Warning: Need database version 1.6 or greater to set custom ePids\n");
+	}
+#	endif // !defined(NO_INI_FILE) || !defined(NO_CL_PIDS)
+
+#	if !defined(NO_RANDOM_EPID) || !defined(NO_CL_PIDS) || !defined(NO_INI_FILE)
+	KmsResponseParameters = (KmsResponseParam_t*)vlmcsd_malloc(sizeof(KmsResponseParam_t) * KmsData->CsvlkCount);
+	memset(KmsResponseParameters, 0, sizeof(KmsResponseParam_t) * KmsData->CsvlkCount);
+#	endif // !defined(NO_RANDOM_EPID) || !defined(NO_CL_PIDS) || !defined(NO_INI_FILE)
+
+#ifndef NO_CL_PIDS
+	optReset();
+	int o;
+
+	for (opterr = 0; (o = getopt(global_argc, (char* const*)global_argv, (const char*)optstring)) > 0; ) switch (o)
+	{
+	case 'a':
+		if (KmsData->MinorVer < 6 || !handleIniFileEpidParameter(optarg, FALSE, "command line"))
+		{
+			usage();
+		}
+
+		break;
+
+	default:
+		break;
+	}
+
+#endif // NO_CL_PIDS
+
+#	ifndef NO_INI_FILE
+
+	if (fn_ini && !readIniFile(INI_FILE_PASS_2))
+	{
+#		ifdef INI_FILE
+		if (strcmp(fn_ini, INI_FILE))
+#		endif // INI_FILE
+			printerrorf("Warning: Can't read %s: %s\n", fn_ini, strerror(errno));
+	}
+
+#	endif // NO_INI_FILE
 
 #	ifndef NO_CLIENT_LIST
 	if (MaintainClients) InitializeClientLists();
@@ -1842,7 +1892,7 @@ int newmain()
 		{
 			printerrorf("Fatal: %s for %s failed: %s\n", "setuid", uname, strerror(errno));
 			return errno;
-		}
+	}
 #	ifndef NO_SIGHUP
 	}
 #	endif // NO_SIGHUP

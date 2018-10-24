@@ -238,6 +238,14 @@ KEYWORDS
               control this setting with option -C.
 
 
+       HostBuild
+              Use  a specific host build number in the ePID even if it is ran-
+              domized. The argument must be a  number  between  1  and  65535.
+              While  you  can use any number you should only use build numbers
+              that a released build numbers of Windows Servers, e.g. 17763 for
+              Windows Server 2019.
+
+
        MaxWorkers
               The argument specifies the maximum number of worker processes or
               threads that will be used to serve activation  requests  concur-
@@ -422,35 +430,15 @@ KEYWORDS
               changed on the fly by sending SIGHUP to vlmcsd.
 
 
-       Windows
+       <csvlk-name>
               The  argument  has the form ePID [ / HwId ]. Always use ePID and
-              HwId for Windows activations. If  specified,  RandomizationLevel
-              for Windows activitations will be ignored.
-
-
-       Office2010
-              The  argument  has the form ePID [ / HwId ]. Always use ePID and
-              HwId for Office 2010 activations. If  specified,  Randomization-
-              Level for Office 2010 activitations will be ignored.
-
-
-       Office2013
-              The  argument  has the form ePID [ / HwId ]. Always use ePID and
-              HwId for Office 2013 activations. If  specified,  Randomization-
-              Level for Office 2013 activitations will be ignored.
-
-
-       Office2016
-              The  argument  has the form ePID [ / HwId ]. Always use ePID and
-              HwId for Office 2016 activations. If  specified,  Randomization-
-              Level for Office 2016 activitations will be ignored.
-
-
-       WinChinaGov
-              The  argument  has the form ePID [ / HwId ]. Always use ePID and
-              HwId for China Government Editions of Windows (Enterprise G/GN).
-              If  specified,  RandomizationLevel  for Windows China Government
-              activitations will be ignored.
+              HwId for activations with <csvlk-name>. If specified, Randomiza-
+              tionLevel for the <csvlk-name> will be ignored. With the default
+              vlmcsd.kmd database you can  use  the  following  <csvlk-name>s:
+              Windows,  Office2010,  Office2013,  Office2016,  Office2019  and
+              WinChinaGov. While vlmcsd is compatible  with  older  databases,
+              you  must  use at least database version 1.6 for this feature to
+              work.
 
 
 VALID EPIDS
@@ -486,8 +474,8 @@ AUTHOR
 
 
 CREDITS
-       Thanks to CODYQX4, deagles, eIcn,  mikmik38,  nosferati87,  qad,  Rati-
-       borus, ...
+       Thanks to abbodi1406, CODYQX4, deagles,  eIcn,  mikmik38,  nosferati87,
+       qad, Ratiborus, ...
 
 
 SEE ALSO
@@ -495,4 +483,4 @@ SEE ALSO
 
 
 
-Hotbird64                          May 2017                      VLMCSD.INI(5)
+Hotbird64                        October 2018                    VLMCSD.INI(5)

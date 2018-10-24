@@ -1,5 +1,5 @@
 .mso www.tmac
-.TH VLMCSD 8 "June 2017" "Hotbird64" "KMS Activation Manual"
+.TH VLMCSD 8 "October 2018" "Hotbird64" "KMS Activation Manual"
 .LO 8
 
 .SH NAME
@@ -173,31 +173,10 @@ The actual security context switch is performed after the TCP sockets have been 
 .IP
 However if you use an ini, pid or log file, you must ensure that the unprivileged user has access to these files. You can always log to \fBsyslog\fR(3) from an unprivileged account on most platforms (see \fB-l\fR).
 
-.IP "\fB-w\fR \fIePID\fR"
-Use \fIePID\fR as Windows ePID. If specified, \fB-r\fR is disregarded for Windows.
+.IP "\fB-a\fR \fICSVLK\fR = \fIePID\fR [ / \fIHwId\fR ]"
+Use \fIePID\fR and \fIHwId\fR for a specific \fICSVLK\fR. When you use it, \fB-r\fR is disregarded for this \fICSVLK\fR. If vlmcsd uses the default vlmcsd.kmd database, you can use the following \fICSVLK\fRs: Windows, WinChinaGov, Office2010, Office2013, Office2016 and Office2019. The \fB-a\fR option requires that database version 1.6 or later is used.
 
-.IP "\fB-0\fR \fIePID\fR"
-Use \fIePID\fR as Office 2010 ePID (including Project and Visio). If specified, \fB-r\fR is disregarded for Office 2010.
-
-.IP "\fB-3\fR \fIePID\fR"
-Use \fIePID\fR as Office 2013 ePID (including Project and Visio). If specified, \fB-r\fR is disregarded for Office 2013.
-
-.IP "\fB-6\fR \fIePID\fR"
-Use \fIePID\fR as Office 2016 ePID (including Project and Visio). If specified, \fB-r\fR is disregarded for Office 2016.
-
-.IP "\fB-G\fR \fIePID\fR"
-Use \fIePID\fR as Windows China Government ePID. If specified, \fB-r\fR is disregarded for Windows China Government Editions (Enterprise G/GN).
-
-.IP "\fB-H\fR \fIHwId\fR"
-Use \fIHwId\fR for all products. All HWIDs in the ini file (see \fB-i\fR) will not be used. In an ini file you can specify a seperate HWID for each \fIapplication-guid\fR. This is not possible when entering a HWID from the command line.
-
-\fIHwId\fR must be specified as 16 hex digits that are interpreted as a series of 8 bytes (big endian). Any character that is not a hex digit will be ignored. This is for better readability. The following commands are identical:
-
-vlmcsd -H 0123456789ABCDEF
-.br
-vlmcsd -H 01:23:45:67:89:ab:cd:ef
-.br
-vlmcsd -H "01 23 45 67 89 AB CD EF"
+\fIHwId\fR must be specified as 16 hex digits that are interpreted as a series of 8 bytes (big endian). Any character that is not a hex digit will be ignored. This is for better readability.
 
 .IP "\fB-i\fR \fIfilename\fR"
 Use configuration file (aka ini file) \fIfilename\fR. Most configuration parameters can be set either via the command line or an ini file. The command line always has precedence over configuration items in the ini file. See \fBvlmcsd.ini\fR(5) for the format of the configuration file.
@@ -236,6 +215,9 @@ By default vlmcsd generates a valid locale id that is recognized by .NET Framewo
 for a list of valid \fILCID\fRs. Please note that some of them are not recognized by .NET Framework 4.0.
 
 Most other KMS emulators use a fixed \fILCID\fR of 1033 (English - US). To achive the same behavior in vlmcsd use \fB-C 1033\fR.
+
+.IP "\fB-H\fR \fIHostBuild\fR"
+Do not randomize the host build number in the ePID and use \fIHostBuild\fR instead, for instance 17763 for Windows Server 2019 / Windows 10 1809.
 
 .IP "\fB-K0\fR, \fB-K1\fR, \fB-K2\fR and \fB-K3\fR"
 Sets the whitelisting level to determine which products vlmcsd activates or refuses. The default is \fB-K0\fR.
@@ -358,7 +340,7 @@ Written by crony12, Hotbird64 and vityan666.
 With contributions from DougQaid.
 
 .SH CREDITS
-Thanks to CODYQX4, deagles, eIcn, mikmik38, nosferati87, qad, Ratiborus, ...
+Thanks to abbodi1406, CODYQX4, deagles, eIcn, mikmik38, nosferati87, qad, Ratiborus, ...
 
 .SH SEE ALSO
 \fBvlmcsd.ini\fR(5), \fBvlmcsd\fR(7), \fBvlmcs\fR(1), \fBvlmcsdmulti\fR(1)

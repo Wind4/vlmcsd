@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Sat Jun 17 00:53:29 2017 -->
+<!-- CreationDate: Sat Oct 20 09:49:39 2018 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -388,6 +388,15 @@ the command line you control this setting with option
 <b>-C</b>.</p> </td></tr>
 </table>
 
+<p style="margin-left:11%;"><b>HostBuild</b></p>
+
+<p style="margin-left:22%;">Use a specific host build
+number in the ePID even if it is randomized. The
+<i>argument</i> must be a number between 1 and 65535. While
+you can use any number you should only use build numbers
+that a released build numbers of Windows Servers, e.g. 17763
+for Windows Server 2019.</p>
+
 <p style="margin-left:11%;"><b>MaxWorkers</b></p>
 
 <p style="margin-left:22%;">The <i>argument</i> specifies
@@ -630,46 +639,19 @@ Windows version of vlmcsd. See <b>-g</b> in
 by sending SIGHUP to vlmcsd.</p></td></tr>
 </table>
 
-<p style="margin-left:11%;"><b>Windows</b></p>
+<p style="margin-left:11%;"><b>&lt;csvlk-name&gt;</b></p>
 
 <p style="margin-left:22%;">The <i>argument</i> has the
 form <i>ePID</i> [ / <i>HwId</i> ]. Always use <i>ePID</i>
-and <i>HwId</i> for Windows activations. If specified,
-<b>RandomizationLevel</b> for Windows activitations will be
-ignored.</p>
-
-<p style="margin-left:11%;"><b>Office2010</b></p>
-
-<p style="margin-left:22%;">The <i>argument</i> has the
-form <i>ePID</i> [ / <i>HwId</i> ]. Always use <i>ePID</i>
-and <i>HwId</i> for Office 2010 activations. If specified,
-<b>RandomizationLevel</b> for Office 2010 activitations will
-be ignored.</p>
-
-<p style="margin-left:11%;"><b>Office2013</b></p>
-
-<p style="margin-left:22%;">The <i>argument</i> has the
-form <i>ePID</i> [ / <i>HwId</i> ]. Always use <i>ePID</i>
-and <i>HwId</i> for Office 2013 activations. If specified,
-<b>RandomizationLevel</b> for Office 2013 activitations will
-be ignored.</p>
-
-<p style="margin-left:11%;"><b>Office2016</b></p>
-
-<p style="margin-left:22%;">The <i>argument</i> has the
-form <i>ePID</i> [ / <i>HwId</i> ]. Always use <i>ePID</i>
-and <i>HwId</i> for Office 2016 activations. If specified,
-<b>RandomizationLevel</b> for Office 2016 activitations will
-be ignored.</p>
-
-<p style="margin-left:11%;"><b>WinChinaGov</b></p>
-
-<p style="margin-left:22%;">The <i>argument</i> has the
-form <i>ePID</i> [ / <i>HwId</i> ]. Always use <i>ePID</i>
-and <i>HwId</i> for China Government Editions of Windows
-(Enterprise G/GN). If specified, <b>RandomizationLevel</b>
-for Windows China Government activitations will be
-ignored.</p>
+and <i>HwId</i> for activations with
+<b>&lt;csvlk-name&gt;</b>. If specified,
+<b>RandomizationLevel</b> for the <b>&lt;csvlk-name&gt;</b>
+will be ignored. With the default vlmcsd.kmd database you
+can use the following <b>&lt;csvlk-name&gt;</b>s: Windows,
+Office2010, Office2013, Office2016, Office2019 and
+WinChinaGov. While vlmcsd is compatible with older
+databases, you must use at least database version 1.6 for
+this feature to work.</p>
 
 <h2>VALID EPIDS
 <a name="VALID EPIDS"></a>
@@ -728,8 +710,8 @@ contributions from DougQaid.</p>
 
 
 <p style="margin-left:11%; margin-top: 1em">Thanks to
-CODYQX4, deagles, eIcn, mikmik38, nosferati87, qad,
-Ratiborus, ...</p>
+abbodi1406, CODYQX4, deagles, eIcn, mikmik38, nosferati87,
+qad, Ratiborus, ...</p>
 
 <h2>SEE ALSO
 <a name="SEE ALSO"></a>
