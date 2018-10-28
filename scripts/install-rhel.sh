@@ -23,6 +23,13 @@ if [ -f '/etc/init.d/vlmcsd' ]; then
   exit 1
 fi
 
+if [ ! -f '/bin/tar' ]; then
+  echo 'Installing tar ...'
+  yum -q -y install tar
+  check_result $? "Can't install tar."
+  echo 'Install tar succeed.'
+fi
+
 if [ ! -f '/usr/bin/wget' ]; then
   echo 'Installing wget ...'
   yum -q -y install wget
