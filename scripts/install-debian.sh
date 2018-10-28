@@ -32,10 +32,11 @@ if [ ! -f '/usr/bin/wget' ]; then
 fi
 
 TMP_DIR=`mktemp -d`
+GIT_TAGS=svn1112
 cd ${TMP_DIR}
 
 echo 'Downloading vlmcsd binaries ...'
-wget -q https://github.com/Wind4/vlmcsd/releases/download/svn1108/binaries.tar.gz -O binaries.tar.gz
+wget -q https://github.com/Wind4/vlmcsd/releases/download/${GIT_TAGS}/binaries.tar.gz -O binaries.tar.gz
 check_result $? 'Download vlmcsd failed.'
 
 echo 'Downloading startup script ...'
