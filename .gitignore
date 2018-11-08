@@ -1,0 +1,12 @@
+VisualStudio/
+bin/
+build/
+buildroot-configs/
+floppy/
+hotbird64-mass-build/
+lib/
+src/VisualStudio-Linux-Remote/
+*.vcxproj*
+*.html
+*.pdf
+*.txt
