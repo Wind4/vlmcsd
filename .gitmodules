@@ -1,3 +1,6 @@
 [submodule "debian"]
 	path = debian
 	url = https://github.com/Wind4/vlmcsd-debian.git
+[submodule "docker"]
+	path = docker
+	url = https://github.com/Wind4/vlmcsd-docker.git
