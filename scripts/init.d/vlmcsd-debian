@@ -24,7 +24,7 @@ start() {
     return 1
   fi
   echo 'Starting service...'
-  local CMD="$SCRIPT -p $PIDFILE -l $LOGFILE"
+  local CMD="$SCRIPT -p $PIDFILE -l $LOGFILE -d"
   su -c "$CMD" $RUNAS
   echo 'Service started.'
 }
