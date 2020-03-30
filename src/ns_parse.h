@@ -46,12 +46,12 @@ typedef enum __ns_sect_vlmcsd {
 } ns_sect_vlmcsd;
 
 typedef struct __ns_msg_vlmcsd {
-	const uint8_t	*_msg, *_eom;
+	uint8_t	*_msg, *_eom;
 	uint16_t	_id, _flags, _counts[ns_s_max_vlmcsd];
-	const uint8_t	*_sections[ns_s_max_vlmcsd];
+	uint8_t	*_sections[ns_s_max_vlmcsd];
 	ns_sect_vlmcsd		_sect;
 	int		_rrnum;
-	const uint8_t	*_msg_ptr;
+	uint8_t	*_msg_ptr;
 } ns_msg_vlmcsd;
 
 
@@ -61,10 +61,10 @@ typedef	struct __ns_rr_vlmcsd {
 	uint16_t	rr_class;
 	uint32_t	ttl;
 	uint16_t	rdlength;
-	const uint8_t *	rdata;
+	uint8_t *	rdata;
 } ns_rr_vlmcsd;
 
-int ns_initparse_vlmcsd(const uint8_t *msg, int msglen, ns_msg_vlmcsd *handle);
+int ns_initparse_vlmcsd(uint8_t *msg, int msglen, ns_msg_vlmcsd *handle);
 
 int ns_parserr_vlmcsd(ns_msg_vlmcsd *handle, ns_sect_vlmcsd section, int rrnum, ns_rr_vlmcsd *rr);
 

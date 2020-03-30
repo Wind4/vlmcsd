@@ -57,9 +57,9 @@
 static void	setsection_vlmcsd(ns_msg_vlmcsd *msg, ns_sect_vlmcsd sect);
 
 
-static int dn_skipname_vlmcsd(const unsigned char *s, const unsigned char *end)
+static int dn_skipname_vlmcsd(unsigned char *s, unsigned char *end)
 {
-	const unsigned char *p;
+	unsigned char *p;
 	for (p=s; p<end; p++)
 		if (!*p) return p-s+1;
 		else if (*p>=192)
@@ -69,8 +69,8 @@ static int dn_skipname_vlmcsd(const unsigned char *s, const unsigned char *end)
 }
 
 static int
-ns_skiprr_vlmcsd(const uint8_t *ptr, const uint8_t *eom, ns_sect_vlmcsd section, int count) {
-	const uint8_t *optr = ptr;
+ns_skiprr_vlmcsd(uint8_t *ptr, uint8_t *eom, ns_sect_vlmcsd section, int count) {
+	uint8_t *optr = ptr;
 
 	for ((void)NULL; count > 0; count--) {
 		int b, rdlength;
@@ -93,8 +93,8 @@ ns_skiprr_vlmcsd(const uint8_t *ptr, const uint8_t *eom, ns_sect_vlmcsd section,
 }
 
 int
-ns_initparse_vlmcsd(const uint8_t *msg, int msglen, ns_msg_vlmcsd *handle) {
-	const uint8_t *eom = msg + msglen;
+ns_initparse_vlmcsd(uint8_t *msg, int msglen, ns_msg_vlmcsd *handle) {
+	uint8_t *eom = msg + msglen;
 	int i;
 
 	memset(handle, 0x5e, sizeof *handle);
