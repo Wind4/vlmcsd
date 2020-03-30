@@ -6,7 +6,7 @@
 #include "endian.h"
 
 #if defined(__BYTE_ORDER) && defined(__BIG_ENDIAN) && defined(__LITTLE_ENDIAN)  \
-	&& defined(BS16) && defined(BS32) && defined(BS64)
+	&& defined(BS16) && defined(BS32) && defined(BS64) && !defined(NO_COMPILER_UAA)
 
 #else // ! defined(__BYTE_ORDER)
 
@@ -136,8 +136,12 @@ unsigned short GET_UAA16LE(void *p, unsigned int i)
 		(unsigned short)_p[ 0 ] |
 		(unsigned short)_p[ 1 ] << 8;
 }
+#endif
 
 
+#if defined(__BYTE_ORDER) && defined(__BIG_ENDIAN) && defined(__LITTLE_ENDIAN)  \
+	&& defined(BS16) && defined(BS32) && defined(BS64)
+#else
 unsigned short BE16(unsigned short x)
 {
 	return GET_UAA16BE(&x, 0);

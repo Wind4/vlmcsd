@@ -247,7 +247,7 @@ ns_name_unpack_vlmcsd(const uint8_t *msg, const uint8_t *eom, const uint8_t *src
  *	Root domain returns as "." not "".
  */
 int
-ns_name_uncompress_vlmcsd(const uint8_t *msg, const uint8_t *eom, const uint8_t *src,
+ns_name_uncompress_vlmcsd(uint8_t *msg, uint8_t *eom, uint8_t *src,
 		   char *dst, size_t dstsiz)
 {
 	uint8_t tmp[NS_MAXCDNAME];

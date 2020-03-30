@@ -228,6 +228,14 @@ typedef union
 
 typedef BYTE hwid_t[8];
 
+typedef enum 
+{
+	None = 0,
+	UseNdr64 = 1 << 0,
+	UseForEpid = 1 << 1,
+	MayBeServer = 1 << 2,
+} HostBuildFlag;
+
 typedef struct CsvlkData
 {
 	union
@@ -236,6 +244,7 @@ typedef struct CsvlkData
 		char* EPid;
 	};
 
+	int64_t ReleaseDate;
 	uint32_t GroupId;
 	uint32_t MinKeyId;
 	uint32_t MaxKeyId;
@@ -280,6 +289,22 @@ typedef struct
 
 #define KMS_OPTIONS_USENDR64 1 << 0
 
+typedef struct HostBuild
+{
+	union
+	{
+		uint64_t DisplayNameOffset;
+		char* DisplayName;
+	};
+
+	int64_t ReleaseDate;
+	int32_t BuildNumber;
+	int32_t PlatformId;
+	HostBuildFlag Flags;
+	uint8_t reserved[4];
+
+} HostBuild_t, *PHostBuild_t;
+
 typedef struct VlmcsdHeader
 {
 	BYTE Magic[4];
@@ -290,19 +315,21 @@ typedef struct VlmcsdHeader
 
 	union
 	{
-		int32_t Counts[3];
+		int32_t Counts[5];
 
 		struct
 		{
 			int32_t AppItemCount;
 			int32_t KmsItemCount;
 			int32_t SkuItemCount;
+			int32_t HostBuildCount;
+			int32_t reserved2Counts;
 		};
 	};
 
 	union
 	{
-		DataPointer_t Datapointers[3];
+		DataPointer_t Datapointers[5];
 
 		struct
 		{
@@ -324,19 +351,31 @@ typedef struct VlmcsdHeader
 				PVlmcsdData_t SkuItemList;
 			};
 
+			union
+			{
+				uint64_t HostBuildOffset;
+				PHostBuild_t HostBuildList;
+			};
+
+			union
+			{
+				uint64_t Reserved2Offset;
+				void* Reserved2List;
+			};
+
 			CsvlkData_t CsvlkData[1];
 		};
 	};
 
 } VlmcsdHeader_t, *PVlmcsdHeader_t;
 
-#define EPID_INDEX_WINDOWS 0
-#define EPID_INDEX_OFFICE2010 1
-#define EPID_INDEX_OFFICE2013 2
-#define EPID_INDEX_OFFICE2016 3
-#define EPID_INDEX_WINCHINAGOV 4
+//#define EPID_INDEX_WINDOWS 0
+//#define EPID_INDEX_OFFICE2010 1
+//#define EPID_INDEX_OFFICE2013 2
+//#define EPID_INDEX_OFFICE2016 3
+//#define EPID_INDEX_WINCHINAGOV 4
 
-typedef HRESULT(__stdcall *RequestCallback_t)(const REQUEST *const baseRequest, RESPONSE *const baseResponse, BYTE *const hwId, const char* const ipstr);
+typedef HRESULT(__stdcall *RequestCallback_t)(REQUEST* baseRequest, RESPONSE *const baseResponse, BYTE *const hwId, const char* const ipstr);
 
 size_t CreateResponseV4(REQUEST_V4 *const Request, BYTE *const response_data, const char* const ipstr);
 size_t CreateResponseV6(REQUEST_V6 *restrict Request, BYTE *const response_data, const char* const ipstr);
@@ -344,13 +383,16 @@ BYTE *CreateRequestV4(size_t *size, const REQUEST* requestBase);
 BYTE *CreateRequestV6(size_t *size, const REQUEST* requestBase);
 void randomPidInit();
 void get16RandomBytes(void* ptr);
-RESPONSE_RESULT DecryptResponseV6(RESPONSE_V6* Response_v6, int responseSize, BYTE* const response, const BYTE* const request, BYTE* hwid);
-RESPONSE_RESULT DecryptResponseV4(RESPONSE_V4* Response_v4, const int responseSize, BYTE* const response, const BYTE* const request);
-void getUnixTimeAsFileTime(FILETIME *const ts);
-__pure int64_t fileTimeToUnixTime(const FILETIME *const ts);
+RESPONSE_RESULT DecryptResponseV6(RESPONSE_V6* response_v6, int responseSize, BYTE* const response, const BYTE* const rawRequest, BYTE* hwid);
+RESPONSE_RESULT DecryptResponseV4(RESPONSE_V4* response_v4, const int responseSize, BYTE* const rawResponse, const BYTE* const rawRequest);
+void getUnixTimeAsFileTime(FILETIME* ts);
+__pure int64_t fileTimeToUnixTime(FILETIME* ts);
 
 #ifndef IS_LIBRARY
 int32_t getProductIndex(const GUID* guid, const PVlmcsdData_t list, const int32_t count, char** name, char** ePid);
+#if !defined(NO_INI_FILE)||!defined(NO_VERBOSE_LOG)
+const char* getNextString(const char* s);
+#endif  // !defined(NO_INI_FILE)||!defined(NO_VERBOSE_LOG)
 #endif // IS_LIBRARY
 
 #ifndef NO_STRICT_MODES
@@ -362,7 +404,7 @@ extern RequestCallback_t CreateResponseBase;
 
 #ifdef _PEDANTIC
 uint16_t IsValidLcid(const uint16_t lcid);
-uint16_t IsValidHostBuild(const uint16_t hostBuild);
+uint32_t IsValidHostBuild(const int32_t hostBuild);
 #endif // _PEDANTIC
 
 #endif // __kms_h
