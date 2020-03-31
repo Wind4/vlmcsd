@@ -52,8 +52,6 @@
 #define VLMCS_OPTION_GRAB_INI 1
 #define VLMCS_OPTION_NO_GRAB_INI 2
 
-//#define kmsVersionMinor 0 // Currently constant. May change in future KMS versions
-
 #ifndef IS_LIBRARY
 
 // Function Prototypes
@@ -83,24 +81,19 @@ static int AddressFamily = 0;
 static int_fast8_t incompatibleOptions = 0;
 static const char* fn_ini_client = NULL;
 //static int_fast16_t kmsVersionMinor = 0;
-static const char* ePidGroup[] = { "Windows", "Office2010", "Office2013", "Office2016" };
+//static const char* ePidGroup[] = { "Windows", "Office2010", "Office2013", "Office2016" };
 static int32_t ActiveProductIndex = 0;
 static int32_t NCountPolicy = 0;
 static GUID AppGuid, KmsGuid, SkuGuid;
 static uint16_t MinorVersion = 0;
 static uint16_t MajorVersion;
 
-//#if !MULTI_CALL_BINARY
-//uint8_t DefaultKmsData[]={0};
-//__pure size_t getDefaultKmsDataSize() { return (size_t)0; }
-//#endif // !MULTI_CALL_BINARY
-
 #ifndef NO_DNS
 static int_fast8_t NoSrvRecordPriority = FALSE;
 #endif // NO_DNS
 
 
-typedef char iniFileEpidLines[4][256];
+//typedef char iniFileEpidLines[4][256];
 
 typedef struct
 {
@@ -943,7 +936,6 @@ static void displayRequestError(RpcCtx *const s, const int status, const int cur
 	}
 }
 
-
 static void newIniBackupFile(const char* const restrict fname)
 {
 	FILE *restrict f = fopen(fname, "wb");
@@ -965,9 +957,9 @@ static void newIniBackupFile(const char* const restrict fname)
 }
 
 
-static void updateIniFile(iniFileEpidLines* const restrict lines)
+static void updateIniFile(char*** restrict lines)
 {
-	int_fast8_t lineWritten[vlmcsd_countof(*lines)];
+	int_fast8_t* lineWritten = (int_fast8_t*)malloc(KmsData->CsvlkCount * sizeof(int_fast8_t));
 #	if !_MSC_VER
 	struct stat statbuf;
 #	endif
@@ -975,7 +967,7 @@ static void updateIniFile(iniFileEpidLines* const restrict lines)
 	int_fast8_t iniFileExistedBefore = TRUE;
 	unsigned int lineNumber;
 
-	memset(lineWritten, FALSE, sizeof(lineWritten));
+	memset(lineWritten, FALSE, KmsData->CsvlkCount * sizeof(int_fast8_t));
 
 	char* restrict fn_bak = (char*)vlmcsd_malloc(strlen(fn_ini_client) + 2);
 
@@ -1009,7 +1001,7 @@ static void updateIniFile(iniFileEpidLines* const restrict lines)
 		vlmcsd_unlink(fn_bak); // Required for Windows. Most Unix systems don't need it.
 		if (rename(fn_ini_client, fn_bak))
 		{
-			int error = errno;
+			const int error = errno;
 			errorout("Fatal: Cannot create %s: %s\n", fn_bak, strerror(error));
 			exit(error);
 		}
@@ -1023,7 +1015,7 @@ static void updateIniFile(iniFileEpidLines* const restrict lines)
 
 	if (!in)
 	{
-		int error = errno;
+		const int error = errno;
 		errorout("Fatal: Cannot open %s: %s\n", fn_bak, strerror(error));
 		exit(error);
 	}
@@ -1032,7 +1024,7 @@ static void updateIniFile(iniFileEpidLines* const restrict lines)
 
 	if (!out)
 	{
-		int error = errno;
+		const int error = errno;
 		errorout("Fatal: Cannot create %s: %s\n", fn_ini_client, strerror(error));
 		exit(error);
 	}
@@ -1041,9 +1033,9 @@ static void updateIniFile(iniFileEpidLines* const restrict lines)
 
 	for (lineNumber = 1; fgets(sourceLine, sizeof(sourceLine), in); lineNumber++)
 	{
-		for (i = 0; i < vlmcsd_countof(*lines); i++)
+		for (i = 0; i < KmsData->CsvlkCount; i++)
 		{
-			if (*(*lines)[i] && !strncasecmp(sourceLine, (*lines)[i], strlen(ePidGroup[i])))
+			if (*(*lines)[i] && !strncasecmp(sourceLine, (*lines)[i], strlen(getNextString((KmsData->CsvlkData[i].EPid)))))
 			{
 				if (lineWritten[i]) break;
 
@@ -1054,7 +1046,7 @@ static void updateIniFile(iniFileEpidLines* const restrict lines)
 			}
 		}
 
-		if (i >= vlmcsd_countof(*lines))
+		if (i >= KmsData->CsvlkCount)
 		{
 			fprintf(out, "%s", sourceLine);
 		}
@@ -1069,7 +1061,7 @@ static void updateIniFile(iniFileEpidLines* const restrict lines)
 
 	fclose(in);
 
-	for (i = 0; i < vlmcsd_countof(*lines); i++)
+	for (i = 0; i < KmsData->CsvlkCount; i++)
 	{
 		if (!lineWritten[i] && *(*lines)[i])
 		{
@@ -1080,7 +1072,7 @@ static void updateIniFile(iniFileEpidLines* const restrict lines)
 
 	if (fclose(out))
 	{
-		int error = errno;
+		const int error = errno;
 		errorout("Fatal: Cannot write to %s: %s\n", fn_ini_client, strerror(error));
 		exit(error);
 	}
@@ -1095,18 +1087,27 @@ static void grabServerData()
 {
 	RpcCtx s = INVALID_RPCCTX;
 	WORD MajorVer = 6;
-	iniFileEpidLines lines;
-
-	static char* Licenses[vlmcsd_countof(lines)] =
-	{
-		(char*)"212a64dc-43b1-4d3d-a30c-2fc69d2095c6", // Vista
-		(char*)"e85af946-2e25-47b7-83e1-bebcebeac611", // Office 2010
-		(char*)"e6a6f1bf-9d40-40c3-aa9f-c77ba21578c0", // Office 2013
-		(char*)"85b5f61b-320b-4be3-814a-b76b2bfafc82", // Office 2016
-	};
-
-	uint_fast8_t i;
+	int32_t i;
 	int32_t j;
+
+	char** lines = (char**)vlmcsd_malloc(KmsData->CsvlkCount * sizeof(char*));
+	GUID* kmsGuids = (GUID*)vlmcsd_malloc(KmsData->CsvlkCount * sizeof(GUID));
+
+	for (i = 0; i < KmsData->CsvlkCount; i++)
+	{
+		lines[i] = (char*)vlmcsd_malloc(256);
+		*lines[i] = 0;
+
+		for (j = 0; j < KmsData->KmsItemCount; j++)
+		{
+			if (KmsData->KmsItemList[j].EPidIndex == i)
+			{
+				kmsGuids[i] = KmsData->KmsItemList[j].Guid;
+				break;
+			}
+		}
+	}
+
 	RESPONSE response;
 	RESPONSE_RESULT result;
 	REQUEST request;
@@ -1114,23 +1115,19 @@ static void grabServerData()
 	int status;
 	size_t len;
 
-	for (i = 0; i < vlmcsd_countof(lines); i++) *lines[i] = 0;
-
-	for (i = 0; i < vlmcsd_countof(Licenses) && MajorVer > 3; i++)
+	for (i = 0; i < KmsData->CsvlkCount && MajorVer > 3; i++)
 	{
-		GUID guid;
-		string2UuidLE(Licenses[i], &guid);
-		int32_t kmsIndex = getProductIndex(&guid, KmsData->KmsItemList, KmsData->KmsItemCount, NULL, NULL);
+		const int32_t kmsIndex = getProductIndex(&kmsGuids[i], KmsData->KmsItemList, KmsData->KmsItemCount, NULL, NULL);
 
 		if (kmsIndex < 0)
 		{
-			errorout("Warning: KMS GUID %s not in database.\n", Licenses[i]);
+			errorout("Warning: KMS GUID not in database.\n");
 			continue;
 		}
 
 		ActiveProductIndex = ~0;
 
-		for (j = KmsData->SkuItemCount; j >= 0; j--)
+		for (j = KmsData->SkuItemCount - 1; j >= 0; j--)
 		{
 			if (KmsData->SkuItemList[j].KmsIndex == kmsIndex)
 			{
@@ -1141,11 +1138,11 @@ static void grabServerData()
 
 		if (ActiveProductIndex == ~0)
 		{
-			errorout("Warning: KMS GUID %s not in database.\n", Licenses[i]);
+			errorout("Warning: KMS GUID not in database.\n");
 			continue;
 		}
 
-		int32_t appIndex = KmsData->SkuItemList[ActiveProductIndex].AppIndex;
+		const int32_t appIndex = KmsData->SkuItemList[ActiveProductIndex].AppIndex;
 
 		NCountPolicy = (uint32_t)KmsData->SkuItemList[ActiveProductIndex].NCountPolicy;
 		memcpy(&SkuGuid, &KmsData->SkuItemList[ActiveProductIndex].Guid, sizeof(GUID));
@@ -1154,7 +1151,7 @@ static void grabServerData()
 		MajorVersion = (uint16_t)MajorVer;
 
 		status = sendRequest(&s, &request, &response, hwid, &result);
-		printf("%-11s", ePidGroup[i]);
+		printf("%-11s", getNextString(KmsData->CsvlkData[i].EPid));
 
 		if (status)
 		{
@@ -1171,7 +1168,7 @@ static void grabServerData()
 			continue;
 		}
 
-		printf("%i of %i", (int)(i + 7 - MajorVer), (int)(10 - MajorVer));
+		printf("%i of %i", (int)(i + 7 - MajorVer), (int)(KmsData->CsvlkCount + 6 - MajorVer));
 		displayResponse(result, &request, &response, hwid);
 
 		char ePID[3 * PID_BUFFER_SIZE];
@@ -1181,16 +1178,16 @@ static void grabServerData()
 			memset(ePID + 3 * PID_BUFFER_SIZE - 3, 0, 3);
 		}
 
-		vlmcsd_snprintf(lines[i], sizeof(lines[0]), "%s = %s", ePidGroup[i], ePID);
+		vlmcsd_snprintf(lines[i], 255 - strlen(lines[i]), "%s = %s", getNextString(KmsData->CsvlkData[i].EPid), ePID);
 
 		if (response.MajorVer > 5)
 		{
 			len = strlen(lines[i]);
-			vlmcsd_snprintf(lines[i] + len, sizeof(lines[0]) - len, " / %02X %02X %02X %02X %02X %02X %02X %02X", hwid[0], hwid[1], hwid[2], hwid[3], hwid[4], hwid[5], hwid[6], hwid[7]);
+			vlmcsd_snprintf(lines[i] + len, 255 - len, " / %02X %02X %02X %02X %02X %02X %02X %02X", hwid[0], hwid[1], hwid[2], hwid[3], hwid[4], hwid[5], hwid[6], hwid[7]);
 		}
 
 		len = strlen(lines[i]);
-		vlmcsd_snprintf(lines[i] + len, sizeof(lines[0]) - len, "\n");
+		vlmcsd_snprintf(lines[i] + len, 255 - len, "\n");
 
 	}
 
@@ -1201,7 +1198,7 @@ static void grabServerData()
 	else
 	{
 		printf("\n");
-		for (i = 0; i < vlmcsd_countof(lines); i++) printf("%s", lines[i]);
+		for (i = 0; i < KmsData->CsvlkCount; i++) printf("%s", lines[i]);
 	}
 }
 
@@ -1212,10 +1209,10 @@ int client_main(int argc, CARGV argv)
 
 	// Windows Sockets must be initialized
 
-	WSADATA wsadata;
+	WSADATA wsaData;
 	int error;
 
-	if ((error = WSAStartup(0x0202, &wsadata)))
+	if ((error = WSAStartup(0x0202, &wsaData)))
 	{
 		errorout("Fatal: Could not initialize Windows sockets (Error: %d).\n", error);
 		return error;
@@ -1245,7 +1242,7 @@ int client_main(int argc, CARGV argv)
 	else
 		useDefaultHost = TRUE;
 
-	int hostportarg = optind;
+	const int hostportarg = optind;
 
 	if (optind < argc - 1)
 	{
