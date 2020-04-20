@@ -225,9 +225,9 @@ help:
 	@echo "    DNS_PARSER=internal          Use $(BASE_CLIENT_NAME) internal DNS parsing routines. No effect on MingW (native Windows)."
 	@echo ""
 	@echo "Other useful CFLAGS"
+	@echo "    -DNO_COMPILER_UAA            Do not use compiler support for byte swapping and unaligned access"
 	@echo "    -DFULL_INTERNAL_DATA         Embed full internal KMS data in $(BASE_PROGRAM_NAME)."
 	@echo "    -DSUPPORT_WINE               Add code that the Windows version of $(BASE_PROGRAM_NAME) runs on Wine if MSRPC=1"
 	@echo "    -D_PEDANTIC                  Report rare error/warning conditions instead of silently ignoring them."
-	@echo "    -DINCLUDE_BETAS              Include SKU / activation IDs for obsolete beta/preview products."
 	@echo "    -DFD_SETSIZE=<x>             Allow <x> -L statements in $(BASE_PROGRAM_NAME) (default: 64 on Windows, 1024 on most Unixes)."
 

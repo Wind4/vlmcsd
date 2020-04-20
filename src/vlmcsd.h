@@ -28,7 +28,7 @@ int server_main(int argc, CARGV argv);
 #define SA_NOCLDWAIT 0
 #endif
 
-#ifndef NO_INI_FILE
+#if !defined(NO_INI_FILE) || !defined(NO_CL_PIDS)
 #define INI_PARAM_RANDOMIZATION_LEVEL 1
 #define INI_PARAM_LCID 2
 #define INI_PARAM_LISTEN 3

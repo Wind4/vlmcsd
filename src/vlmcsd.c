@@ -93,21 +93,23 @@ static uint_fast8_t maxsockets = 0;
 
 #ifdef _NTSERVICE
 static int_fast8_t installService = 0;
-static const char *restrict ServiceUser = NULL;
-static const char *restrict ServicePassword = "";
+static const char* restrict ServiceUser = NULL;
+static const char* restrict ServicePassword = "";
 #endif
 
 #ifndef NO_PID_FILE
-static const char *fn_pid = NULL;
+static const char* fn_pid = NULL;
 #endif
 
-#ifndef NO_INI_FILE
+#if !defined(NO_INI_FILE) || !defined(NO_CL_PIDS)
 
+#ifndef NO_INI_FILE
 #ifdef INI_FILE
-static const char *fn_ini = INI_FILE;
+static const char* fn_ini = INI_FILE;
 #else // !INI_FILE
-static const char *fn_ini = NULL;
+static const char* fn_ini = NULL;
 #endif // !INI_FILE
+#endif // NO_INI_FILE
 
 #ifndef NO_TAP
 char* tapArgument = NULL;
@@ -203,12 +205,12 @@ static int shmid = -1;
 #ifndef NO_USER_SWITCH
 #ifndef _WIN32
 
-static const char *uname = NULL, *gname = NULL;
+static const char* uname = NULL, * gname = NULL;
 static gid_t gid = INVALID_GID;
 static uid_t uid = INVALID_UID;
 
 // Get Numeric id of user/group
-static char GetNumericId(gid_t *restrict id, const char *const c)
+static char GetNumericId(gid_t* restrict id, const char* const c)
 {
 	char* endptr;
 	gid_t temp;
@@ -224,7 +226,7 @@ static char GetNumericId(gid_t *restrict id, const char *const c)
 // Get group id from option argument
 static char GetGid()
 {
-	struct group *g;
+	struct group* g;
 
 	if ((g = getgrnam(optarg)))
 		gid = g->gr_gid;
@@ -238,7 +240,7 @@ static char GetGid()
 // Get user id from option argument
 static char GetUid()
 {
-	struct passwd *u;
+	struct passwd* u;
 
 	////PORTABILITY: Assumes uid_t and gid_t are of same size (shouldn't be a problem)
 	if ((u = getpwnam(optarg)))
@@ -380,9 +382,9 @@ static __noreturn void usage()
 
 
 #ifndef NO_CUSTOM_INTERVALS
-#ifndef NO_INI_FILE
+#if !defined(NO_INI_FILE)
 
-__pure static BOOL getTimeSpanFromIniFile(DWORD* result, const char *const restrict argument)
+__pure static BOOL getTimeSpanFromIniFile(DWORD* result, const char* const restrict argument)
 {
 	const DWORD val = timeSpanString2Minutes(argument);
 
@@ -396,10 +398,10 @@ __pure static BOOL getTimeSpanFromIniFile(DWORD* result, const char *const restr
 	return TRUE;
 }
 
-#endif // NO_INI_FILE
+#endif // !defined(NO_INI_FILE)
 
 
-__pure static DWORD getTimeSpanFromCommandLine(const char *const restrict arg, const char optchar)
+__pure static DWORD getTimeSpanFromCommandLine(const char* const restrict arg, const char optchar)
 {
 	const DWORD val = timeSpanString2Minutes(arg);
 
@@ -424,13 +426,13 @@ static __pure int isControlCharOrSlash(const char c)
 }
 
 
-static void iniFileLineNextWord(const char **s)
+static void iniFileLineNextWord(const char** s)
 {
 	while (**s && isspace((int)**s)) (*s)++;
 }
 
 
-static BOOL setHwIdFromIniFileLine(const char **s, const uint32_t index, const uint8_t overwrite)
+static BOOL setHwIdFromIniFileLine(const char** s, const uint32_t index, const uint8_t overwrite)
 {
 	iniFileLineNextWord(s);
 
@@ -438,8 +440,8 @@ static BOOL setHwIdFromIniFileLine(const char **s, const uint32_t index, const u
 	{
 		if (!overwrite && KmsResponseParameters[index].HwId) return TRUE;
 
-		BYTE* HwId = (BYTE*)vlmcsd_malloc(sizeof(((RESPONSE_V6 *)0)->HwId));
-		hex2bin(HwId, *s + 1, sizeof(((RESPONSE_V6 *)0)->HwId));
+		BYTE* HwId = (BYTE*)vlmcsd_malloc(sizeof(((RESPONSE_V6*)0)->HwId));
+		hex2bin(HwId, *s + 1, sizeof(((RESPONSE_V6*)0)->HwId));
 		KmsResponseParameters[index].HwId = HwId;
 	}
 
@@ -447,10 +449,10 @@ static BOOL setHwIdFromIniFileLine(const char **s, const uint32_t index, const u
 }
 
 
-static BOOL setEpidFromIniFileLine(const char **s, const uint32_t index, const char *ePidSource, const uint8_t overwrite)
+static BOOL setEpidFromIniFileLine(const char** s, const uint32_t index, const char* ePidSource, const uint8_t overwrite)
 {
 	iniFileLineNextWord(s);
-	const char *savedPosition = *s;
+	const char* savedPosition = *s;
 	uint_fast16_t i;
 
 	for (i = 0; !isControlCharOrSlash(**s); i++)
@@ -478,34 +480,16 @@ static BOOL setEpidFromIniFileLine(const char **s, const uint32_t index, const c
 
 	return TRUE;
 }
-#endif // !defined(NO_INI_FILE) || !defined (NO_CL_PIDS)
 
 #ifndef NO_INI_FILE
-static void ignoreIniFileParameter(uint_fast8_t iniFileParameterId)
-{
-	uint_fast8_t i;
-
-	for (i = 0; i < vlmcsd_countof(IniFileParameterList); i++)
-	{
-		if (IniFileParameterList[i].Id != iniFileParameterId) continue;
-		IniFileParameterList[i].Id = 0;
-		break;
-	}
-}
-#else // NO_INI_FILE
-#define ignoreIniFileParameter(x)
-#endif // NO_INI_FILE
-
-
-#ifndef NO_INI_FILE
-static BOOL getIniFileArgumentBool(int_fast8_t *result, const char *const argument)
+static BOOL getIniFileArgumentBool(int_fast8_t* result, const char* const argument)
 {
 	IniFileErrorMessage = "Argument must be true/on/yes/1 or false/off/no/0";
 	return getArgumentBool(result, argument);
 }
 
 
-static BOOL getIniFileArgumentInt(unsigned int *result, const char *const argument, const unsigned int min, const unsigned int max)
+static BOOL getIniFileArgumentInt(unsigned int* result, const char* const argument, const unsigned int min, const unsigned int max)
 {
 	unsigned int tempResult;
 
@@ -521,7 +505,7 @@ static BOOL getIniFileArgumentInt(unsigned int *result, const char *const argume
 }
 
 
-static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
+static BOOL setIniFileParameter(uint_fast8_t id, const char* const iniarg)
 {
 	unsigned int result;
 	BOOL success = TRUE;
@@ -539,7 +523,7 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 
 	case INI_PARAM_GID:
 	{
-		struct group *g;
+		struct group* g;
 		IniFileErrorMessage = "Invalid group id or name";
 		if (!(gname = vlmcsd_strdup(iniarg))) return FALSE;
 
@@ -552,7 +536,7 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 
 	case INI_PARAM_UID:
 	{
-		struct passwd *p;
+		struct passwd* p;
 		IniFileErrorMessage = "Invalid user id or name";
 		if (!(uname = vlmcsd_strdup(iniarg))) return FALSE;
 
@@ -749,9 +733,11 @@ static BOOL setIniFileParameter(uint_fast8_t id, const char *const iniarg)
 
 	return success;
 }
+#endif // !NO_INI_FILE
 
 
-static BOOL getIniFileArgument(const char **s)
+
+static BOOL getIniFileArgument(const char** s)
 {
 	while (!isspace((int)**s) && **s != '=' && **s) (*s)++;
 	iniFileLineNextWord(s);
@@ -773,18 +759,14 @@ static BOOL getIniFileArgument(const char **s)
 	return TRUE;
 }
 
-static char* GetNextString(char* s)
-{
-	return s + strlen(s) + 1;
-}
 
-static int8_t GetCsvlkIndexFromName(const char *s)
+static int8_t GetCsvlkIndexFromName(const char* s)
 {
 	int8_t i;
 
 	for (i = 0; i < KmsData->CsvlkCount; i++)
 	{
-		const char *csvlkName = GetNextString(KmsData->CsvlkData[i].EPid);
+		const char* csvlkName = getNextString(KmsData->CsvlkData[i].EPid);
 
 		if (!strncasecmp(csvlkName, s, strlen(csvlkName)))
 		{
@@ -795,7 +777,7 @@ static int8_t GetCsvlkIndexFromName(const char *s)
 	return -1;
 }
 
-static BOOL handleIniFileEpidParameter(const char *s, uint8_t allowIniFileDirectives, const char *ePidSource)
+static BOOL handleIniFileEpidParameter(const char* s, uint8_t allowIniFileDirectives, const char* ePidSource)
 {
 	int_fast16_t i;
 
@@ -824,7 +806,26 @@ static BOOL handleIniFileEpidParameter(const char *s, uint8_t allowIniFileDirect
 	return FALSE;
 }
 
-static BOOL handleIniFileParameter(const char *s)
+#endif // !defined(NO_INI_FILE) || !defined (NO_CL_PIDS)
+
+#ifndef NO_INI_FILE
+static void ignoreIniFileParameter(uint_fast8_t iniFileParameterId)
+{
+	uint_fast8_t i;
+
+	for (i = 0; i < vlmcsd_countof(IniFileParameterList); i++)
+	{
+		if (IniFileParameterList[i].Id != iniFileParameterId) continue;
+		IniFileParameterList[i].Id = 0;
+		break;
+	}
+}
+#else // NO_INI_FILE
+#define ignoreIniFileParameter(x)
+#endif // NO_INI_FILE
+
+#ifndef NO_INI_FILE
+static BOOL handleIniFileParameter(const char* s)
 {
 	uint_fast8_t i;
 
@@ -843,7 +844,7 @@ static BOOL handleIniFileParameter(const char *s)
 
 
 #if !defined(NO_SOCKETS) && !defined(SIMPLE_SOCKETS) && !defined(USE_MSRPC)
-static BOOL setupListeningSocketsFromIniFile(const char *s)
+static BOOL setupListeningSocketsFromIniFile(const char* s)
 {
 	if (!maxsockets) return TRUE;
 	if (strncasecmp("Listen", s, 6)) return TRUE;
@@ -859,17 +860,12 @@ static BOOL setupListeningSocketsFromIniFile(const char *s)
 static BOOL readIniFile(const uint_fast8_t pass)
 {
 	char  line[256];
-	const char *s;
+	const char* s;
 	unsigned int lineNumber;
 	uint_fast8_t lineParseError;
 
-	FILE *restrict f;
+	FILE* restrict f;
 	BOOL result = TRUE;
-
-	if (pass == INI_FILE_PASS_2 && KmsData->MinorVer < 6)
-	{
-		return TRUE;
-	}
 
 	IniFileErrorBuffer = (char*)vlmcsd_malloc(INIFILE_ERROR_BUFFERSIZE);
 
@@ -877,8 +873,18 @@ static BOOL readIniFile(const uint_fast8_t pass)
 
 	for (lineNumber = 1; (s = fgets(line, sizeof(line), f)); lineNumber++)
 	{
-		line[strlen(line) - 1] = 0;
+		size_t i;
 
+		for (i = strlen(line); i > 0; i--)
+		{
+			if (line[i - 1] != 0xd && line[i - 1] != 0xa)
+			{
+				break;
+			}
+		}
+
+		line[i] = 0;
+		
 		iniFileLineNextWord(&s);
 		if (*s == ';' || *s == '#' || !*s) continue;
 
@@ -965,7 +971,7 @@ __noreturn static void HangupHandler(const int signal_unused)
 	}
 
 	argv_out[argc_in] = argv_out[argc_in + 1] = NULL;
-	if (daemonize_protection) argv_out[argc_in] = (char*) "-Z";
+	if (daemonize_protection) argv_out[argc_in] = (char*)"-Z";
 
 	exec_self((char**)argv_out);
 	int error = errno;
@@ -1084,7 +1090,7 @@ static DWORD daemonizeAndSetSignalAction()
 // Workaround for Cygwin fork problem (only affects cygwin processes that are Windows services)
 // Best is to compile for Cygwin with threads. fork() is slow and unreliable on Cygwin
 #if !defined(NO_INI_FILE) || !defined(NO_LOG) || !defined(NO_CL_PIDS) || !defined(NO_EXTERNAL_DATA)
-__pure static char* getCommandLineArg(char *const restrict arg)
+__pure static char* getCommandLineArg(char* const restrict arg)
 {
 #	if !__CYGWIN__ || defined(USE_THREADS) || defined(NO_SOCKETS)
 	return arg;
@@ -1325,14 +1331,6 @@ static void parseGeneralArguments() {
 	case 'H':
 		HostBuild = (uint16_t)getOptionArgumentInt((char)o, 0, 0xffff);
 		ignoreIniFileParameter(INI_PARAM_HOST_BUILD);
-
-#		ifdef _PEDANTIC
-		if (!IsValidHostBuild(HostBuild))
-		{
-			printerrorf("Warning: %u is not a known released Windows Server build >= 2008.\n");
-		}
-#		endif // _PEDANTIC
-
 		break;
 #	endif // NO_RANDOM_PID
 
@@ -1437,7 +1435,7 @@ static void writePidFile()
 
 	if (fn_pid && !InetdMode)
 	{
-		FILE *file = fopen(fn_pid, "w");
+		FILE* file = fopen(fn_pid, "w");
 
 		if (file)
 		{
@@ -1455,8 +1453,8 @@ static void writePidFile()
 			logger("Warning: Cannot write pid file '%s'. %s.\n", fn_pid, strerror(errno));
 		}
 #		endif // NO_LOG
-		}
 	}
+}
 #else
 #define writePidFile()
 #endif // !defined(NO_PID_FILE)
@@ -1563,8 +1561,8 @@ static void allocateSemaphore(void)
 			{
 				printerrorf("Warning: Could not create semaphore: %s\n", vlmcsd_strerror(errno));
 				MaxTasks = SEM_VALUE_MAX;
-}
-	}
+			}
+		}
 
 #		endif // THREADS or CYGWIN
 
@@ -1577,7 +1575,7 @@ static void allocateSemaphore(void)
 		}
 
 #		endif // _WIN32
-}
+	}
 }
 #endif // !defined(NO_LIMIT) && !defined(NO_SOCKETS) && !__minix__
 
@@ -1656,7 +1654,7 @@ int setupListeningSockets()
 		if (haveIPv6Stack) addListeningSocket("::");
 		if (haveIPv4Stack) addListeningSocket("0.0.0.0");
 #		endif // !HAVE_GETIFADDR
-}
+	}
 
 	if (!numsockets)
 	{
@@ -1751,7 +1749,7 @@ int newmain()
 #		ifndef NO_LOG
 		logstdout = 0;
 #		endif // !NO_LOG
-}
+	}
 
 #	endif // !defined(_WIN32) && !defined(NO_SOCKETS) && !defined(USE_MSRPC)
 
@@ -1776,22 +1774,15 @@ int newmain()
 			!IsNDR64Defined
 			)
 	{
-		UseServerRpcNDR64 = !!KmsData->Flags & KMS_OPTIONS_USENDR64;
+		UseServerRpcNDR64 = !!(KmsData->Flags & KMS_OPTIONS_USENDR64);
 #		ifndef NO_RANDOM_EPID
-		if (HostBuild&&RandomizationLevel)
+		if (HostBuild && RandomizationLevel)
 		{
 			UseServerRpcNDR64 = HostBuild > 7601;
 		}
 #		endif 
 	}
 #	endif // !defined(USE_MSRPC) && !defined(SIMPLE_RPC)
-
-#	if !defined(NO_INI_FILE) || !defined(NO_CL_PIDS)
-	if (KmsData->MinorVer < 6)
-	{
-		printerrorf("Warning: Need database version 1.6 or greater to set custom ePids\n");
-	}
-#	endif // !defined(NO_INI_FILE) || !defined(NO_CL_PIDS)
 
 #	if !defined(NO_RANDOM_EPID) || !defined(NO_CL_PIDS) || !defined(NO_INI_FILE)
 	KmsResponseParameters = (KmsResponseParam_t*)vlmcsd_malloc(sizeof(KmsResponseParam_t) * KmsData->CsvlkCount);
@@ -1805,7 +1796,7 @@ int newmain()
 	for (opterr = 0; (o = getopt(global_argc, (char* const*)global_argv, (const char*)optstring)) > 0; ) switch (o)
 	{
 	case 'a':
-		if (KmsData->MinorVer < 6 || !handleIniFileEpidParameter(optarg, FALSE, "command line"))
+		if (!handleIniFileEpidParameter(optarg, FALSE, "command line"))
 		{
 			usage();
 		}
@@ -1892,7 +1883,7 @@ int newmain()
 		{
 			printerrorf("Fatal: %s for %s failed: %s\n", "setuid", uname, strerror(errno));
 			return errno;
-	}
+		}
 #	ifndef NO_SIGHUP
 	}
 #	endif // NO_SIGHUP
@@ -1905,6 +1896,22 @@ int newmain()
 	// the lifetime of the process. So we generate them now
 #	ifndef NO_RANDOM_EPID
 	if (RandomizationLevel == 1) randomPidInit();
+#   if !defined(NO_LOG) && !defined(NO_VERBOSE_LOG)
+	if (logverbose)
+	{
+		int32_t i;
+
+		for (i = 0; i < KmsData->CsvlkCount; i++)
+		{
+			const CsvlkData_t* const csvlk = KmsData->CsvlkData + i;
+			const char* csvlkIniName = getNextString(csvlk->EPid);
+			const char* csvlkFullName = getNextString(csvlkIniName);
+			csvlkFullName = *csvlkFullName ? csvlkFullName : "unknown";
+			const char* ePid = KmsResponseParameters[i].Epid ? KmsResponseParameters[i].Epid : RandomizationLevel == 2 ? "" : csvlk->EPid;
+			logger("Using CSVLK %s (%s) with %s ePID %s\n", csvlkIniName, csvlkFullName, (RandomizationLevel == 1 && KmsResponseParameters[i].IsRandom) || (RandomizationLevel == 2 && !KmsResponseParameters[i].Epid) ? "random" : "fixed", ePid);
+		}
+	}
+#   endif // !defined(NO_LOG) && !defined(NO_VERBOSE_LOG)
 #	endif
 
 #	if !defined(NO_SOCKETS)
@@ -1950,12 +1957,12 @@ int newmain()
 #if _MSC_VER && !defined(_DEBUG)&& !MULTI_CALL_BINARY
 int __stdcall WinStartUp(void)
 {
-	WCHAR **szArgList;
+	WCHAR** szArgList;
 	int argc;
 	szArgList = CommandLineToArgvW(GetCommandLineW(), &argc);
 
 	int i;
-	char **argv = (char**)vlmcsd_malloc(sizeof(char*)*argc);
+	char** argv = (char**)vlmcsd_malloc(sizeof(char*) * argc);
 
 	for (i = 0; i < argc; i++)
 	{

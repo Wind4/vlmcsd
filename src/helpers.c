@@ -434,14 +434,14 @@ __pure BOOL getArgumentBool(int_fast8_t *result, const char *const argument)
 #ifndef NO_EXTERNAL_DATA
 __noreturn static void dataFileReadError()
 {
-	int error = errno;
+	const int error = errno;
 	errorout("Fatal: Could not read %s: %s\n", fn_data, strerror(error));
 	exit(error);
 }
 
 __noreturn static void dataFileFormatError()
 {
-	errorout("Fatal: %s is not a KMS data file\n", fn_data);
+	errorout("Fatal: %s is not a KMS data file version 2.x\n", fn_data);
 	exit(VLMCSD_EINVAL);
 }
 #endif // NO_EXTERNAL_DATA
@@ -526,7 +526,7 @@ static void getDefaultDataFile()
 	getExeName();
 	strncpy(fileName, fn_exe, MAX_PATH);
 	PathRemoveFileSpec(fileName);
-	strncat(fileName, "\\vlmcsd.kmd", MAX_PATH);
+	strncat(fileName, "\\vlmcsd.kmd", MAX_PATH - 11);
 	fn_data = vlmcsd_strdup(fileName);
 }
 #else // !_WIN32
@@ -588,12 +588,12 @@ void loadKmsData()
 			KmsData = (PVlmcsdHeader_t)vlmcsd_malloc(size);
 			if (fseek(file, 0, SEEK_SET)) dataFileReadError();
 
-			size_t bytesRead = fread(KmsData, 1, size, file);
+			const size_t bytesRead = fread(KmsData, 1, size, file);
 			if ((long)bytesRead != size) dataFileReadError();
 			fclose(file);
 
 #			if !defined(NO_LOG) && !defined(NO_SOCKETS)
-			if (!InetdMode) logger("Read KMS data file version %u.%u %s\n", (unsigned int)KmsData->MajorVer, (unsigned int)KmsData->MinorVer, fn_data);
+			if (!InetdMode) logger("Read KMS data file version %u.%u %s\n", (unsigned int)LE16(KmsData->MajorVer), (unsigned int)LE16(KmsData->MinorVer), fn_data);
 #			endif // NO_LOG
 		}
 	}
@@ -610,6 +610,7 @@ void loadKmsData()
 	KmsData->AppItemCount = LE32(KmsData->AppItemCount);
 	KmsData->KmsItemCount = LE32(KmsData->KmsItemCount);
 	KmsData->SkuItemCount = LE32(KmsData->SkuItemCount);
+	KmsData->HostBuildCount = LE32(KmsData->HostBuildCount);
 
 	uint32_t i;
 
@@ -625,6 +626,7 @@ void loadKmsData()
 	{
 		PCsvlkData_t csvlkData = &KmsData->CsvlkData[i];
 		csvlkData->EPid = (char*)KmsData + LE64(csvlkData->EPidOffset);
+		csvlkData->ReleaseDate = LE64(csvlkData->ReleaseDate);
 #		ifndef UNSAFE_DATA_LOAD
 		if (csvlkData->EPid > (char*)KmsData + size) dataFileFormatError();
 #		endif // UNSAFE_DATA_LOAD
@@ -636,12 +638,25 @@ void loadKmsData()
 #		endif // NO_RANDOM_EPID
 	}
 
+	for (i = 0; i < (uint32_t)KmsData->HostBuildCount; i++)
+	{
+		PHostBuild_t hostBuild = &KmsData->HostBuildList[i];
+		hostBuild->BuildNumber = LE32(hostBuild->BuildNumber);
+		hostBuild->Flags = LE32(hostBuild->Flags);
+		hostBuild->PlatformId = LE32(hostBuild->PlatformId);
+		hostBuild->ReleaseDate = LE64(hostBuild->ReleaseDate);
+		hostBuild->DisplayName = (char*)KmsData + LE64(hostBuild->DisplayNameOffset);
+#		ifndef UNSAFE_DATA_LOAD
+		if (hostBuild->DisplayName > (char*)KmsData + size) dataFileFormatError();
+#		endif // UNSAFE_DATA_LOAD
+	}
+
 	const uint32_t totalItemCount = KmsData->AppItemCount + KmsData->KmsItemCount + KmsData->SkuItemCount;
 
 #	ifndef NO_EXTERNAL_DATA
 	if (
 		memcmp(KmsData->Magic, "KMD", sizeof(KmsData->Magic)) ||
-		KmsData->MajorVer != 1
+		KmsData->MajorVer != 2
 #		ifndef UNSAFE_DATA_LOAD
 		||
 		sizeof(VlmcsdHeader_t) + totalItemCount * sizeof(VlmcsdData_t) >= ((uint64_t)size)
