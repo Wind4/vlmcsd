@@ -70,7 +70,7 @@ VERBOSE ?= NO
 ################################################################################
 
 CC ?= gcc
-TARGETPLATFORM := $(shell LANG=en_US.UTF-8 $(CC) -v 2>&1 | grep '^Target: ' | cut -f 2 -d ' ')
+TARGETPLATFORM := $(shell LANG=en_US.UTF-8 LANGUAGE=en_US $(CC) -v 2>&1 | grep '^Target: ' | cut -f 2 -d ' ')
 
 ifneq (,$(findstring darwin,$(TARGETPLATFORM)))
   DARWIN := 1
