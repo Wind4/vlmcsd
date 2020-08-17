@@ -171,7 +171,7 @@ RpcStatus closeRpc(const RpcCtx handle)
 
 #if !MULTI_CALL_BINARY
 // Memory allocation function for RPC.
-void *__RPC_USER midl_user_allocate(SIZE_T len)
+void *__RPC_USER midl_user_allocate(size_t len)
 {
 	return vlmcsd_malloc(len);
 }

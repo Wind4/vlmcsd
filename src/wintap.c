@@ -42,7 +42,7 @@ static BOOL isAddressAssigned()
 	BOOL result = FALSE;
 
 	pIPAddrTable = (PMIB_IPADDRTABLE)vlmcsd_malloc(sizeof(MIB_IPADDRTABLE));
-	DWORD status = GetIpAddrTable(pIPAddrTable, &dwSize, 0);
+	const DWORD status = GetIpAddrTable(pIPAddrTable, &dwSize, 0);
 	free(pIPAddrTable);
 
 	if (status != ERROR_INSUFFICIENT_BUFFER) return FALSE;
@@ -74,16 +74,16 @@ static BOOL isAddressAssigned()
 
 static void parseTapArgument(char* argument)
 {
-	char* equalsignPosition = strchr(argument, (int)'=');
+	char* equalSignPosition = strchr(argument, (int)'=');
 	char* slashPosition = strchr(argument, (int)'/');
 	char* colonPosition = strchr(argument, (int)':');
 
 	szTapName = argument;
 
-	if (equalsignPosition)
+	if (equalSignPosition)
 	{
-		*equalsignPosition = 0;
-		szIpAddress = equalsignPosition + 1;
+		*equalSignPosition = 0;
+		szIpAddress = equalSignPosition + 1;
 	}
 
 	if (slashPosition)
@@ -166,10 +166,10 @@ static HANDLE OpenTapHandle()
 		WinErrorExit(regResult);
 	}
 
-	char subkeyName[TAP_REGISTRY_DATA_SIZE];
-	DWORD i, subKeySize = sizeof(subkeyName);
+	char subKeyName[TAP_REGISTRY_DATA_SIZE];
+	DWORD i, subKeySize = sizeof(subKeyName);
 
-	for (i = 0; (regResult = RegEnumKeyEx(regAdapterKey, i, subkeyName, &subKeySize, NULL, NULL, NULL, NULL)) != ERROR_NO_MORE_ITEMS; i++)
+	for (i = 0; (regResult = RegEnumKeyEx(regAdapterKey, i, subKeyName, &subKeySize, NULL, NULL, NULL, NULL)) != ERROR_NO_MORE_ITEMS; i++)
 	{
 		HKEY regSubKey;
 		DWORD type, regDataSize;
@@ -177,7 +177,7 @@ static HANDLE OpenTapHandle()
 
 		if (regResult) WinErrorExit(regResult);
 
-		if ((regResult = RegOpenKeyEx(regAdapterKey, subkeyName, 0, KEY_READ | KEY_WOW64_64KEY, &regSubKey)) == ERROR_SUCCESS)
+		if ((regResult = RegOpenKeyEx(regAdapterKey, subKeyName, 0, KEY_READ | KEY_WOW64_64KEY, &regSubKey)) == ERROR_SUCCESS)
 		{
 			regDataSize = sizeof(regData);
 
@@ -201,8 +201,8 @@ static HANDLE OpenTapHandle()
 						char connectionKeyName[TAP_REGISTRY_DATA_SIZE];
 
 						strncpy(connectionKeyName, NETWORK_CONNECTIONS_KEY "\\", sizeof(connectionKeyName));
-						strncat(connectionKeyName, regData, sizeof(connectionKeyName));
-						strncat(connectionKeyName, "\\Connection", sizeof(connectionKeyName));
+						strncat(connectionKeyName, regData, sizeof(connectionKeyName) - strlen(connectionKeyName) - 1);
+						strncat(connectionKeyName, "\\Connection", sizeof(connectionKeyName) - strlen(connectionKeyName) - 1);
 
 						if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, connectionKeyName, 0, KEY_READ | KEY_WOW64_64KEY, &connectionKey) == ERROR_SUCCESS)
 						{
@@ -215,8 +215,8 @@ static HANDLE OpenTapHandle()
 								{
 									ActiveTapName = vlmcsd_strdup(deviceName);
 									strncpy(deviceName, USERMODEDEVICEDIR, sizeof(deviceName));
-									strncat(deviceName, regData, sizeof(deviceName));
-									strncat(deviceName, strcmp(AdapterClass, "TEAMVIEWERVPN") ? TAP_WIN_SUFFIX : ".dgt", sizeof(deviceName));
+									strncat(deviceName, regData, sizeof(deviceName) - strlen(deviceName) - 1);
+									strncat(deviceName, strcmp(AdapterClass, "TEAMVIEWERVPN") ? TAP_WIN_SUFFIX : ".dgt", sizeof(deviceName) - strlen(deviceName) - 1);
 									handle = CreateFile(deviceName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM, NULL);
 								}
 							}
@@ -231,7 +231,7 @@ static HANDLE OpenTapHandle()
 		}
 
 		RegCloseKey(regSubKey);
-		subKeySize = sizeof(subkeyName);
+		subKeySize = sizeof(subKeyName);
 		if (handle != INVALID_HANDLE_VALUE) break;
 	}
 

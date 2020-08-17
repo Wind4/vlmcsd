@@ -325,7 +325,7 @@ static int rpcRequest(const RPC_REQUEST64 *const Request, RPC_RESPONSE64 *const 
 #	endif // !SIMPLE_RPC
 
 	pRpcReturnCode = ((BYTE*)&Response->Ndr) + len;
-	UA32(pRpcReturnCode) = ResponseSize < 0 ? LE32(ResponseSize) : 0;
+	PUT_UA32LE(pRpcReturnCode, ResponseSize < 0 ? ResponseSize : 0);
 	len += sizeof(DWORD);
 
 	// Pad zeros to 32-bit align (seems not neccassary but Windows RPC does it this way)
@@ -371,7 +371,7 @@ static void CheckRpcBindRequest(const RPC_BIND_REQUEST *const Request, const uns
 
 		if (ctxItem->InterfaceVerMajor != LE16(1) || ctxItem->InterfaceVerMinor != 0)
 			logger("Warning: Interface version is %u.%u but should be 1.0.\n",
-				(unsigned int)LE16(ctxItem->InterfaceVerMajor),
+			(unsigned int)LE16(ctxItem->InterfaceVerMajor),
 				(unsigned int)LE16(ctxItem->InterfaceVerMinor)
 			);
 
@@ -494,7 +494,7 @@ static int rpcBind(const RPC_BIND_REQUEST *const Request, RPC_BIND_RESPONSE* Res
 
 	for (i = 0; i < numCtxItems; i++)
 	{
-		struct CtxResults* result = Response->Results+i;
+		struct CtxResults* result = Response->Results + i;
 		const GUID* ctxTransferSyntax = &Request->CtxItems[i].TransferSyntax;
 
 #		ifndef SIMPLE_RPC
@@ -970,7 +970,8 @@ RpcStatus rpcSendRequest(const RpcCtx sock, const BYTE *const kmsRequest, const 
 		}
 
 		pReturnCode = (DWORD*)(*kmsResponse + *responseSize + pad);
-		status = LE32(UA32(pReturnCode));
+		status = GET_UA32LE(pReturnCode);
+		//status = LE32(UA32(pReturnCode));
 
 		break;
 	}

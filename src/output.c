@@ -180,7 +180,7 @@ void uuid2StringLE(const GUID *const guid, char *const string)
 }
 
 #if !defined(NO_VERBOSE_LOG) && !defined(NO_LOG)
-void logRequestVerbose(const REQUEST *const Request, const PRINTFUNC p)
+void logRequestVerbose(REQUEST* Request, const PRINTFUNC p)
 {
 	char guidBuffer[GUID_STRING_LENGTH + 1];
 	char WorkstationBuffer[3 * WORKSTATION_NAME_BUFFER];
@@ -222,7 +222,7 @@ void logRequestVerbose(const REQUEST *const Request, const PRINTFUNC p)
 	p("N count policy (minimum clients): %u\n", (uint32_t)LE32(Request->N_Policy));
 }
 
-void logResponseVerbose(const char *const ePID, const BYTE *const hwid, const RESPONSE *const response, const PRINTFUNC p)
+void logResponseVerbose(const char *const ePID, const BYTE *const hwid, RESPONSE* response, const PRINTFUNC p)
 {
 	char guidBuffer[GUID_STRING_LENGTH + 1];
 

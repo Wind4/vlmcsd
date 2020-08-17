@@ -9,17 +9,17 @@
 //
 // Unaligned access
 //
+
+#if !defined(NO_COMPILER_UAA)
 #define UAA16(p, i) (((PACKED16*)p)->val[i])
 #define UAA32(p, i) (((PACKED32*)p)->val[i])
 #define UAA64(p, i) (((PACKED64*)p)->val[i])
-
-#define UA64(p)  UAA64(p, 0)
-#define UA32(p)  UAA32(p, 0)
-#define UA16(p)  UAA16(p, 0)
+#endif 
 
 //
 //Byteswap: Use compiler support if available
 //
+#ifndef NO_COMPILER_UAA
 #ifdef __has_builtin // Clang supports this
 
 #if __has_builtin(__builtin_bswap16)
@@ -56,6 +56,7 @@
 #endif // GNU C > 4.7
 #endif // __GNUC__ > 4
 #endif // __GNUC__
+#endif // NO_COMPILER_UAA
 
 //
 // Byteorder
@@ -198,6 +199,10 @@
 #define __BE64(x)  BS64(x)
 #define __LE64(x)  (x)
 
+#define PUT_UA16(p, v) PUT_UA16LE(p, v)
+#define PUT_UA32(p, v) PUT_UA32LE(p, v)
+#define PUT_UA64(p, v) PUT_UA64LE(p, v)
+
 #else // __BYTE_ORDER == __BIG_ENDIAN
 
 #define __BE16(x)  (x)
@@ -207,7 +212,37 @@
 #define __BE64(x)  (x)
 #define __LE64(x)  BS64(x)
 
+#define PUT_UA16(p, v) PUT_UA16BE(p, v)
+#define PUT_UA32(p, v) PUT_UA32BE(p, v)
+#define PUT_UA64(p, v) PUT_UA64BE(p, v)
+
 #endif // __BYTE_ORDER
+
+#define BE16(x)  __BE16(x)
+#define LE16(x)  __LE16(x)
+#define BE32(x)  __BE32(x)
+#define LE32(x)  __LE32(x)
+#define BE64(x)  __BE64(x)
+#define LE64(x)  __LE64(x)
+
+#else
+
+extern unsigned short BE16(unsigned short x);
+
+extern unsigned short LE16(unsigned short x);
+
+extern unsigned int BE32(unsigned int x);
+
+extern unsigned int LE32(unsigned int x);
+
+extern unsigned long long BE64(unsigned long long x);
+
+extern unsigned long long LE64(unsigned long long x);
+
+#endif // defined(__BYTE_ORDER)
+
+#if defined(__BYTE_ORDER) && defined(__BIG_ENDIAN) && defined(__LITTLE_ENDIAN)  \
+	&& defined(BS16) && defined(BS32) && defined(BS64) &&!defined(NO_COMPILER_UAA)
 
 #define PUT_UAA64BE(p, v, i)  ( UAA64(p, i) = __BE64(v) )
 #define PUT_UAA32BE(p, v, i)  ( UAA32(p, i) = __BE32(v) )
@@ -225,56 +260,37 @@
 #define GET_UAA32LE(p, i)  __LE32(UAA32(p, i))
 #define GET_UAA16LE(p, i)  __LE16(UAA16(p, i))
 
-#define BE16(x)  __BE16(x)
-#define LE16(x)  __LE16(x)
-#define BE32(x)  __BE32(x)
-#define LE32(x)  __LE32(x)
-#define BE64(x)  __BE64(x)
-#define LE64(x)  __LE64(x)
 
 #else // ! defined(__BYTE_ORDER)
 
-extern void PUT_UAA64BE(void *p, unsigned long long v, unsigned int i);
+extern void PUT_UAA64BE(void* p, unsigned long long v, unsigned int i);
 
-extern void PUT_UAA32BE(void *p, unsigned int v, unsigned int i);
+extern void PUT_UAA32BE(void* p, unsigned int v, unsigned int i);
 
-extern void PUT_UAA16BE(void *p, unsigned short v, unsigned int i);
-
-
-extern void PUT_UAA64LE(void *p, unsigned long long v, unsigned int i);
-
-extern void PUT_UAA32LE(void *p, unsigned int v, unsigned int i);
-
-extern void PUT_UAA16LE(void *p, unsigned short v, unsigned int i);
+extern void PUT_UAA16BE(void* p, unsigned short v, unsigned int i);
 
 
-extern unsigned long long GET_UAA64BE(void *p, unsigned int i);
+extern void PUT_UAA64LE(void* p, unsigned long long v, unsigned int i);
 
-extern unsigned int GET_UAA32BE(void *p, unsigned int i);
+extern void PUT_UAA32LE(void* p, unsigned int v, unsigned int i);
 
-extern unsigned short GET_UAA16BE(void *p, unsigned int i);
-
-
-extern unsigned long long GET_UAA64LE(void *p, unsigned int i);
-
-extern unsigned int GET_UAA32LE(void *p, unsigned int i);
-
-extern unsigned short GET_UAA16LE(void *p, unsigned int i);
+extern void PUT_UAA16LE(void* p, unsigned short v, unsigned int i);
 
 
-extern unsigned short BE16(unsigned short x);
+extern unsigned long long GET_UAA64BE(void* p, unsigned int i);
 
-extern unsigned short LE16(unsigned short x);
+extern unsigned int GET_UAA32BE(void* p, unsigned int i);
 
-extern unsigned int BE32(unsigned int x);
+extern unsigned short GET_UAA16BE(void* p, unsigned int i);
 
-extern unsigned int LE32(unsigned int x);
 
-extern unsigned long long BE64(unsigned long long x);
+extern unsigned long long GET_UAA64LE(void* p, unsigned int i);
 
-extern unsigned long long LE64(unsigned long long x);
+extern unsigned int GET_UAA32LE(void* p, unsigned int i);
 
-#endif // defined(__BYTE_ORDER)
+extern unsigned short GET_UAA16LE(void* p, unsigned int i);
+#endif
+
 
 
 #define PUT_UA64BE(p, v)  PUT_UAA64BE(p, v, 0)
