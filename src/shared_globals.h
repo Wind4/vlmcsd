@@ -55,6 +55,7 @@ typedef struct
 	const BYTE* HwId;
 	#ifndef NO_LOG
 	const char* EpidSource;
+	uint8_t IsRandom;
 	#endif // NO_LOG
 } KmsResponseParam_t, *PKmsResponseParam_t;
 

@@ -294,7 +294,7 @@ int ProcessActivationRequest(handle_t IDL_handle, int requestSize, unsigned char
 
 
 // Memory allocation function for RPC.
-void *__RPC_USER midl_user_allocate(SIZE_T len)
+void *__RPC_USER midl_user_allocate(size_t len)
 {
 	return vlmcsd_malloc(len);
 }
