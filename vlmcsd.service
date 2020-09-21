@@ -1,0 +1,14 @@
+[Unit]
+Description=Microsoft Key Management System
+After=network.target
+After=network-online.target
+Wants=network-online.target
+ 
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/vlmcsd
+RemainAfterExit=yes
+LimitNOFILE=65536
+ 
+[Install]
+WantedBy=multi-user.target
