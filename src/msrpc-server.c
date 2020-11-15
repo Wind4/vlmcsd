@@ -184,10 +184,10 @@ static int_fast8_t IsPrivateIPAddress(char* ipAddress)
 			if
 			(
 				(ip & 0xff000000) == 0x7f000000 || // 127.x.x.x localhost
-				(ip & 0xffff0000) == 0xc0a80000 || // 192.168.x.x private routeable
+				(ip & 0xffff0000) == 0xc0a80000 || // 192.168.x.x private routable
 				(ip & 0xffff0000) == 0xa9fe0000 || // 169.254.x.x link local
-				(ip & 0xff000000) == 0x0a000000 || // 10.x.x.x private routeable
-				(ip & 0xfff00000) == 0xac100000    // 172.16-31.x.x private routeable
+				(ip & 0xff000000) == 0x0a000000 || // 10.x.x.x private routable
+				(ip & 0xfff00000) == 0xac100000    // 172.16-31.x.x private routable
 			)
 			{
 				return TRUE;
