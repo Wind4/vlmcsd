@@ -66,6 +66,13 @@ Authoritative source on Microsoft's [TechNet](https://technet.microsoft.com/en-u
 | Windows 7 Enterprise N    | YDRBP-3D83W-TY26F-D46B2-XCKRJ |
 | Windows 7 Enterprise E    | C29WB-22CC8-VJ326-GHFJW-H9DH4 |
 
+### Windows Server 2019
+| Operating system edition                  | KMS Client Setup Key          |
+| ----------------------------------------- | ----------------------------- |
+| Windows Server 2019 Datacenter            | WMDGN-G9PQG-XVVXX-R3X43-63DFG |
+| Windows Server 2019 Standard              | N69G4-B89J2-4G8F4-WWYCC-J464C |
+| Windows Server 2019 Essentials            | WVDHN-86M7X-466P6-VHXV7-YY726 |
+
 ### Windows Server 2016
 | Operating system edition                  | KMS Client Setup Key          |
 | ----------------------------------------- | ----------------------------- |
