@@ -23,6 +23,7 @@ cscript ospp.vbs /act
 Authoritative source on Microsoft's [TechNet](https://technet.microsoft.com/en-us/library/jj612867) and [Windows Server Activation Guide](https://docs.microsoft.com/en-us/windows-server/get-started/kmsclientkeys).
 
 ### Windows 10
+
 | Operating system edition          | KMS Client Setup Key          |
 | --------------------------------- | ----------------------------- |
 | Windows 10 Core                   | TX9XD-98N7V-6WMQ6-BX7FG-H8Q99 |
@@ -41,6 +42,7 @@ Authoritative source on Microsoft's [TechNet](https://technet.microsoft.com/en-u
 | Windows 10 Enterprise 2016 LTSB N | QFFDN-GRT3P-VKWWX-X7T3R-8B639 |
 
 ### Windows 8 / 8.1
+
 | Operating system edition                  | KMS Client Setup Key          |
 | ----------------------------------------- | ----------------------------- |
 | Windows 8 Professional                    | NG4HW-VH26C-733KW-K6F98-J8CK4 |
@@ -57,6 +59,7 @@ Authoritative source on Microsoft's [TechNet](https://technet.microsoft.com/en-u
 | Windows Embedded 8.1 Industry Enterprise  | FNFKF-PWTVT-9RC8H-32HB2-JB34X |
 
 ### Windows 7
+
 | Operating system edition  | KMS Client Setup Key          |
 | ------------------------- | ----------------------------- |
 | Windows 7 Professional    | FJ82H-XT6CR-J8D7P-XQJJ2-GPDD4 |
@@ -67,12 +70,14 @@ Authoritative source on Microsoft's [TechNet](https://technet.microsoft.com/en-u
 | Windows 7 Enterprise E    | C29WB-22CC8-VJ326-GHFJW-H9DH4 |
 
 ### Windows Server 2022
+
 | Operating system edition                  | KMS Client Setup Key          |
 | ----------------------------------------- | ----------------------------- |
 | Windows Server 2022 Datacenter            | WX4NM-KYWYW-QJJR4-XV3QB-6VM33 |
 | Windows Server 2022 Standard              | VDYBN-27WPP-V4HQT-9VMD4-VMK7H |
 
 ### Windows Server 2019
+
 | Operating system edition                  | KMS Client Setup Key          |
 | ----------------------------------------- | ----------------------------- |
 | Windows Server 2019 Datacenter            | WMDGN-G9PQG-XVVXX-R3X43-63DFG |
@@ -80,6 +85,7 @@ Authoritative source on Microsoft's [TechNet](https://technet.microsoft.com/en-u
 | Windows Server 2019 Essentials            | WVDHN-86M7X-466P6-VHXV7-YY726 |
 
 ### Windows Server 2016
+
 | Operating system edition                  | KMS Client Setup Key          |
 | ----------------------------------------- | ----------------------------- |
 | Windows Server 2016 Datacenter            | CB7KF-BWN84-R7R2Y-793K2-8XDDG |
@@ -87,6 +93,7 @@ Authoritative source on Microsoft's [TechNet](https://technet.microsoft.com/en-u
 | Windows Server 2016 Essentials            | JCKRF-N37P4-C2D82-9YXRT-4M63B |
 
 ### Windows Server 2012
+
 | Operating system edition                  | KMS Client Setup Key          |
 | ----------------------------------------- | ----------------------------- |
 | Windows Server 2012                       | BN3D2-R7TKB-3YPBD-8DRP2-27GG4 |
@@ -102,6 +109,7 @@ Authoritative source on Microsoft's [TechNet](https://technet.microsoft.com/en-u
 | Windows Server 2012 R2 Essentials         | KNC87-3J2TX-XB4WP-VCPJV-M4FWM |
 
 ### Windows Server 2008
+
 | Operating system edition                          | KMS Client Setup Key          |
 | ------------------------------------------------- | ----------------------------- |
 | Windows Server 2008 Web                           | WYR28-R7TFJ-3X2YQ-YCY4H-M249D |
@@ -121,6 +129,7 @@ Authoritative source on Microsoft's [TechNet](https://technet.microsoft.com/en-u
 | Windows Server 2008 R2 for Itanium-based Systems  | GT63C-RJFQ3-4GMB6-BRFB9-CB83V |
 
 ### Office LTSC 2021
+
 | Product                            | GVLK                          |
 | ---------------------------------- | ----------------------------- |
 | Office LTSC Professional Plus 2021 | FXYTK-NJJ8C-GB6DW-3DYQT-6F7TH |
@@ -138,6 +147,7 @@ Authoritative source on Microsoft's [TechNet](https://technet.microsoft.com/en-u
 | Word LTSC 2021                     | TN8H9-M34D3-Y64V9-TR72V-X79KV |
 
 ### Office 2019
+
 | Product                       | GVLK                          |
 | ----------------------------- | ----------------------------- |
 | Office Professional Plus 2019 | NMMKJ-6RK4F-KMJVX-8D9MJ-6MWKP |
@@ -155,6 +165,7 @@ Authoritative source on Microsoft's [TechNet](https://technet.microsoft.com/en-u
 | Word 2019                     | PBX3G-NWMT6-Q7XBW-PYJGG-WXD33 |
 
 ### Office 2016
+
 | Product                       | GVLK                          |
 | ----------------------------- | ----------------------------- |
 | Office Professional Plus 2016 | XQNVK-8JYDB-WJ9W3-YJ8YR-WFG99 |
@@ -173,6 +184,7 @@ Authoritative source on Microsoft's [TechNet](https://technet.microsoft.com/en-u
 | Word 2016                     | WXY84-JN2Q9-RBCCQ-3Q3J3-3PFJ6 |
 
 ### Office 2013
+
 | Product                       | GVLK                          |
 | ----------------------------- | ----------------------------- |
 | Office 2013 Professional Plus | YC7DK-G2NP3-2QQC3-J6H88-GVGXT |
@@ -192,6 +204,7 @@ Authoritative source on Microsoft's [TechNet](https://technet.microsoft.com/en-u
 | Word 2013                     | 6Q7VD-NX8JD-WJ2VH-88V73-4GBJ7 |
 
 ### Office 2010
+
 | Product                       | GVLK                          |
 | ----------------------------- | ----------------------------- |
 | Office Professional Plus 2010 | VYBBJ-TRJPB-QFQRF-QFT4D-H3GVB |
