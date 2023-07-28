@@ -126,6 +126,7 @@ ifneq (,$(findstring openbsd,$(TARGETPLATFORM)))
   UNIX := 1
   BSD := 1
   ELF := 1
+  THREADS := 1
 endif
 
 ifneq (,$(findstring solaris,$(TARGETPLATFORM)))
