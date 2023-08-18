@@ -1,7 +1,5 @@
 .NOTPARALLEL:
 
-MAX_THREADS ?= 16
-
 PROGRAM_NAME ?= bin/vlmcsd
 CLIENT_NAME ?= bin/vlmcs
 MULTI_NAME ?= bin/vlmcsdmulti
@@ -104,30 +102,30 @@ endif
 
 .DEFAULT:
 	+@(test -d bin || mkdir bin) & (test -d lib || mkdir lib) & (test -d build || mkdir build)
-	+@$(MAKE) -j$(MAX_THREADS) -C src $@ FROM_PARENT=1 PROGRAM_NAME=$(PROGRAM_NAME) CLIENT_NAME=$(CLIENT_NAME) MULTI_NAME=$(MULTI_NAME) DLL_NAME=$(DLL_NAME) A_NAME=$(A_NAME)
+	+@$(MAKE)  -C src $@ FROM_PARENT=1 PROGRAM_NAME=$(PROGRAM_NAME) CLIENT_NAME=$(CLIENT_NAME) MULTI_NAME=$(MULTI_NAME) DLL_NAME=$(DLL_NAME) A_NAME=$(A_NAME)
 
 all:
 	+@(test -d bin || mkdir bin) & (test -d lib || mkdir lib) & (test -d build || mkdir build)
-	+@$(MAKE) -j$(MAX_THREADS) -C src $@ FROM_PARENT=1 PROGRAM_NAME=$(PROGRAM_NAME) CLIENT_NAME=$(CLIENT_NAME) MULTI_NAME=$(MULTI_NAME) DLL_NAME=$(DLL_NAME) A_NAME=$(A_NAME)
+	+@$(MAKE)  -C src $@ FROM_PARENT=1 PROGRAM_NAME=$(PROGRAM_NAME) CLIENT_NAME=$(CLIENT_NAME) MULTI_NAME=$(MULTI_NAME) DLL_NAME=$(DLL_NAME) A_NAME=$(A_NAME)
 
 clean:
-	+@$(MAKE) -j$(MAX_THREADS) -C src $@ FROM_PARENT=1 PROGRAM_NAME=$(PROGRAM_NAME) CLIENT_NAME=$(CLIENT_NAME) MULTI_NAME=$(MULTI_NAME) DLL_NAME=$(DLL_NAME) A_NAME=$(A_NAME)
-	+@$(MAKE) -j$(MAX_THREADS) -C man $@
+	+@$(MAKE)  -C src $@ FROM_PARENT=1 PROGRAM_NAME=$(PROGRAM_NAME) CLIENT_NAME=$(CLIENT_NAME) MULTI_NAME=$(MULTI_NAME) DLL_NAME=$(DLL_NAME) A_NAME=$(A_NAME)
+	+@$(MAKE)  -C man $@
 
 alldocs:
-	+@$(MAKE) -j$(MAX_THREADS) -C man $@
+	+@$(MAKE)  -C man $@
 
 dosdocs:
-	+@$(MAKE) -j$(MAX_THREADS) -C man $@
+	+@$(MAKE)  -C man $@
 
 unixdocs:
-	+@$(MAKE) -j$(MAX_THREADS) -C man $@
+	+@$(MAKE)  -C man $@
 
 htmldocs:
-	+@$(MAKE) -j$(MAX_THREADS) -C man $@
+	+@$(MAKE)  -C man $@
 
 pdfdocs:
-	+@$(MAKE) -j$(MAX_THREADS) -C man $@
+	+@$(MAKE)  -C man $@
 
 GNUmakefile:
 
