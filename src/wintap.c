@@ -188,6 +188,7 @@ static HANDLE OpenTapHandle()
 					(
 						!strncmp(regData, "tap0801", sizeof(regData)) ||
 						!strncmp(regData, "tap0901", sizeof(regData)) ||
+						!strncmp(regData, "root\\tap0901", sizeof(regData)) ||
 						!strncmp(regData, "TEAMVIEWERVPN", sizeof(regData))
 						)
 					)
