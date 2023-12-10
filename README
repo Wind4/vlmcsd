@@ -4,11 +4,11 @@
 [install]开始部署服务
 [uninstall]移除服务
 [stop]停止服务
-[setup]启动服务
+[start]启动服务
 [key]查看各版本Windows及Office密钥
 [readme]关于作者
 仅供学习和研究使用，一切使用该脚本的盗版行为与作者无关
-Telegram:@LeslieAlexander E-mail:HappyLeslieAlexander@duck.com
+Telegram:@LeslieAlexander E-mail:leslie@leslieblog.top
 
 下列为各版本Windows以及Office的KMS Key
 Windows 10 Pro  W269N-WFGWX-YVC9B-4J6C9-T83GX
