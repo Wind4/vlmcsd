@@ -1,57 +1,57 @@
 @echo off
 %1 mshta vbscript:CreateObject("Shell.Application").ShellExecute("cmd.exe","/c %~s0 ::","","runas",1)(window.close)&&exit
 cd /d "%~dp0"
-title KMS·şÎñÆ÷Ò»¼ü²¿Êğ½Å±¾V1.1
+title KMSæœåŠ¡å™¨ä¸€é”®éƒ¨ç½²è„šæœ¬V1.1
 color 2
 
 :start
 echo -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-echo ±¾½Å±¾ÓÉLeslie Alexander±àĞ´£¬»ùÓÚGithub¿ªÔ´ÏîÄ¿vlmcsd£¬Ö¼ÔÚ²¿ÊğKMS·şÎñÆ÷
-echo ×¢Òâ£¬KMS·şÎñÆ÷²»ÄÜ¼¤»îKMS·şÎñÆ÷±¾Éí
-echo ±¾½Å±¾Ä¬ÈÏÊ¹ÓÃÄ¿Â¼ÏÂµÄvlmcsd.exe£¨¸Ã³ÌĞòÎª64Î»£©£¬Èç¹ûÄãÔËĞĞÔÚ32Î»µÄWindowsÉÏ£¬ÇëÊÖ¶¯É¾³ıÔ­±¾µÄvlmcsd.exe£¬È»ºó°Ñvlmcsd_x32.exeÖØÃüÃûÎªvlmcsd.exe
-echo ½ö¹©Ñ§Ï°ºÍÑĞ¾¿Ê¹ÓÃ£¬Ò»ÇĞÊ¹ÓÃ¸Ã½Å±¾µÄµÁ°æĞĞÎªÓë×÷ÕßÎŞ¹Ø
+echo æœ¬è„šæœ¬ç”±Leslie Alexanderç¼–å†™ï¼ŒåŸºäºGithubå¼€æºé¡¹ç›®vlmcsdï¼Œæ—¨åœ¨éƒ¨ç½²KMSæœåŠ¡å™¨
+echo æ³¨æ„ï¼ŒKMSæœåŠ¡å™¨ä¸èƒ½æ¿€æ´»KMSæœåŠ¡å™¨æœ¬èº«
+echo æœ¬è„šæœ¬é»˜è®¤ä½¿ç”¨ç›®å½•ä¸‹çš„vlmcsd.exeï¼ˆè¯¥ç¨‹åºä¸º64ä½ï¼‰ï¼Œå¦‚æœä½ è¿è¡Œåœ¨32ä½çš„Windowsä¸Šï¼Œè¯·æ‰‹åŠ¨åˆ é™¤åŸæœ¬çš„vlmcsd.exeï¼Œç„¶åæŠŠvlmcsd_x32.exeé‡å‘½åä¸ºvlmcsd.exe
+echo ä»…ä¾›å­¦ä¹ å’Œç ”ç©¶ä½¿ç”¨ï¼Œä¸€åˆ‡ä½¿ç”¨è¯¥è„šæœ¬çš„ç›—ç‰ˆè¡Œä¸ºä¸ä½œè€…æ— å…³
 echo Telegram:@LeslieAlexander E-mail:banspam@vtqpy.onmicrosoft.com
-echo ¼ÌĞøÔòÄ¬ÈÏÄúÍ¬ÒâÒÔÉÏËµÃ÷
+echo ç»§ç»­åˆ™é»˜è®¤æ‚¨åŒæ„ä»¥ä¸Šè¯´æ˜
 echo -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-echo ÇëÊäÈëÒªÖ´ĞĞµÄ²Ù×÷£º
-echo [install]¿ªÊ¼²¿Êğ·şÎñ
-echo [uninstall]ÒÆ³ı·şÎñ
-echo [stop]Í£Ö¹·şÎñ
-echo [setup]Æô¶¯·şÎñ
-echo [key]²é¿´¸÷°æ±¾Windows¼°OfficeÃÜÔ¿
-echo [readme]¹ØÓÚ×÷Õß
-set /p choice=ÇëÊäÈëÑ¡Ôñ£º
+echo è¯·è¾“å…¥è¦æ‰§è¡Œçš„æ“ä½œï¼š
+echo [install]å¼€å§‹éƒ¨ç½²æœåŠ¡
+echo [uninstall]ç§»é™¤æœåŠ¡
+echo [stop]åœæ­¢æœåŠ¡
+echo [start]å¯åŠ¨æœåŠ¡
+echo [key]æŸ¥çœ‹å„ç‰ˆæœ¬WindowsåŠOfficeå¯†é’¥
+echo [readme]å…³äºä½œè€…
+set /p choice=è¯·è¾“å…¥é€‰æ‹©ï¼š
 if /i "%choice%"=="install" goto install
 if /i "%choice%"=="uninstall" goto uninstall
 if /i "%choice%"=="stop" goto stop
-if /i "%choice%"=="setup" goto setup
+if /i "%choice%"=="start" goto setup
 if /i "%choice%"=="key" goto key
 if /i "%choice%"=="readme" goto readme
 
 :install
-echo ¼´½«¿ªÊ¼²¿Êğ£¬Çë¼üÈëÈÕÖ¾ÎÄ¼ş´æ·ÅµØÖ·£º
-set /p URI=ÇëÊäÈëµØÖ·£º
-echo ÕıÔÚ²¿Êğ...
+echo å³å°†å¼€å§‹éƒ¨ç½²ï¼Œè¯·é”®å…¥æ—¥å¿—æ–‡ä»¶å­˜æ”¾åœ°å€ï¼š
+set /p URI=è¯·è¾“å…¥åœ°å€ï¼š
+echo æ­£åœ¨éƒ¨ç½²...
 vlmcsd.exe -s -l %URI%\KMS.log
-echo ÕıÔÚÆô¶¯·şÎñ...
+echo æ­£åœ¨å¯åŠ¨æœåŠ¡...
 sc query state= inactive | findstr /c:"Key Management Server"
 net start "Key Management Server"
-echo ÕıÔÚÌí¼Ó·À»ğÇ½ÈëÕ¾¹æÔò...
+echo æ­£åœ¨æ·»åŠ é˜²ç«å¢™å…¥ç«™è§„åˆ™...
 netsh advfirewall firewall add rule name=KMS1688 dir=in action=allow protocol=TCP localport=1688
 pause
 cls&goto start
 
 :uninstall
-echo ÄúÈ·ÈÏÒªÒÆ³ı·şÎñÂğ£¿
+echo æ‚¨ç¡®è®¤è¦ç§»é™¤æœåŠ¡å—ï¼Ÿ
 pause
-echo ÕıÔÚÒÆ³ı·şÎñ...
+echo æ­£åœ¨ç§»é™¤æœåŠ¡...
 sc query state= inactive | findstr /c:"Key Management Server"
 net stop "Key Management Server"
 sc delete vlmcsd
-echo ÕıÔÚÒÆ³ı·À»ğÇ½¹æÔò...
+echo æ­£åœ¨ç§»é™¤é˜²ç«å¢™è§„åˆ™...
 netsh advfirewall firewall delete rule name=KMS1688
-echo ÒÆ³ı³É¹¦£¡ÇëÊÖ¶¯Ñ¡ÔñÊÇ·ñÉ¾³ıÈÕÖ¾ÎÄ¼ş
+echo ç§»é™¤æˆåŠŸï¼è¯·æ‰‹åŠ¨é€‰æ‹©æ˜¯å¦åˆ é™¤æ—¥å¿—æ–‡ä»¶
 pause
 cls&goto start
 
@@ -61,7 +61,7 @@ net stop "Key Management Server"
 pause
 cls&goto start
 
-:setup
+:start
 sc query state= inactive | findstr /c:"Key Management Server"
 net start "Key Management Server"
 pause
@@ -218,9 +218,8 @@ pause
 cls&goto start
 
 :readme
-echo ±¾½Å±¾ÓÉLeslie Alexander´´×÷£¬vlmcsdÊÇGithubÉÏWind4µÄ¿ªÔ´×÷Æ·£¬½Å±¾»ùÓÚvlmcsd´´×÷£¬Ö¼ÔÚ¼òµ¥¿ì½İµØ²¿ÊğKMS·şÎñÆ÷£¬ÈÃÓÅĞãµÄ¿ªÔ´ÏîÄ¿Ò×ÓÃ£¡
-echo ÓÉÓÚ±¾ÈË·±Ã¦£¬´Ë½Å±¾½«²»¶¨Ê±¸üĞÂ¡£ÈçÓĞBUGÇëÁªÏµÎÒ£¡E-mail£ºbanspam@vtqpy.onmicrosoft.com Telegram:@LeslieALexander
-echo Èç¹ûÄãÓĞÄÜÁ¦£¬ÇëÔŞÖúÎÒ£¬ÕâÀï¸Ğ¼¤²»¾¡£¡
-echo ×÷Õß±£Ö¤±¾½Å±¾°²È«£¬Believe it or not£¡
+echo æœ¬è„šæœ¬ç”±Leslie Alexanderåˆ›ä½œï¼Œvlmcsdæ˜¯Githubä¸ŠWind4çš„å¼€æºä½œå“ï¼Œè„šæœ¬åŸºäºvlmcsdåˆ›ä½œï¼Œæ—¨åœ¨ç®€å•å¿«æ·åœ°éƒ¨ç½²KMSæœåŠ¡å™¨ï¼Œè®©ä¼˜ç§€çš„å¼€æºé¡¹ç›®æ˜“ç”¨ï¼
+echo ç”±äºæœ¬äººç¹å¿™ï¼Œæ­¤è„šæœ¬å°†ä¸å®šæ—¶æ›´æ–°ã€‚å¦‚æœ‰BUGè¯·è”ç³»æˆ‘ï¼E-mailï¼šleslie@leslieblog.top Telegram:@LeslieALexander
+echo å¦‚æœä½ æœ‰èƒ½åŠ›ï¼Œè¯·èµåŠ©æˆ‘ï¼Œè°¢è°¢ï¼
 pause
 cls&goto start
