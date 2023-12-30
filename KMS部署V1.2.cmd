@@ -1,16 +1,16 @@
 @echo off
 %1 mshta vbscript:CreateObject("Shell.Application").ShellExecute("cmd.exe","/c %~s0 ::","","runas",1)(window.close)&&exit
 cd /d "%~dp0"
-title KMS服务器一键部署脚本V1.1
+title KMS服务器一键部署脚本V1.2
 color 2
 
 :start
 echo -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 echo 本脚本由Leslie Alexander编写，基于Github开源项目vlmcsd，旨在部署KMS服务器
 echo 注意，KMS服务器不能激活KMS服务器本身
-echo 本脚本默认使用目录下的vlmcsd.exe（该程序为64位），如果你运行在32位的Windows上，请手动删除原本的vlmcsd.exe，然后把vlmcsd_x32.exe重命名为vlmcsd.exe
-echo 仅供学习和研究使用，一切使用该脚本的盗版行为与作者无关
-echo Telegram:@LeslieAlexander E-mail:banspam@vtqpy.onmicrosoft.com
+
+echo 仅供学习和研究使用，一切使用该脚本的盗版行为与作者无关，请在下载后24h内删除
+echo Telegram:@LeslieAlexander E-mail:Leslie@leslieblog.top
 echo 继续则默认您同意以上说明
 echo -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -22,14 +22,31 @@ echo [start]启动服务
 echo [key]查看各版本Windows及Office密钥
 echo [readme]关于作者
 set /p choice=请输入选择：
-if /i "%choice%"=="install" goto install
+if /i "%choice%"=="install" goto 3264
 if /i "%choice%"=="uninstall" goto uninstall
 if /i "%choice%"=="stop" goto stop
 if /i "%choice%"=="start" goto setup
 if /i "%choice%"=="key" goto key
 if /i "%choice%"=="readme" goto readme
 
-:install
+:3264
+if "%PROCESSOR_ARCHITECTURE%"=="x86" goto install32
+if "%PROCESSOR_ARCHITECTURE%"=="AMD64" goto install64
+
+:install32
+echo 即将开始部署，请键入日志文件存放地址：
+set /p URI=请输入地址：
+echo 正在部署...
+vlmcsd_X32.exe -s -l %URI%\KMS.log
+echo 正在启动服务...
+sc query state= inactive | findstr /c:"Key Management Server"
+net start "Key Management Server"
+echo 正在添加防火墙入站规则...
+netsh advfirewall firewall add rule name=KMS1688 dir=in action=allow protocol=TCP localport=1688
+pause
+cls&goto start
+
+:install64
 echo 即将开始部署，请键入日志文件存放地址：
 set /p URI=请输入地址：
 echo 正在部署...
@@ -218,8 +235,8 @@ pause
 cls&goto start
 
 :readme
-echo 本脚本由Leslie Alexander创作，vlmcsd是Github上Wind4的开源作品，脚本基于vlmcsd创作，旨在简单快捷地部署KMS服务器，让优秀的开源项目易用！
-echo 由于本人繁忙，此脚本将不定时更新。如有BUG请联系我！E-mail：leslie@leslieblog.top Telegram:@LeslieALexander
+echo 本脚本由Leslie Alexander创作，vlmcsd是GitHub上Wind4的开源作品，脚本基于vlmcsd创作，旨在简单快捷地部署KMS服务器，让优秀的开源项目易用！
+echo 由于本人繁忙，此脚本将不定时更新。如有BUG请联系我！E-mail：leslie@Leslieblog.top Telegram:@LeslieALexander
 echo 如果你有能力，请赞助我，谢谢！
 pause
 cls&goto start
