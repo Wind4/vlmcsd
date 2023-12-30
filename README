@@ -1,6 +1,5 @@
 本脚本由Leslie Alexander编写，基于Github开源项目vlmcsd，旨在部署KMS服务器
 注意，在Windows8.1及以上版本中，KMS服务器不能激活KMS服务器本身
-本脚本默认使用目录下的vlmcsd.exe（该程序为64位），如果你运行在32位的Windows上，请手动删除原本的vlmcsd.exe，然后把vlmcsd_x32.exe重命名为vlmcsd.exe
 [install]开始部署服务
 [uninstall]移除服务
 [stop]停止服务
